@@ -1,0 +1,66 @@
+{
+  "type": "decision",
+  "titre": "Carcinome",
+  "choix": {
+    "Infiltrant": {
+      "type": "decision",
+      "titre": "Triple N",
+      "choix": {
+        "0": {
+          "type": "resultat",
+          "donnees": {
+            "OUT_Hormonothérapie seule": "Non spécifié",
+            "OUT_Abstention": "Non spécifié",
+            "OUT_RCP": "1.0",
+            "OUT_Chimiothérapie": "Non spécifié",
+            "OUT_Trastuzumab": "Non spécifié",
+            "OUT_Radiothérapie": "Non spécifié",
+            "OUT_Chirurgie première": "Non spécifié"
+          }
+        },
+        "1": {
+          "type": "decision",
+          "titre": "T",
+          "choix": {
+            "T1a": {
+              "type": "resultat",
+              "donnees": {
+                "OUT_Hormonothérapie seule": "Non spécifié",
+                "OUT_Abstention": "Non spécifié",
+                "OUT_RCP": "Non spécifié",
+                "OUT_Chimiothérapie": "0.0",
+                "OUT_Trastuzumab": "Non spécifié",
+                "OUT_Radiothérapie": "Non spécifié",
+                "OUT_Chirurgie première": "Non spécifié"
+              }
+            },
+            "T1b": {
+              "type": "resultat",
+              "donnees": {
+                "OUT_Hormonothérapie seule": "Non spécifié",
+                "OUT_Abstention": "Non spécifié",
+                "OUT_RCP": "Non spécifié",
+                "OUT_Chimiothérapie": "1.0",
+                "OUT_Trastuzumab": "Non spécifié",
+                "OUT_Radiothérapie": "Non spécifié",
+                "OUT_Chirurgie première": "Non spécifié"
+              }
+            }
+          }
+        }
+      }
+    },
+    "In situ": {
+      "type": "resultat",
+      "donnees": {
+        "OUT_Hormonothérapie seule": "Non spécifié",
+        "OUT_Abstention": "Non spécifié",
+        "OUT_RCP": "Non spécifié",
+        "OUT_Chimiothérapie": "Non spécifié",
+        "OUT_Trastuzumab": "Non spécifié",
+        "OUT_Radiothérapie": "1.0",
+        "OUT_Chirurgie première": "Non spécifié"
+      }
+    }
+  }
+}

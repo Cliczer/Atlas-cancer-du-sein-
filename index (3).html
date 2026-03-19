@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atlas Pronostics — Cancer du Sein</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:       #D11467;
+      --pink-light: #fce7f3;
+      --pink-dark:  #a50d52;
+      --dark:       #1a1a2e;
+      --text:       #2d3436;
+      --muted:      #636e72;
+      --border:     #e5e7eb;
+      --bg:         #f8f9fa;
+      --white:      #ffffff;
+      --green:      #16a34a;
+      --green-bg:   #dcfce7;
+      --red:        #dc2626;
+      --red-bg:     #fee2e2;
+      --grey-bg:    #f3f4f6;
+      --radius:     12px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    html, body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────
+       UTILITAIRE : afficher / cacher les écrans
+       Une seule règle, un seul endroit.
+    ───────────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─────────────────────────────────────────
+       HEADER COMMUN
+    ───────────────────────────────────────── */
+    .header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .header-logo-icon {
+      /* Cœur SVG dans un carré rose — width/height forcés ici ET sur le svg */
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    /* ↓ Règle défensive : aucun SVG de l'appli ne peut déborder de son conteneur */
+    svg { display: block; overflow: visible; }
+
+    /* ─────────────────────────────────────────
+       BOUTONS
+    ───────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 12px 24px;
+      transition: opacity .15s, transform .1s;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--pink);
+      color: var(--white);
+    }
+    .btn-primary:not(:disabled):hover { background: var(--pink-dark); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      padding: 9px 18px;
+      font-size: 14px;
+    }
+    .btn-ghost:hover { border-color: var(--pink); color: var(--pink); }
+
+    .btn-white {
+      background: var(--white);
+      color: var(--pink);
+    }
+    .btn-white:hover { background: var(--pink-light); }
+
+    /* ─────────────────────────────────────────
+       ╔══════════════════════════════╗
+       ║  ÉCRAN 1 : ACCUEIL           ║
+       ╚══════════════════════════════╝
+    ───────────────────────────────────────── */
+    #screen-home .hero {
+      background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
+      color: var(--white);
+      padding: 80px 40px;
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      min-height: 420px;
+    }
+    #screen-home .hero-text { flex: 1; max-width: 560px; }
+    #screen-home .hero-text h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    #screen-home .hero-text p {
+      font-size: 17px;
+      opacity: .88;
+      margin-bottom: 32px;
+      max-width: 480px;
+    }
+    #screen-home .hero-image {
+      flex: 0 0 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #screen-home .hero-image img {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      display: block;
+    }
+
+    /* Cartes "comment ça marche" */
+    #screen-home .how {
+      padding: 64px 40px;
+      background: var(--white);
+    }
+    #screen-home .how h2 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 40px;
+    }
+    #screen-home .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    #screen-home .how-card {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      text-align: center;
+    }
+    #screen-home .how-card .icon { font-size: 32px; margin-bottom: 12px; }
+    #screen-home .how-card strong { display: block; font-size: 15px; margin-bottom: 6px; }
+    #screen-home .how-card span { font-size: 13px; color: var(--muted); }
+
+    #screen-home footer {
+      text-align: center;
+      padding: 24px 40px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ─────────────────────────────────────────
+       ╔══════════════════════════════╗
+       ║  ÉCRAN 2 : QUESTIONNAIRE     ║
+       ╚══════════════════════════════╝
+    ───────────────────────────────────────── */
+    #screen-quiz .quiz-progress {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    #screen-quiz .progress-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    #screen-quiz .progress-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    #screen-quiz .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink), var(--pink-dark));
+      border-radius: 99px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+    #screen-quiz .progress-pct {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--pink);
+      white-space: nowrap;
+    }
+
+    #screen-quiz .quiz-body {
+      display: flex;
+      justify-content: center;
+      padding: 48px 24px;
+    }
+    #screen-quiz .quiz-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 48px;
+      width: 100%;
+      max-width: 680px;
+    }
+    #screen-quiz .quiz-card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 32px;
+      color: var(--text);
+    }
+
+    /* Boutons de choix */
+    .choice-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .15s, background .15s, transform .1s;
+    }
+    .choice-btn:hover {
+      border-color: var(--pink);
+      background: var(--pink-light);
+      transform: translateX(4px);
+    }
+    .choice-btn:active { transform: translateX(2px); }
+    .choice-btn .arrow {
+      color: var(--pink);
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity .15s;
+      /* flex-shrink pour que la flèche ne grossisse jamais */
+      flex-shrink: 0;
+    }
+    .choice-btn:hover .arrow { opacity: 1; }
+
+    /* Pied de carte : bouton retour */
+    .quiz-footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ─────────────────────────────────────────
+       ╔══════════════════════════════╗
+       ║  ÉCRAN 3 : RÉSULTATS         ║
+       ╚══════════════════════════════╝
+    ───────────────────────────────────────── */
+    #screen-results .results-body {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+    #screen-results h2 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 28px;
+    }
+
+    /* Bandeau parcours */
+    .path-banner {
+      background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+      color: var(--white);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+    .path-banner h3 {
+      font-size: 13px;
+      font-weight: 600;
+      opacity: .8;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 12px;
+    }
+    .path-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .path-step {
+      background: rgba(255,255,255,.22);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .path-sep { font-size: 14px; opacity: .5; }
+
+    /* Grille résultats */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .result-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      border-left: 4px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform .15s;
+    }
+    .result-card:hover { transform: translateY(-2px); }
+    .result-card.rec  { border-left-color: var(--green); }
+    .result-card.nrec { border-left-color: var(--red); }
+    .result-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 99px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge.rec  { background: var(--green-bg); color: var(--green); }
+    .badge.nrec { background: var(--red-bg);   color: var(--red); }
+    .badge.ns   { background: var(--grey-bg);  color: var(--muted); }
+
+    /* Avertissement */
+    .warning-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-size: 13px;
+      color: #78350f;
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .header { padding: 0 16px; }
+      #screen-home .hero { flex-direction: column; padding: 48px 20px; gap: 32px; }
+      #screen-home .hero-image { display: none; }
+      #screen-home .how { padding: 48px 20px; }
+      #screen-quiz .quiz-card { padding: 28px 20px; }
+      #screen-quiz .quiz-progress { padding: 14px 16px; }
+      #screen-results .results-body { padding: 32px 16px; }
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════
+     ÉCRAN 1 — ACCUEIL
+     .screen.active = seul écran visible à un instant t
+════════════════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+
+  <header class="header">
+    <a href="#" class="header-logo" onclick="return false;">
+      <div class="header-logo-icon">
+        <!-- width + height sur le svg ET sur le div parent = zéro risque d'icône géante -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.593C6.37 16.054 1 11.296 1 6.939 1 3.22 4.22 1 7.5 1c1.796 0 3.578.891 4.5 2.959C12.922 1.891 14.704 1 16.5 1 19.78 1 23 3.22 23 6.939c0 4.357-5.37 9.115-11 14.654z"/>
+        </svg>
+      </div>
+      Atlas Pronostics
+    </a>
+    <nav>
+      <button class="btn btn-primary" id="btn-start" onclick="demarrer()" disabled>
+        Chargement…
+      </button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Comprendre Votre Pronostic et Vos Options de Traitement</h1>
+      <p>
+        Outil d'aide à la décision médicale basé sur les recommandations
+        cliniques pour accompagner les équipes soignantes en oncologie du sein.
+      </p>
+      <button class="btn btn-white" id="btn-start-hero" onclick="demarrer()" disabled>
+        Commencer l'évaluation →
+      </button>
+    </div>
+    <div class="hero-image">
+      <img
+        src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80"
+        alt="Consultation médicale oncologie"
+        onerror="this.parentElement.style.display='none'"
+      />
+    </div>
+  </section>
+
+  <section class="how">
+    <h2>Comment fonctionne l'Atlas ?</h2>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="icon">🔍</div>
+        <strong>Profil Clinique</strong>
+        <span>Saisie des caractéristiques tumorales</span>
+      </div>
+      <div class="how-card">
+        <div class="icon">🌿</div>
+        <strong>Arbre Décisionnel</strong>
+        <span>Navigation guidée étape par étape</span>
+      </div>
+      <div class="how-card">
+        <div class="icon">📊</div>
+        <strong>Données Probantes</strong>
+        <span>Confrontation aux données cliniques</span>
+      </div>
+      <div class="how-card">
+        <div class="icon">✅</div>
+        <strong>Recommandations</strong>
+        <span>Options thérapeutiques adaptées</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    ⚠️ Outil d'aide à la décision — Ne remplace pas l'avis d'un professionnel de santé.
+  </footer>
+
+</div><!-- /#screen-home -->
+
+
+<!-- ════════════════════════════════════════════════
+     ÉCRAN 2 — QUESTIONNAIRE
+════════════════════════════════════════════════ -->
+<div id="screen-quiz" class="screen">
+
+  <header class="header">
+    <a href="#" class="header-logo" onclick="return false;">
+      <div class="header-logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.593C6.37 16.054 1 11.296 1 6.939 1 3.22 4.22 1 7.5 1c1.796 0 3.578.891 4.5 2.959C12.922 1.891 14.704 1 16.5 1 19.78 1 23 3.22 23 6.939c0 4.357-5.37 9.115-11 14.654z"/>
+        </svg>
+      </div>
+      Atlas Pronostics
+    </a>
+  </header>
+
+  <div class="quiz-progress">
+    <span class="progress-label" id="quiz-step-label">Étape 1</span>
+    <div class="progress-track">
+      <div class="progress-bar" id="quiz-progress-bar"></div>
+    </div>
+    <span class="progress-pct" id="quiz-pct-label">0 %</span>
+  </div>
+
+  <div class="quiz-body">
+    <div class="quiz-card">
+      <h2 id="quiz-question">…</h2>
+      <!-- Les boutons de réponse sont injectés ici par app.js -->
+      <div id="quiz-choices"></div>
+      <div class="quiz-footer">
+        <button class="btn btn-ghost" id="btn-back" onclick="reculer()" style="display:none;">
+          ← Étape précédente
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#screen-quiz -->
+
+
+<!-- ════════════════════════════════════════════════
+     ÉCRAN 3 — RÉSULTATS
+════════════════════════════════════════════════ -->
+<div id="screen-results" class="screen">
+
+  <header class="header">
+    <a href="#" class="header-logo" onclick="return false;">
+      <div class="header-logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.593C6.37 16.054 1 11.296 1 6.939 1 3.22 4.22 1 7.5 1c1.796 0 3.578.891 4.5 2.959C12.922 1.891 14.704 1 16.5 1 19.78 1 23 3.22 23 6.939c0 4.357-5.37 9.115-11 14.654z"/>
+        </svg>
+      </div>
+      Atlas Pronostics
+    </a>
+    <button class="btn btn-ghost" onclick="recommencer()">↺ Nouvelle évaluation</button>
+  </header>
+
+  <div class="results-body">
+    <h2>Recommandations Thérapeutiques</h2>
+
+    <div class="path-banner">
+      <h3>Parcours clinique</h3>
+      <!-- Injecté par app.js -->
+      <div class="path-steps" id="results-path"></div>
+    </div>
+
+    <!-- Injecté par app.js -->
+    <div class="results-grid" id="results-grid"></div>
+
+    <div class="warning-box">
+      <strong>⚠️ Important :</strong> Ces recommandations sont générées automatiquement
+      à titre indicatif. Toute décision thérapeutique doit être validée en
+      Réunion de Concertation Pluridisciplinaire (RCP) et relève du jugement clinique.
+    </div>
+  </div>
+
+</div><!-- /#screen-results -->
+
+
+<script src="app.js"></script>
+</body>
+</html>
