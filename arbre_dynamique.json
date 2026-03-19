@@ -7,43 +7,109 @@
             "titre": "Triple N",
             "choix": {
                 "0": {
-                    "type": "resultat",
-                    "donnees": {
-                        "OUT_Hormonothérapie seule": "Non spécifié",
-                        "OUT_Abstention": "Non spécifié",
-                        "OUT_RCP": "1.0",
-                        "OUT_Chimiothérapie": "Non spécifié",
-                        "OUT_Trastuzumab": "Non spécifié",
-                        "OUT_Radiothérapie": "Non spécifié",
-                        "OUT_Chirurgie première": "Non spécifié"
+                    "type": "decision",
+                    "titre": "HER2",
+                    "choix": {
+                        "HER2+": {
+                            "type": "decision",
+                            "titre": "RE",
+                            "choix": {
+                                "RE-": {
+                                    "type": "decision",
+                                    "titre": "Ménopause",
+                                    "choix": {
+                                        "0": {
+                                            "type": "decision",
+                                            "titre": "T",
+                                            "choix": {
+                                                "T1a": {
+                                                    "type": "decision",
+                                                    "titre": "RH",
+                                                    "choix": {
+                                                        "RH-": {
+                                                            "type": "decision",
+                                                            "titre": "Ki67 (%)",
+                                                            "choix": {
+                                                                ">20": {
+                                                                    "type": "decision",
+                                                                    "titre": "Grade",
+                                                                    "choix": {
+                                                                        "3": {
+                                                                            "type": "decision",
+                                                                            "titre": "Emboles",
+                                                                            "choix": {
+                                                                                "1": {
+                                                                                    "type": "resultat",
+                                                                                    "donnees": {
+                                                                                        "OUT_Hormonothérapie seule": "Non spécifié",
+                                                                                        "OUT_Abstention": "Non spécifié",
+                                                                                        "OUT_RCP": "1.0",
+                                                                                        "OUT_Chimiothérapie": "Non spécifié",
+                                                                                        "OUT_Trastuzumab": "Non spécifié",
+                                                                                        "OUT_Radiothérapie": "Non spécifié",
+                                                                                        "OUT_Chirurgie première": "Non spécifié"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "1": {
                     "type": "decision",
-                    "titre": "T",
+                    "titre": "HER2",
                     "choix": {
-                        "T1a": {
-                            "type": "resultat",
-                            "donnees": {
-                                "OUT_Hormonothérapie seule": "Non spécifié",
-                                "OUT_Abstention": "Non spécifié",
-                                "OUT_RCP": "Non spécifié",
-                                "OUT_Chimiothérapie": "0.0",
-                                "OUT_Trastuzumab": "Non spécifié",
-                                "OUT_Radiothérapie": "Non spécifié",
-                                "OUT_Chirurgie première": "Non spécifié"
-                            }
-                        },
-                        "T1b": {
-                            "type": "resultat",
-                            "donnees": {
-                                "OUT_Hormonothérapie seule": "Non spécifié",
-                                "OUT_Abstention": "Non spécifié",
-                                "OUT_RCP": "Non spécifié",
-                                "OUT_Chimiothérapie": "1.0",
-                                "OUT_Trastuzumab": "Non spécifié",
-                                "OUT_Radiothérapie": "Non spécifié",
-                                "OUT_Chirurgie première": "Non spécifié"
+                        "0": {
+                            "type": "decision",
+                            "titre": "RE",
+                            "choix": {
+                                "0": {
+                                    "type": "decision",
+                                    "titre": "RP",
+                                    "choix": {
+                                        "0": {
+                                            "type": "decision",
+                                            "titre": "T",
+                                            "choix": {
+                                                "T1a": {
+                                                    "type": "resultat",
+                                                    "donnees": {
+                                                        "OUT_Hormonothérapie seule": "Non spécifié",
+                                                        "OUT_Abstention": "Non spécifié",
+                                                        "OUT_RCP": "Non spécifié",
+                                                        "OUT_Chimiothérapie": "0.0",
+                                                        "OUT_Trastuzumab": "Non spécifié",
+                                                        "OUT_Radiothérapie": "Non spécifié",
+                                                        "OUT_Chirurgie première": "Non spécifié"
+                                                    }
+                                                },
+                                                "T1b": {
+                                                    "type": "resultat",
+                                                    "donnees": {
+                                                        "OUT_Hormonothérapie seule": "Non spécifié",
+                                                        "OUT_Abstention": "Non spécifié",
+                                                        "OUT_RCP": "Non spécifié",
+                                                        "OUT_Chimiothérapie": "1.0",
+                                                        "OUT_Trastuzumab": "Non spécifié",
+                                                        "OUT_Radiothérapie": "Non spécifié",
+                                                        "OUT_Chirurgie première": "Non spécifié"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -51,15 +117,27 @@
             }
         },
         "in situ": {
-            "type": "resultat",
-            "donnees": {
-                "OUT_Hormonothérapie seule": "Non spécifié",
-                "OUT_Abstention": "Non spécifié",
-                "OUT_RCP": "Non spécifié",
-                "OUT_Chimiothérapie": "Non spécifié",
-                "OUT_Trastuzumab": "Non spécifié",
-                "OUT_Radiothérapie": "1.0",
-                "OUT_Chirurgie première": "Non spécifié"
+            "type": "decision",
+            "titre": "Marges (mm)",
+            "choix": {
+                ">2": {
+                    "type": "decision",
+                    "titre": "MCC",
+                    "choix": {
+                        "1": {
+                            "type": "resultat",
+                            "donnees": {
+                                "OUT_Hormonothérapie seule": "Non spécifié",
+                                "OUT_Abstention": "Non spécifié",
+                                "OUT_RCP": "Non spécifié",
+                                "OUT_Chimiothérapie": "Non spécifié",
+                                "OUT_Trastuzumab": "Non spécifié",
+                                "OUT_Radiothérapie": "1.0",
+                                "OUT_Chirurgie première": "Non spécifié"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
