@@ -41,7 +41,6 @@
 
     /* ─────────────────────────────────────────
        UTILITAIRE : afficher / cacher les écrans
-       Une seule règle, un seul endroit.
     ───────────────────────────────────────── */
     .screen { display: none; }
     .screen.active { display: block; }
@@ -71,17 +70,21 @@
       text-decoration: none;
     }
     .header-logo-icon {
-      /* Cœur SVG dans un carré rose — width/height forcés ici ET sur le svg */
       width: 34px;
       height: 34px;
-      background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+      /* On enlève le fond rose puisqu'on met une image complète */
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      overflow: hidden; /* Empêche l'image de dépasser du carré arrondi */
     }
-    /* ↓ Règle défensive : aucun SVG de l'appli ne peut déborder de son conteneur */
+    .header-logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Assure que l'image remplit bien l'espace sans se déformer */
+    }
     svg { display: block; overflow: visible; }
 
     /* ─────────────────────────────────────────
@@ -104,10 +107,7 @@
     .btn:active { transform: scale(.98); }
     .btn:disabled { opacity: .45; cursor: not-allowed; }
 
-    .btn-primary {
-      background: var(--pink);
-      color: var(--white);
-    }
+    .btn-primary { background: var(--pink); color: var(--white); }
     .btn-primary:not(:disabled):hover { background: var(--pink-dark); }
 
     .btn-ghost {
@@ -119,16 +119,11 @@
     }
     .btn-ghost:hover { border-color: var(--pink); color: var(--pink); }
 
-    .btn-white {
-      background: var(--white);
-      color: var(--pink);
-    }
+    .btn-white { background: var(--white); color: var(--pink); }
     .btn-white:hover { background: var(--pink-light); }
 
     /* ─────────────────────────────────────────
-       ╔══════════════════════════════╗
-       ║  ÉCRAN 1 : ACCUEIL           ║
-       ╚══════════════════════════════╝
+       ÉCRAN 1 : ACCUEIL
     ───────────────────────────────────────── */
     #screen-home .hero {
       background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
@@ -136,12 +131,13 @@
       padding: 80px 40px;
       display: flex;
       align-items: center;
-      gap: 60px;
+      justify-content: center; /* Centre le texte puisqu'il n'y a plus d'image à côté */
       min-height: 420px;
+      text-align: center; /* Centre le texte à l'intérieur de son conteneur */
     }
-    #screen-home .hero-text { flex: 1; max-width: 560px; }
+    #screen-home .hero-text { max-width: 800px; display: flex; flex-direction: column; align-items: center; }
     #screen-home .hero-text h1 {
-      font-size: clamp(28px, 4vw, 42px);
+      font-size: clamp(32px, 5vw, 54px); /* Titre plus grand */
       font-weight: 800;
       line-height: 1.2;
       margin-bottom: 20px;
@@ -150,20 +146,7 @@
       font-size: 17px;
       opacity: .88;
       margin-bottom: 32px;
-      max-width: 480px;
-    }
-    #screen-home .hero-image {
-      flex: 0 0 420px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #screen-home .hero-image img {
-      width: 100%;
-      max-width: 220px;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
-      display: block;
+      max-width: 580px;
     }
 
     /* Cartes "comment ça marche" */
@@ -203,9 +186,7 @@
     }
 
     /* ─────────────────────────────────────────
-       ╔══════════════════════════════╗
-       ║  ÉCRAN 2 : QUESTIONNAIRE     ║
-       ╚══════════════════════════════╝
+       ÉCRAN 2 : QUESTIONNAIRE
     ───────────────────────────────────────── */
     #screen-quiz .quiz-progress {
       background: var(--white);
@@ -293,7 +274,6 @@
       font-size: 18px;
       opacity: 0;
       transition: opacity .15s;
-      /* flex-shrink pour que la flèche ne grossisse jamais */
       flex-shrink: 0;
     }
     .choice-btn:hover .arrow { opacity: 1; }
@@ -306,9 +286,7 @@
     }
 
     /* ─────────────────────────────────────────
-       ╔══════════════════════════════╗
-       ║  ÉCRAN 3 : RÉSULTATS         ║
-       ╚══════════════════════════════╝
+       ÉCRAN 3 : RÉSULTATS
     ───────────────────────────────────────── */
     #screen-results .results-body {
       max-width: 880px;
@@ -374,11 +352,7 @@
     .result-card:hover { transform: translateY(-2px); }
     .result-card.rec  { border-left-color: var(--green); }
     .result-card.nrec { border-left-color: var(--red); }
-    .result-card h4 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
+    .result-card h4 { font-size: 14px; font-weight: 600; color: var(--text); }
     .badge {
       font-size: 11px;
       font-weight: 700;
@@ -407,8 +381,7 @@
     ───────────────────────────────────────── */
     @media (max-width: 700px) {
       .header { padding: 0 16px; }
-      #screen-home .hero { flex-direction: column; padding: 48px 20px; gap: 32px; }
-      #screen-home .hero-image { display: none; }
+      #screen-home .hero { padding: 48px 20px; }
       #screen-home .how { padding: 48px 20px; }
       #screen-quiz .quiz-card { padding: 28px 20px; }
       #screen-quiz .quiz-progress { padding: 14px 16px; }
@@ -419,19 +392,12 @@
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════
-     ÉCRAN 1 — ACCUEIL
-     .screen.active = seul écran visible à un instant t
-════════════════════════════════════════════════ -->
 <div id="screen-home" class="screen active">
 
   <header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
       <div class="header-logo-icon">
-        <!-- width + height sur le svg ET sur le div parent = zéro risque d'icône géante -->
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 21.593C6.37 16.054 1 11.296 1 6.939 1 3.22 4.22 1 7.5 1c1.796 0 3.578.891 4.5 2.959C12.922 1.891 14.704 1 16.5 1 19.78 1 23 3.22 23 6.939c0 4.357-5.37 9.115-11 14.654z"/>
-        </svg>
+        <img src="curie.jpg" alt="Logo Curie" />
       </div>
       Atlas des facteurs pronostics en cancer du sein
     </a>
@@ -452,13 +418,6 @@
       <button class="btn btn-white" id="btn-start-hero" onclick="demarrer()" disabled>
         Commencer l'évaluation →
       </button>
-    </div>
-    <div class="hero-image">
-      <img
-        src="curie.jpg"
-        alt="Consultation médicale oncologie"
-        onerror="this.parentElement.style.display='none'"
-      />
     </div>
   </section>
 
@@ -492,20 +451,12 @@
     ⚠️ Outil d'aide à la décision — Ne remplace pas l'avis d'un professionnel de santé.
   </footer>
 
-</div><!-- /#screen-home -->
-
-
-<!-- ════════════════════════════════════════════════
-     ÉCRAN 2 — QUESTIONNAIRE
-════════════════════════════════════════════════ -->
-<div id="screen-quiz" class="screen">
+</div><div id="screen-quiz" class="screen">
 
   <header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
       <div class="header-logo-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 21.593C6.37 16.054 1 11.296 1 6.939 1 3.22 4.22 1 7.5 1c1.796 0 3.578.891 4.5 2.959C12.922 1.891 14.704 1 16.5 1 19.78 1 23 3.22 23 6.939c0 4.357-5.37 9.115-11 14.654z"/>
-        </svg>
+        <img src="curie.jpg" alt="Logo Curie" />
       </div>
       Atlas Pronostics
     </a>
@@ -522,7 +473,6 @@
   <div class="quiz-body">
     <div class="quiz-card">
       <h2 id="quiz-question">…</h2>
-      <!-- Les boutons de réponse sont injectés ici par app.js -->
       <div id="quiz-choices"></div>
       <div class="quiz-footer">
         <button class="btn btn-ghost" id="btn-back" onclick="reculer()" style="display:none;">
@@ -532,20 +482,12 @@
     </div>
   </div>
 
-</div><!-- /#screen-quiz -->
-
-
-<!-- ════════════════════════════════════════════════
-     ÉCRAN 3 — RÉSULTATS
-════════════════════════════════════════════════ -->
-<div id="screen-results" class="screen">
+</div><div id="screen-results" class="screen">
 
   <header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
       <div class="header-logo-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 21.593C6.37 16.054 1 11.296 1 6.939 1 3.22 4.22 1 7.5 1c1.796 0 3.578.891 4.5 2.959C12.922 1.891 14.704 1 16.5 1 19.78 1 23 3.22 23 6.939c0 4.357-5.37 9.115-11 14.654z"/>
-        </svg>
+        <img src="curie.jpg" alt="Logo Curie" />
       </div>
       Atlas Pronostics
     </a>
@@ -557,21 +499,16 @@
 
     <div class="path-banner">
       <h3>Parcours clinique</h3>
-      <!-- Injecté par app.js -->
       <div class="path-steps" id="results-path"></div>
     </div>
 
-    <!-- Injecté par app.js -->
     <div class="results-grid" id="results-grid"></div>
 
     <div class="warning-box">
-      <strong>⚠️ Important :<strong>ℹ️ Note :</strong> Ces recommandations sont établies sur la base des arbres de décision du <strong>SENORIF</strong>. Elles reflètent les protocoles validés par les experts du réseau et sont fournies à titre d'aide à la décision clinique.
+      <strong>⚠️ Important :</strong> Ces recommandations sont établies sur la base des arbres de décision du <strong>SENORIF</strong>. Elles reflètent les protocoles validés par les experts du réseau et sont fournies à titre d'aide à la décision clinique.
     </div>
   </div>
 
-</div><!-- /#screen-results -->
-
-
-<script src="app.js"></script>
+</div><script src="app.js"></script>
 </body>
 </html>
