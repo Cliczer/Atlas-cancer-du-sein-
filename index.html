@@ -133,7 +133,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: calc(100vh - 150px);
+      min-height: calc(100vh - 150px); /* Prend presque toute la hauteur de l'écran */
       text-align: center;
     }
     #screen-home .hero-text { max-width: 800px; display: flex; flex-direction: column; align-items: center; }
@@ -349,121 +349,6 @@
     }
 
     /* ─────────────────────────────────────────
-       CARTES DES ÉTUDES (Base de données)
-    ───────────────────────────────────────── */
-    .etude-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-    .etude-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      margin-bottom: 12px;
-    }
-    .etude-score {
-      background: #e3f2fd;
-      color: #1976d2;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-weight: bold;
-    }
-    .etude-preuve {
-      background: #f5f5f5;
-      color: #616161;
-      padding: 4px 8px;
-      border-radius: 12px;
-    }
-    .etude-title {
-      font-size: 15px;
-      color: var(--text);
-      margin-bottom: 16px;
-      line-height: 1.4;
-    }
-    .etude-stats {
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    .etude-link {
-      color: var(--orange);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .etude-link:hover {
-      text-decoration: underline;
-    }
-    /* ─────────────────────────────────────────
-       BOUTON "JE NE SAIS PAS"
-    ───────────────────────────────────────── */
-    .skip-separator {
-      border-top: 1px dashed var(--border);
-      margin: 12px 0 8px;
-    }
-    .choice-btn.skip-btn {
-      border-color: #d1d5db;
-      color: var(--muted);
-      font-style: italic;
-      background: var(--white);
-      font-size: 14px;
-    }
-    .choice-btn.skip-btn:hover {
-      border-color: var(--muted);
-      background: #f5f5f5;
-      transform: translateX(2px);
-      color: var(--text);
-    }
-    .choice-btn.skip-btn .arrow { color: var(--muted); }
-    .choice-btn.skip-btn:hover .arrow { opacity: 1; color: var(--text); }
-
-    /* ─────────────────────────────────────────
-       PARCOURS CLINIQUE
-    ───────────────────────────────────────── */
-    .path-step-nr {
-      background: rgba(255,255,255,.12) !important;
-      font-style: italic;
-      opacity: 0.75;
-    }
-
-    /* ─────────────────────────────────────────
-       AVERTISSEMENT DONNÉES INCOMPLÈTES
-    ───────────────────────────────────────── */
-    .warning-nr {
-      background: #fff7ed;
-      border-color: #fed7aa;
-      color: #9a3412;
-    }
-
-    /* ─────────────────────────────────────────
-       CRITÈRES D'INCLUSION DES ÉTUDES
-    ───────────────────────────────────────── */
-    .etude-traitements {
-      font-size: 12px;
-      margin-bottom: 8px;
-      color: var(--muted);
-    }
-    .etude-criteres {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-    .critere-tag {
-      background: #f0f4ff;
-      color: #3730a3;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 99px;
-      border: 1px solid #c7d2fe;
-    }
-
-    /* ─────────────────────────────────────────
        RESPONSIVE
     ───────────────────────────────────────── */
     @media (max-width: 700px) {
@@ -572,14 +457,8 @@
       <strong>⚠️ Important :</strong> Ces recommandations sont établies sur la base des arbres de décision du <strong>SENORIF</strong>. Elles reflètent les protocoles validés par les experts du réseau et sont fournies à titre d'aide à la décision clinique.
     </div>
 
-    <div class="etudes-section" style="margin-top: 40px; border-top: 2px dashed var(--border); padding-top: 24px;">
-      <h3 style="margin-bottom: 16px; color: var(--text);">📊 Données issues de la littérature</h3>
-      <p style="font-size: 14px; color: var(--muted); margin-bottom: 24px;">
-        Ces études ont été filtrées automatiquement pour correspondre au profil clinique de votre patiente (Score de pertinence estimé).
-      </p>
-      <div id="etudes-container" style="display: grid; gap: 16px;">
-        </div>
-    </div>
+    <!-- Les cartes d'études sont injectées ici par app.js -->
+    <div id="etudes-section"></div>
 
   </div>
 
