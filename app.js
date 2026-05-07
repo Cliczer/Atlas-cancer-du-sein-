@@ -633,7 +633,18 @@
   window.recommencer        = recommencer;
   window.accueil            = recommencer;
   window.calculerScoreEtude = calculerScoreEtude; // testable depuis la console
+// ... (tout le reste de votre code)
+  
+  window.recommencer = recommencer;
+  window.accueil     = recommencer;
+  
+  // LE TEST POUR IPAD :
+  alert("Type de calculerScoreEtude : " + typeof calculerScoreEtude);
+  
+  load();
+}());
 
+  
   load();
 
 }());
