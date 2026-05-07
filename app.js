@@ -1,5 +1,5 @@
 /*
- * Atlas Pronostics — app.js (Version Corrigée)
+ * Atlas Pronostics — app.js (Version Corrigée et Déboguée)
  */
 
 (function () {
@@ -169,21 +169,14 @@
     return merged;
   }
 
-  /* ─── MOTEUR DE MATCHING (CORRIGÉ) ─── */
+  /* ─── MOTEUR DE MATCHING (CORRIGÉ ET DÉBOGUÉ) ─── */
 
-  /**
-   * Trouve la colonne critère d'étude correspondant à un titre de question de l'arbre.
-   * Gère les variations de nommage (RE-, HER2+, Ki67 (%), etc.)
-   */
   function trouverColonneCritere(questionTitre, mapping) {
-    // 1. Correspondance exacte avec les valeurs du mapping (noms de colonnes d'étude)
     for (var key in mapping) {
       if (mapping[key] === questionTitre) return mapping[key];
     }
-    // 2. Correspondance exacte avec les clés du mapping
     if (mapping.hasOwnProperty(questionTitre)) return mapping[questionTitre];
 
-    // 3. Normalisation : on retire les caractères non alphanumériques pour comparaison souple
     function normaliser(s) {
       return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
     }
@@ -192,11 +185,8 @@
     for (var k in mapping) {
       var kNorm = normaliser(k);
       var vNorm = normaliser(mapping[k]);
-      // Correspondance normalisée exacte
       if (qtNorm === kNorm || qtNorm === vNorm) return mapping[k];
-      // La question commence par la clé (ex: "RE-" commence par "re")
       if (qtNorm.startsWith(kNorm) && kNorm.length >= 2) return mapping[k];
-      // La clé commence par la question (cas rare)
       if (kNorm.startsWith(qtNorm) && qtNorm.length >= 2) return mapping[k];
     }
     return null;
@@ -207,7 +197,6 @@
     var val = parseFloat(valeurPatient);
     if (isNaN(val)) return false;
     var crit = String(critereEtude).trim();
-    // Plage avec tiret (ex: "20-40"), en évitant les négatifs
     var rangeMatch = crit.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
     if (rangeMatch) return val >= parseFloat(rangeMatch[1]) && val <= parseFloat(rangeMatch[2]);
     if (crit.startsWith('<=')) return val <= parseFloat(crit.substring(2));
@@ -232,24 +221,36 @@
   function matchCategoriel(reponsePatient, critereEtude) {
     var p  = reponsePatient.toLowerCase().trim().replace(/\.0$/, '');
     var vE = critereEtude.toLowerCase().trim();
-
-    // Inclusion directe
     if (vE.includes(p)) return true;
-
-    // Correspondance sémantique positif/négatif
     if (estPositif(p) && (vE.includes('positif') || vE.includes('pos'))) return true;
     if (estNegatif(p) && (vE.includes('négatif') || vE.includes('negatif') || vE.includes('neg'))) return true;
-
     return false;
   }
 
   function calculerScoreEtude(etude, profilPatient, mapping, traitementsRecommandes) {
-    // 1. Filtre Traitement
+    console.log("==========================================");
+    console.log("🔍 ÉVALUATION DE L'ÉTUDE :", etude.objectif || "Sans titre");
+
+    // 1. Filtre Traitement (Assoupli)
     var traitementsEtude = etude.traitements_evalues || [];
     var cleanRecs  = traitementsRecommandes.map(function(r) { return r.toLowerCase().trim(); });
     var cleanEtude = traitementsEtude.map(function(t) { return t.toLowerCase().trim(); });
-    var matchTraitement = (cleanRecs.length === 0) || cleanRecs.some(function(r) { return cleanEtude.includes(r); });
-    if (!matchTraitement) return 0;
+
+    // Vérifie si le traitement recommandé est inclus (même en partie) dans le traitement de l'étude
+    var matchTraitement = (cleanRecs.length === 0) || cleanRecs.some(function(rec) {
+      return cleanEtude.some(function(trEtude) {
+        return trEtude.includes(rec) || rec.includes(trEtude); 
+      });
+    });
+
+    console.log("-> Traitements de l'arbre :", cleanRecs);
+    console.log("-> Traitements de l'étude :", cleanEtude);
+    console.log("-> Match Traitement :", matchTraitement ? "✅ OUI" : "❌ NON");
+
+    if (!matchTraitement) {
+      console.log("❌ SCORE 0 : Le traitement de l'étude ne correspond pas aux recos de l'arbre.");
+      return 0;
+    }
 
     // 2. Filtre Clinique
     var criteres = etude.criteres || {};
@@ -257,36 +258,49 @@
 
     for (var questionArbre in profilPatient) {
       var reponsePatient = String(profilPatient[questionArbre]).toLowerCase().trim();
-      // Ignorer les réponses "non renseigné" : elles ne comptent ni pour ni contre
       if (reponsePatient === '-1' || reponsePatient === 'non renseigné' || reponsePatient === 'non_renseigne') continue;
 
-      // Trouver la colonne critère correspondante dans l'étude
       var colonneCritere = trouverColonneCritere(questionArbre, mapping);
-      if (!colonneCritere || !criteres.hasOwnProperty(colonneCritere)) continue;
+      if (!colonneCritere || !criteres.hasOwnProperty(colonneCritere)) {
+        console.log("⚠️ Ignoré (Hors mapping) :", questionArbre);
+        continue;
+      }
 
       criteresEvalues++;
       var vE = String(criteres[colonneCritere]).toLowerCase().trim();
 
+      console.log("Question : [" + questionArbre + "] | Patient : [" + reponsePatient + "] | Étude veut : [" + vE + "]");
+
       if (vE === '-1' || vE === 'nan' || vE === 'nc' || vE === '') {
-        // L'étude n'a pas de critère restrictif sur ce point → match automatique
         scorePoints++;
+        console.log("   ✅ Match automatique (Joker NC)");
       } else if (colonneCritere.toLowerCase().includes('age') || colonneCritere.toLowerCase().includes('ki67')) {
-        if (matchNumerique(reponsePatient, vE)) scorePoints++;
+        if (matchNumerique(reponsePatient, vE)) {
+          scorePoints++;
+          console.log("   ✅ Match Numérique");
+        } else {
+          console.log("   ❌ Échec Numérique");
+        }
       } else {
-        if (matchCategoriel(reponsePatient, vE)) scorePoints++;
+        if (matchCategoriel(reponsePatient, vE)) {
+          scorePoints++;
+          console.log("   ✅ Match Catégoriel");
+        } else {
+          console.log("   ❌ Échec Catégoriel");
+        }
       }
     }
 
-    return criteresEvalues > 0 ? Math.round((scorePoints / criteresEvalues) * 100) : 100;
+    var scoreFinal = criteresEvalues > 0 ? Math.round((scorePoints / criteresEvalues) * 100) : 100;
+    console.log("🎯 SCORE FINAL :", scoreFinal, "%");
+    return scoreFinal;
   }
 
   function renderResults(donnees, donneesIncompletes) {
-    // 1. Barre de progression à 100 %
     if ($('quiz-progress-bar')) $('quiz-progress-bar').style.width = '100%';
     if ($('quiz-pct-label')) $('quiz-pct-label').textContent = '100 %';
     if ($('quiz-step-label')) $('quiz-step-label').textContent = 'Terminé';
 
-    // 2. Parcours clinique
     var pathEl = $('results-path');
     if (pathEl) {
       pathEl.innerHTML = '';
@@ -303,7 +317,6 @@
       });
     }
 
-    // 3. Avertissement données incomplètes
     var resultsBody = document.querySelector('#screen-results .results-body');
     var existingWarnNR = document.getElementById('warning-nr');
     if (existingWarnNR) existingWarnNR.remove();
@@ -317,7 +330,6 @@
       if (grid) resultsBody.insertBefore(warnNR, grid);
     }
 
-    // 4. Grille des recommandations
     var grid = $('results-grid');
     if (!grid) return;
     grid.innerHTML = '';
@@ -344,10 +356,7 @@
       grid.appendChild(card);
     });
 
-    // 5. Études pertinentes
     renderEtudes(donnees);
-
-    // 6. Affichage
     show('screen-results');
   }
 
@@ -356,11 +365,9 @@
     if (!container || !baseEtudes) return;
     container.innerHTML = '';
 
-    // Construire le profil patient à partir de l'historique
     var profil = {};
     history.forEach(function(h) { profil[h.question] = h.label; });
 
-    // Traitements recommandés
     var traitementsRec = [];
     Object.keys(donneesResultats).forEach(function(k) {
       if (['1', '1.0', '0.5'].includes(String(donneesResultats[k]))) {
@@ -368,7 +375,6 @@
       }
     });
 
-    // Noms lisibles des colonnes outcomes (première ligne = dictionnaire)
     var outcomesLabels = (baseEtudes.etudes[0] && baseEtudes.etudes[0].outcomes) ? baseEtudes.etudes[0].outcomes : {};
 
     var etudesPertinentes = baseEtudes.etudes.slice(1).map(function(etude) {
@@ -386,13 +392,11 @@
       var card = document.createElement('div');
       card.className = 'etude-card';
 
-      // Outcomes avec labels lisibles
       var outcomesHtml = Object.keys(etude.outcomes || {}).map(function(k) {
         var label = outcomesLabels[k] || k;
         return '<div><strong>' + label + ' :</strong> ' + etude.outcomes[k] + '</div>';
       }).join('');
 
-      // Critères d'inclusion (non vides)
       var criteresHtml = '';
       if (etude.criteres) {
         var criteresListe = Object.keys(etude.criteres).filter(function(k) {
