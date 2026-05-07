@@ -1,18 +1,273 @@
 /*
- * Atlas Pronostics — app.js (Version Corrigée et Déboguée)
+ * Atlas Pronostics — app.js
+ * Vanilla JS pur, aucune dépendance.
+ *
+ * CONTRAT avec index.html (IDs immuables) :
+ *   Écrans    : #screen-home  #screen-quiz  #screen-results
+ *   Accueil   : #btn-start  #btn-start-hero
+ *   Quiz      : #quiz-question  #quiz-choices  #quiz-step-label
+ *               #quiz-pct-label  #quiz-progress-bar  #btn-back
+ *   Résultats : #results-path  #results-grid  #etudes-section
  */
 
 (function () {
   'use strict';
 
-  var tree       = null;
-  var baseEtudes = null;
-  window.baseEtudes = null;
-  var current    = null;
-  var history    = [];
-  var maxDepth   = 1;
+  /* ════════════════════════════════════════════════════════════
+     ÉTAT GLOBAL
+  ════════════════════════════════════════════════════════════ */
+  var tree      = null;
+  var etudes    = [];
+  var current   = null;
+  var history   = [];
+  var maxDepth  = 1;
 
   function $(id) { return document.getElementById(id); }
+
+  /* ════════════════════════════════════════════════════════════
+     1. TABLE DE CORRESPONDANCE (arbre → études)
+     Traduit les valeurs de l'arbre vers leurs équivalents
+     dans la base d'études. Le -1 / NC restent des jokers.
+  ════════════════════════════════════════════════════════════ */
+  var MAPPING = {
+    /* HER2 */
+    'HER2+':       ['Positif','HER2+','positif','her2+','1'],
+    'HER2-':       ['Négatif','HER2-','négatif','her2-','0','Negatif'],
+    /* RE / RP */
+    'RE+':         ['Positif','RE+','positif','élevés','eleves'],
+    'RE-':         ['Négatif','RE-','négatif','negatif','0'],
+    'élevés':      ['Positif','positif','élevés','eleves','RE+','RP+'],
+    'RP-':         ['Négatif','RP-','négatif','0'],
+    /* T */
+    'T1a':         ['T1','T1a','T1, T2','T1, T2, T3','T1, T2, T3, T4','T2, T1'],
+    'T1b':         ['T1','T1b','T1, T2','T1, T2, T3','T1, T2, T3, T4','T2, T1'],
+    'T1c':         ['T1','T1c','T1, T2','T1, T2, T3','T1, T2, T3, T4'],
+    'T2':          ['T2','T1, T2','T2, T3','T1, T2, T3','T2, T3, T4','T0, T1, T4, T2, T3'],
+    'T3':          ['T3','T2, T3','T1, T2, T3','T2, T3, T4'],
+    'T4':          ['T4','T4d','T1, T2, T3, T4','T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
+    'T4d':         ['T4','T4d','T1, T2, T3, T4','T2, T3, T4'],
+    'Tis':         ['Tis','in situ','CCIS'],
+    /* N */
+    'N0':          ['N0','pN0','N0, N1','pN0, pN+'],
+    'N+':          ['N+','pN+','pN1','pN1-3','N1','N2','N0, N1','N2, N3, N0, N1','pN0, pN+'],
+    'pN0':         ['pN0','N0','N0, N1'],
+    'pN1':         ['pN1','pN1-3','N+','pN+','N1'],
+    /* Carcinome */
+    'Infiltrant':  ['Infiltrant','Infilitrant','invasif','invasive'],
+    'Infilitrant': ['Infiltrant','Infilitrant','invasif','invasive'],
+    'in situ':     ['in situ','Tis','CCIS','carcinome in situ'],
+    /* Ménopause */
+    '0':           ['0','pré-ménopausée','pre-menopausee','non ménopausée','0.0'],
+    '1':           ['1','ménopausée','menopausee','post-ménopausée','1.0'],
+    /* Traitements (correspondances souples) */
+    'Radiothérapie':   ['Radiothérapie','RT','radiotherapie','radiation'],
+    'Chimiothérapie':  ['Chimiothérapie','CT','CTadj','chimiotherapie','chemotherapy'],
+    'Hormonothérapie': ['Hormonothérapie','Hormonotherapie','Tamoxifène','tamoxifene','hormone'],
+    'Chirurgie':       ['Chirurgie','chirurgie_mammaire','MT','MP','TSSM','mastectomie'],
+    'Trastuzumab':     ['Trastuzumab','trastuzumab','Herceptin','anti-HER2','immunotherapie'],
+    'RCP':             ['RCP','rcp','concertation'],
+  };
+
+  /* ════════════════════════════════════════════════════════════
+     2. HELPERS DE MATCHING
+  ════════════════════════════════════════════════════════════ */
+
+  function normaliser(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).toLowerCase().trim();
+  }
+
+  /** Valeurs joker : l'étude ne filtre pas sur ce critère */
+  function estJoker(v) {
+    var n = normaliser(v);
+    return (n === 'nc' || n === '-1' || n === '-1.0' ||
+            n === 'nan' || n === '' || n === 'n/a' || n === 'nr');
+  }
+
+  /** Compare deux valeurs catégorielles via le mapping. Retourne 0 ou 1. */
+  function matchCategoriel(vP, vE) {
+    var nP = normaliser(vP);
+    var nE = normaliser(vE);
+
+    if (nP === nE) return 1;
+
+    /* Équivalents du côté patient */
+    if (MAPPING[vP]) {
+      var eqP = MAPPING[vP].map(normaliser);
+      if (eqP.indexOf(nE) !== -1) return 1;
+    }
+
+    /* Équivalents du côté étude */
+    if (MAPPING[vE]) {
+      var eqE = MAPPING[vE].map(normaliser);
+      if (eqE.indexOf(nP) !== -1) return 1;
+    }
+
+    /* L'étude liste plusieurs valeurs séparées par virgule : "T1, T2, T3" */
+    if (nE.indexOf(',') !== -1) {
+      var parties = nE.split(',').map(function(p) { return p.trim(); });
+      var eqPat   = MAPPING[vP] ? MAPPING[vP].map(normaliser) : [];
+      for (var i = 0; i < parties.length; i++) {
+        if (parties[i] === nP) return 1;
+        if (eqPat.indexOf(parties[i]) !== -1) return 1;
+      }
+    }
+
+    return 0;
+  }
+
+  /** Compare des valeurs numériques ou plages. Retourne 1, 0.5 ou 0. */
+  function matchNumerique(vP, vE) {
+    var nP = normaliser(vP);
+    var nE = normaliser(vE);
+
+    if (nP === nE) return 1;
+
+    var numP = parseFloat(nP.replace(/[^0-9.-]/g, ''));
+    var numE = parseFloat(nE.replace(/[^0-9.-]/g, ''));
+
+    if (!isNaN(numP) && !isNaN(numE)) {
+      if (numP === numE) return 1;
+      if (Math.abs(numP - numE) / Math.max(Math.abs(numE), 1) <= 0.2) return 0.5;
+    }
+    return 0;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     3. PROFIL PATIENT depuis l'historique de navigation
+  ════════════════════════════════════════════════════════════ */
+
+  function construireProfil() {
+    var profil = {};
+    history.forEach(function(h) {
+      var question = (h.node && h.node.titre) ? h.node.titre : '';
+      var reponse  = h.label || '';
+      if (question && reponse) profil[question] = reponse;
+    });
+    console.log('[Atlas] 👤 Profil patient :', profil);
+    return profil;
+  }
+
+  function extraireTraitementsRecommandes(donnees) {
+    var traitements = [];
+    Object.keys(donnees || {}).forEach(function(k) {
+      var v = String(donnees[k] || '').trim();
+      if (v === '1' || v === '1.0') {
+        traitements.push(k.replace(/^OUT_/i, ''));
+      }
+    });
+    console.log('[Atlas] 💊 Traitements recommandés :', traitements);
+    return traitements;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     4. CALCULER SCORE ÉTUDE
+     ─────────────────────────────────────────────────────────
+     Règles :
+       • Joker (NC / -1 / nan / '') → +1 automatique
+       • Critère absent du profil patient → ignoré (pas de pénalité)
+       • match parfait → +1
+       • match partiel → +0.5
+       • pas de match → +0
+       • Score final = (points / critères évalués) × 100
+  ════════════════════════════════════════════════════════════ */
+
+  function calculerScoreEtude(etude, profilPatient, mapping, traitementsRecommandes) {
+    var nomEtude = [
+      etude.auteur || '',
+      etude.annee  || '',
+      '—',
+      etude.objectif || etude.titre || 'sans titre'
+    ].join(' ');
+
+    console.group('[Atlas] 🔬 ' + nomEtude);
+
+    /* ── ÉTAPE 1 : Filtre traitement (assoupli) ── */
+    var traitementsEtude = etude.traitements_evalues;
+
+    if (!traitementsEtude || !Array.isArray(traitementsEtude) || traitementsEtude.length === 0) {
+      console.warn('  ⚠️  traitements_evalues absent ou vide → filtre ignoré');
+    } else {
+      var traitementMatch = false;
+
+      traitementsRecommandes.forEach(function(tR) {
+        var eqR = MAPPING[tR] ? MAPPING[tR].map(normaliser) : [];
+        eqR.push(normaliser(tR));
+
+        traitementsEtude.forEach(function(tE) {
+          var nTE = normaliser(tE);
+          if (eqR.indexOf(nTE) !== -1) { traitementMatch = true; }
+          if (MAPPING[tE]) {
+            var eqE = MAPPING[tE].map(normaliser);
+            if (eqE.indexOf(normaliser(tR)) !== -1) { traitementMatch = true; }
+          }
+        });
+      });
+
+      if (!traitementMatch) {
+        console.log('  ❌ Traitement non pertinent → 0');
+        console.log('     Recommandés :', traitementsRecommandes, '| Étude :', traitementsEtude);
+        console.groupEnd();
+        return 0;
+      }
+      console.log('  ✅ Filtre traitement : OK');
+    }
+
+    /* ── ÉTAPE 2 : Scoring critère par critère ── */
+    var criteresEtude   = etude.criteres || {};
+    var scorePoints     = 0;
+    var criteresEvalues = 0;
+    var NUMERIQUES      = ['Ki67 (%)', 'ki67', 'Age', 'age', 'Marges (mm)', 'marges'];
+
+    Object.keys(criteresEtude).forEach(function(nomCritere) {
+      var vE = criteresEtude[nomCritere];
+
+      /* Joker → match automatique */
+      if (estJoker(vE)) {
+        scorePoints     += 1;
+        criteresEvalues += 1;
+        console.log('  🃏 [' + nomCritere + '] Joker (' + vE + ') → +1');
+        return;
+      }
+
+      /* Critère absent du profil patient → ignoré */
+      var vP = profilPatient[nomCritere];
+      if (vP === undefined || vP === null || String(vP).trim() === '') {
+        console.log('  ⏭️  [' + nomCritere + '] Absent du profil → ignoré');
+        return;
+      }
+
+      criteresEvalues += 1;
+
+      var score = (NUMERIQUES.indexOf(nomCritere) !== -1)
+        ? matchNumerique(vP, vE)
+        : matchCategoriel(vP, vE);
+
+      scorePoints += score;
+
+      if (score === 1) {
+        console.log('  ✅ [' + nomCritere + '] "' + vP + '" vs "' + vE + '" → +1');
+      } else if (score === 0.5) {
+        console.log('  🟡 [' + nomCritere + '] "' + vP + '" vs "' + vE + '" → +0.5');
+      } else {
+        console.log('  ❌ [' + nomCritere + '] "' + vP + '" vs "' + vE + '" → +0');
+      }
+    });
+
+    /* ── ÉTAPE 3 : Score final ── */
+    var scoreFinal = (criteresEvalues === 0)
+      ? 50  // aucun critère évaluable → score neutre
+      : Math.round((scorePoints / criteresEvalues) * 100);
+
+    console.log('  📊 ' + scorePoints + ' pts / ' + criteresEvalues + ' critères = ' + scoreFinal + '%');
+    console.groupEnd();
+
+    return scoreFinal;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     5. CHARGEMENT DES JSON (en parallèle)
+  ════════════════════════════════════════════════════════════ */
 
   function depth(node, d) {
     if (!node || node.type === 'resultat' || !node.choix) return d;
@@ -27,413 +282,358 @@
 
   function load() {
     var v = '?_v=' + Date.now();
+
     Promise.all([
-      fetch('arbre_dynamique.json' + v).then(function(r) {
-          if (!r.ok) throw new Error('Arbre HTTP ' + r.status); return r.json();
-      }),
-      fetch('base_etudes.json' + v).then(function(r) {
-          if (!r.ok) { console.warn('Base études introuvable.'); return null; }
+      fetch('arbre_dynamique.json' + v)
+        .then(function(r) {
+          if (!r.ok) throw new Error('arbre_dynamique.json HTTP ' + r.status);
           return r.json();
-      }).catch(function() { return null; })
-    ])
-    .then(function (results) {
-      tree       = results[0];
-      baseEtudes = results[1];
-      window.baseEtudes = results[1];
-      maxDepth   = depth(tree, 0) || 1;
-      var bs = $('btn-start'), bh = $('btn-start-hero');
+        }),
+      fetch('base_etudes.json' + v)
+        .then(function(r) {
+          if (!r.ok) throw new Error('base_etudes.json HTTP ' + r.status);
+          return r.json();
+        })
+        .catch(function(err) {
+          console.warn('[Atlas] base_etudes.json non disponible :', err.message);
+          return [];
+        })
+    ]).then(function(results) {
+      tree     = results[0];
+      etudes   = results[1] || [];
+      maxDepth = depth(tree, 0) || 1;
+
+      console.log('[Atlas] ✅ Arbre chargé. Profondeur max :', maxDepth);
+      console.log('[Atlas] ✅ Études chargées :', etudes.length);
+
+      var bs = $('btn-start');
+      var bh = $('btn-start-hero');
       if (bs) { bs.disabled = false; bs.textContent = 'Commencer →'; }
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
-    })
-    .catch(function (err) {
-      console.error('[Atlas] Erreur fatale:', err);
+    }).catch(function(err) {
+      console.error('[Atlas] ❌ Chargement :', err);
+      alert('Impossible de charger les données.\nDétail : ' + err.message);
     });
   }
 
+  /* ════════════════════════════════════════════════════════════
+     6. NAVIGATION
+  ════════════════════════════════════════════════════════════ */
+
   function show(id) {
-    ['screen-home', 'screen-quiz', 'screen-results'].forEach(function (sid) {
+    ['screen-home', 'screen-quiz', 'screen-results'].forEach(function(sid) {
       var el = $(sid);
-      if (el) el.classList.toggle('active', sid === id);
+      if (!el) return;
+      el.classList.toggle('active', sid === id);
     });
     window.scrollTo(0, 0);
   }
 
   function demarrer() {
-    if (!tree) return alert('Chargement en cours...');
+    if (!tree) {
+      alert('Les données sont encore en cours de chargement. Réessayez dans un instant.');
+      return;
+    }
     history = [];
     current = tree;
     show('screen-quiz');
     render(current);
   }
 
-  function humaniserLabel(val) {
-    var v = String(val || '').trim();
-    if (v === '1.0' || v === '1') return 'Oui / Positif';
-    if (v === '0.0' || v === '0') return 'Non / Négatif';
-    if (v === '-1.0' || v === '-1') return 'Non renseigné';
-    return v;
+  function reculer() {
+    if (history.length === 0) return;
+    var prev = history.pop();
+    current  = prev.node;
+    render(current);
   }
+
+  function recommencer() {
+    history = [];
+    current = null;
+    $('quiz-choices').innerHTML = '';
+    $('results-grid').innerHTML = '';
+    $('results-path').innerHTML = '';
+    var s = $('etudes-section');
+    if (s) s.innerHTML = '';
+    show('screen-home');
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     7. AFFICHER UN NŒUD
+  ════════════════════════════════════════════════════════════ */
 
   function render(node) {
     if (node.type === 'resultat') {
       renderResults(node.donnees);
       return;
     }
-    var questionTitre = node.titre || '(Question)';
-    $('quiz-question').textContent = questionTitre;
+
+    $('quiz-question').textContent = node.titre || '(Question sans titre)';
+
     var step  = history.length + 1;
     var total = maxDepth || step;
     var pct   = Math.round(Math.max(0, (step - 1) / total) * 100);
+
     $('quiz-step-label').textContent   = 'Étape ' + step + ' / ' + total;
     $('quiz-pct-label').textContent    = pct + ' %';
     $('quiz-progress-bar').style.width = pct + '%';
-    $('btn-back').style.display = history.length > 0 ? 'inline-flex' : 'none';
+    $('btn-back').style.display        = history.length > 0 ? 'inline-flex' : 'none';
 
     var container = $('quiz-choices');
     container.innerHTML = '';
+
     var keys = Object.keys(node.choix || {});
-    keys.forEach(function (label) {
-      var next = node.choix[label];
-      var btn = document.createElement('button');
-      btn.className = 'choice-btn';
-      var txt = document.createElement('span');
-      txt.textContent = humaniserLabel(label);
-      btn.appendChild(txt);
-      var arr = document.createElement('span');
-      arr.className = 'arrow'; arr.textContent = '→';
-      btn.appendChild(arr);
-      btn.addEventListener('click', function () {
-        history.push({ node: current, label: label, question: questionTitre });
-        current = next;
-        render(current);
-      });
-      container.appendChild(btn);
-    });
-
-    // Bouton "Je ne sais pas / Non renseigné"
-    var separator = document.createElement('div');
-    separator.className = 'skip-separator';
-    container.appendChild(separator);
-
-    var btnSkip = document.createElement('button');
-    btnSkip.className = 'choice-btn skip-btn';
-    var skipTxt = document.createElement('span');
-    skipTxt.textContent = 'Je ne sais pas / Non renseigné';
-    btnSkip.appendChild(skipTxt);
-    var skipArr = document.createElement('span');
-    skipArr.className = 'arrow'; skipArr.textContent = '?';
-    btnSkip.appendChild(skipArr);
-    btnSkip.addEventListener('click', (function(capturedNode, capturedTitre) {
-      return function () {
-        history.push({ node: capturedNode, label: '-1', question: capturedTitre, nonRenseigne: true });
-        var allResults = collecterTousResultats(capturedNode);
-        var donneesMerged = fusionnerResultats(allResults);
-        renderResults(donneesMerged, true);
-      };
-    })(current, questionTitre));
-    container.appendChild(btnSkip);
-  }
-
-  function reculer() {
-    if (history.length === 0) return;
-    current = history.pop().node;
-    render(current);
-  }
-
-  /* ─── COLLECTE ET FUSION DES RÉSULTATS (pour "Je ne sais pas") ─── */
-  function collecterTousResultats(node) {
-    if (!node) return [];
-    if (node.type === 'resultat') return [node.donnees];
-    return Object.values(node.choix || {}).reduce(function(acc, child) {
-      return acc.concat(collecterTousResultats(child));
-    }, []);
-  }
-
-  function fusionnerResultats(listeResultats) {
-    if (!listeResultats.length) return {};
-    // Priorité : "1" (recommandé) > "0.5" (alternatif) > "-1" (NS) > "0" (non rec)
-    var prio = {'1': 4, '1.0': 4, '0.5': 3, '-1': 2, '0': 1, '0.0': 1};
-    var merged = {};
-    listeResultats.forEach(function(res) {
-      Object.keys(res || {}).forEach(function(key) {
-        var v = String(res[key]);
-        if (!merged.hasOwnProperty(key)) {
-          merged[key] = v;
-        } else {
-          if ((prio[v] || 0) > (prio[merged[key]] || 0)) {
-            merged[key] = v;
-          }
-        }
-      });
-    });
-    return merged;
-  }
-
-  /* ─── MOTEUR DE MATCHING (CORRIGÉ ET DÉBOGUÉ) ─── */
-
-  function trouverColonneCritere(questionTitre, mapping) {
-    for (var key in mapping) {
-      if (mapping[key] === questionTitre) return mapping[key];
-    }
-    if (mapping.hasOwnProperty(questionTitre)) return mapping[questionTitre];
-
-    function normaliser(s) {
-      return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
-    }
-    var qtNorm = normaliser(questionTitre);
-
-    for (var k in mapping) {
-      var kNorm = normaliser(k);
-      var vNorm = normaliser(mapping[k]);
-      if (qtNorm === kNorm || qtNorm === vNorm) return mapping[k];
-      if (qtNorm.startsWith(kNorm) && kNorm.length >= 2) return mapping[k];
-      if (kNorm.startsWith(qtNorm) && qtNorm.length >= 2) return mapping[k];
-    }
-    return null;
-  }
-
-  function matchNumerique(valeurPatient, critereEtude) {
-    if (!critereEtude || critereEtude === '-1' || critereEtude === 'nc' || critereEtude === 'nan') return true;
-    var val = parseFloat(valeurPatient);
-    if (isNaN(val)) return false;
-    var crit = String(critereEtude).trim();
-    var rangeMatch = crit.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
-    if (rangeMatch) return val >= parseFloat(rangeMatch[1]) && val <= parseFloat(rangeMatch[2]);
-    if (crit.startsWith('<=')) return val <= parseFloat(crit.substring(2));
-    if (crit.startsWith('>=')) return val >= parseFloat(crit.substring(2));
-    if (crit.startsWith('<'))  return val < parseFloat(crit.substring(1));
-    if (crit.startsWith('>'))  return val > parseFloat(crit.substring(1));
-    return val === parseFloat(crit);
-  }
-
-  function estPositif(val) {
-    var v = val.toLowerCase().trim();
-    return v === '1' || v === 'oui' || v === 'positif' || v === 'pos' ||
-           v.endsWith('+') || v.includes('positif');
-  }
-
-  function estNegatif(val) {
-    var v = val.toLowerCase().trim();
-    return v === '0' || v === 'non' || v === 'négatif' || v === 'negatif' || v === 'neg' ||
-           (v.length > 1 && v.endsWith('-')) || v.includes('négatif') || v.includes('negatif');
-  }
-
-  function matchCategoriel(reponsePatient, critereEtude) {
-    var p  = reponsePatient.toLowerCase().trim().replace(/\.0$/, '');
-    var vE = critereEtude.toLowerCase().trim();
-    if (vE.includes(p)) return true;
-    if (estPositif(p) && (vE.includes('positif') || vE.includes('pos'))) return true;
-    if (estNegatif(p) && (vE.includes('négatif') || vE.includes('negatif') || vE.includes('neg'))) return true;
-    return false;
-  }
-
-  function calculerScoreEtude(etude, profilPatient, mapping, traitementsRecommandes) {
-    console.log("==========================================");
-    console.log("🔍 ÉVALUATION DE L'ÉTUDE :", etude.objectif || "Sans titre");
-
-    // 1. Filtre Traitement (Assoupli)
-    var traitementsEtude = etude.traitements_evalues || [];
-    var cleanRecs  = traitementsRecommandes.map(function(r) { return r.toLowerCase().trim(); });
-    var cleanEtude = traitementsEtude.map(function(t) { return t.toLowerCase().trim(); });
-
-    // Vérifie si le traitement recommandé est inclus (même en partie) dans le traitement de l'étude
-    var matchTraitement = (cleanRecs.length === 0) || cleanRecs.some(function(rec) {
-      return cleanEtude.some(function(trEtude) {
-        return trEtude.includes(rec) || rec.includes(trEtude); 
-      });
-    });
-
-    console.log("-> Traitements de l'arbre :", cleanRecs);
-    console.log("-> Traitements de l'étude :", cleanEtude);
-    console.log("-> Match Traitement :", matchTraitement ? "✅ OUI" : "❌ NON");
-
-    if (!matchTraitement) {
-      console.log("❌ SCORE 0 : Le traitement de l'étude ne correspond pas aux recos de l'arbre.");
-      return 0;
-    }
-
-    // 2. Filtre Clinique
-    var criteres = etude.criteres || {};
-    var scorePoints = 0, criteresEvalues = 0;
-
-    for (var questionArbre in profilPatient) {
-      var reponsePatient = String(profilPatient[questionArbre]).toLowerCase().trim();
-      if (reponsePatient === '-1' || reponsePatient === 'non renseigné' || reponsePatient === 'non_renseigne') continue;
-
-      var colonneCritere = trouverColonneCritere(questionArbre, mapping);
-      if (!colonneCritere || !criteres.hasOwnProperty(colonneCritere)) {
-        console.log("⚠️ Ignoré (Hors mapping) :", questionArbre);
-        continue;
-      }
-
-      criteresEvalues++;
-      var vE = String(criteres[colonneCritere]).toLowerCase().trim();
-
-      console.log("Question : [" + questionArbre + "] | Patient : [" + reponsePatient + "] | Étude veut : [" + vE + "]");
-
-      if (vE === '-1' || vE === 'nan' || vE === 'nc' || vE === '') {
-        scorePoints++;
-        console.log("   ✅ Match automatique (Joker NC)");
-      } else if (colonneCritere.toLowerCase().includes('age') || colonneCritere.toLowerCase().includes('ki67')) {
-        if (matchNumerique(reponsePatient, vE)) {
-          scorePoints++;
-          console.log("   ✅ Match Numérique");
-        } else {
-          console.log("   ❌ Échec Numérique");
-        }
-      } else {
-        if (matchCategoriel(reponsePatient, vE)) {
-          scorePoints++;
-          console.log("   ✅ Match Catégoriel");
-        } else {
-          console.log("   ❌ Échec Catégoriel");
-        }
-      }
-    }
-
-    var scoreFinal = criteresEvalues > 0 ? Math.round((scorePoints / criteresEvalues) * 100) : 100;
-    console.log("🎯 SCORE FINAL :", scoreFinal, "%");
-    return scoreFinal;
-  }
-
-  function renderResults(donnees, donneesIncompletes) {
-    if ($('quiz-progress-bar')) $('quiz-progress-bar').style.width = '100%';
-    if ($('quiz-pct-label')) $('quiz-pct-label').textContent = '100 %';
-    if ($('quiz-step-label')) $('quiz-step-label').textContent = 'Terminé';
-
-    var pathEl = $('results-path');
-    if (pathEl) {
-      pathEl.innerHTML = '';
-      history.forEach(function(h, i) {
-        if (i > 0) {
-          var sep = document.createElement('span');
-          sep.className = 'path-sep'; sep.textContent = '›';
-          pathEl.appendChild(sep);
-        }
-        var step = document.createElement('span');
-        step.className = 'path-step' + (h.nonRenseigne ? ' path-step-nr' : '');
-        step.textContent = h.question + ' : ' + (h.nonRenseigne ? '?' : humaniserLabel(h.label));
-        pathEl.appendChild(step);
-      });
-    }
-
-    var resultsBody = document.querySelector('#screen-results .results-body');
-    var existingWarnNR = document.getElementById('warning-nr');
-    if (existingWarnNR) existingWarnNR.remove();
-    if (donneesIncompletes && resultsBody) {
-      var warnNR = document.createElement('div');
-      warnNR.id = 'warning-nr';
-      warnNR.className = 'warning-box warning-nr';
-      warnNR.style.marginBottom = '20px';
-      warnNR.innerHTML = '<strong>⚠️ Données incomplètes :</strong> Une ou plusieurs questions n\'ont pas reçu de réponse. Les recommandations ci-dessous représentent l\'ensemble des cas possibles et ne sont pas spécifiques à cette patiente. Une évaluation en RCP est fortement conseillée.';
-      var grid = $('results-grid');
-      if (grid) resultsBody.insertBefore(warnNR, grid);
-    }
-
-    var grid = $('results-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    var recsPourEtudes = [];
-    Object.keys(donnees || {}).forEach(function (key) {
-      var scoreBrut = String(donnees[key]);
-      var typeCls = 'ns';
-      var labelBadge = 'Non spécifié';
-
-      if (scoreBrut === '1' || scoreBrut === '1.0') {
-        typeCls = 'rec'; labelBadge = '✓ Recommandé';
-        recsPourEtudes.push(key.replace(/^OUT_/i, '').trim());
-      } else if (scoreBrut === '0' || scoreBrut === '0.0') {
-        typeCls = 'nrec'; labelBadge = '✗ Non recommandé';
-      } else if (scoreBrut === '0.5') {
-        typeCls = 'alt'; labelBadge = '↹ Alternative (OU)';
-        recsPourEtudes.push(key.replace(/^OUT_/i, '').trim());
-      }
-
-      var card = document.createElement('div');
-      card.className = 'result-card ' + typeCls;
-      card.innerHTML = '<h4>' + key.replace(/^OUT_/i, '') + '</h4><span class="badge ' + typeCls + '">' + labelBadge + '</span>';
-      grid.appendChild(card);
-    });
-
-    renderEtudes(donnees);
-    show('screen-results');
-  }
-
-  function renderEtudes(donneesResultats) {
-    var container = $('etudes-container');
-    if (!container || !baseEtudes) return;
-    container.innerHTML = '';
-
-    var profil = {};
-    history.forEach(function(h) { profil[h.question] = h.label; });
-
-    var traitementsRec = [];
-    Object.keys(donneesResultats).forEach(function(k) {
-      if (['1', '1.0', '0.5'].includes(String(donneesResultats[k]))) {
-        traitementsRec.push(k.replace(/^OUT_/i, '').trim());
-      }
-    });
-
-    var outcomesLabels = (baseEtudes.etudes[0] && baseEtudes.etudes[0].outcomes) ? baseEtudes.etudes[0].outcomes : {};
-
-    var etudesPertinentes = baseEtudes.etudes.slice(1).map(function(etude) {
-      etude.scoreMatch = calculerScoreEtude(etude, profil, baseEtudes.mapping, traitementsRec);
-      return etude;
-    }).filter(function(e) { return e.scoreMatch >= 50; })
-      .sort(function(a, b) { return b.scoreMatch - a.scoreMatch; });
-
-    if (etudesPertinentes.length === 0) {
-      container.innerHTML = '<p class="muted">Aucune étude correspondante trouvée pour ce profil.</p>';
+    if (keys.length === 0) {
+      container.innerHTML = '<p style="color:#636e72;font-style:italic;">Aucune option disponible.</p>';
       return;
     }
 
-    etudesPertinentes.forEach(function(etude) {
-      var card = document.createElement('div');
-      card.className = 'etude-card';
+    keys.forEach(function(label) {
+      var next = node.choix[label];
+      var btn  = document.createElement('button');
+      btn.className = 'choice-btn';
 
-      var outcomesHtml = Object.keys(etude.outcomes || {}).map(function(k) {
-        var label = outcomesLabels[k] || k;
-        return '<div><strong>' + label + ' :</strong> ' + etude.outcomes[k] + '</div>';
-      }).join('');
+      var txt = document.createElement('span');
+      txt.textContent = label;
+      btn.appendChild(txt);
 
-      var criteresHtml = '';
-      if (etude.criteres) {
-        var criteresListe = Object.keys(etude.criteres).filter(function(k) {
-          var v = String(etude.criteres[k]);
-          return v !== '-1' && v !== 'nan' && v !== '';
-        }).map(function(k) {
-          return '<span class="critere-tag">' + k + ' : ' + etude.criteres[k] + '</span>';
-        }).join('');
-        if (criteresListe) {
-          criteresHtml = '<div class="etude-criteres">' + criteresListe + '</div>';
-        }
-      }
+      var arr = document.createElement('span');
+      arr.className   = 'arrow';
+      arr.textContent = '→';
+      arr.setAttribute('aria-hidden', 'true');
+      btn.appendChild(arr);
 
-      var niveauPreuve = etude.niveau_preuve !== '-1' ? 'Niveau ' + etude.niveau_preuve : 'Niveau NC';
-      var titreEtude = (etude.objectif && etude.objectif !== '-1') ? etude.objectif : 'Étude clinique';
-      var lienRef = (etude.reference && etude.reference !== '-1') ? etude.reference : null;
+      btn.addEventListener('click', (function(l, n) {
+        return function() {
+          history.push({ node: current, label: l });
+          current = n;
+          render(current);
+        };
+      }(label, next)));
 
-      card.innerHTML =
-        '<div class="etude-header">' +
-          '<span class="etude-score">' + etude.scoreMatch + '% Match</span>' +
-          '<span class="etude-preuve">' + niveauPreuve + '</span>' +
-        '</div>' +
-        '<h4 class="etude-title">' + titreEtude + '</h4>' +
-        '<div class="etude-traitements"><strong>Traitements évalués :</strong> ' + etude.traitements_evalues.join(', ') + '</div>' +
-        criteresHtml +
-        (outcomesHtml ? '<div class="etude-stats">' + outcomesHtml + '</div>' : '<p class="muted" style="font-size:13px;margin-bottom:12px;">Pas de données chiffrées disponibles.</p>') +
-        (lienRef ? '<a href="' + lienRef + '" target="_blank" rel="noopener" class="etude-link">Voir la référence ↗</a>' : '');
-
-      container.appendChild(card);
+      container.appendChild(btn);
     });
   }
 
-  function recommencer() { history = []; current = null; show('screen-home'); }
+  /* ════════════════════════════════════════════════════════════
+     8. AFFICHER LES RÉSULTATS
+  ════════════════════════════════════════════════════════════ */
 
-  window.demarrer    = demarrer;
-  window.reculer     = reculer;
-  window.recommencer = recommencer;
-  window.accueil     = recommencer;
+  function cls(val) {
+    var v = String(val || '').trim();
+    if (v === '1' || v === '1.0') return 'rec';
+    if (v === '0' || v === '0.0') return 'nrec';
+    return 'ns';
+  }
+
+  function badge(val) {
+    var v = String(val || '').trim();
+    if (v === '1' || v === '1.0') return '✓ Recommandé';
+    if (v === '0' || v === '0.0') return '✗ Non recommandé';
+    return 'Non spécifié';
+  }
+
+  function renderResults(donnees) {
+    $('quiz-progress-bar').style.width = '100%';
+    $('quiz-pct-label').textContent    = '100 %';
+    $('quiz-step-label').textContent   = 'Terminé';
+
+    /* Parcours clinique */
+    var pathEl = $('results-path');
+    pathEl.innerHTML = '';
+    if (history.length === 0) {
+      pathEl.textContent = 'Résultat direct';
+    } else {
+      history.forEach(function(h, i) {
+        if (i > 0) {
+          var sep = document.createElement('span');
+          sep.className   = 'path-sep';
+          sep.textContent = '›';
+          pathEl.appendChild(sep);
+        }
+        var s = document.createElement('span');
+        s.className   = 'path-step';
+        s.textContent = h.label;
+        pathEl.appendChild(s);
+      });
+    }
+
+    /* Grille SENORIF */
+    var grid = $('results-grid');
+    grid.innerHTML = '';
+
+    var entries = Object.keys(donnees || {}).map(function(k) {
+      return { name: k.replace(/^OUT_/i, ''), val: donnees[k], cls: cls(donnees[k]) };
+    });
+    var order = { rec: 0, nrec: 1, ns: 2 };
+    entries.sort(function(a, b) { return order[a.cls] - order[b.cls]; });
+
+    if (entries.length === 0) {
+      grid.innerHTML = '<p style="color:#636e72;">Aucune donnée de traitement disponible.</p>';
+    } else {
+      entries.forEach(function(e) {
+        var card = document.createElement('div');
+        card.className = 'result-card ' + e.cls;
+        var h4 = document.createElement('h4');
+        h4.textContent = e.name;
+        var b = document.createElement('span');
+        b.className   = 'badge ' + e.cls;
+        b.textContent = badge(e.val);
+        card.appendChild(h4);
+        card.appendChild(b);
+        grid.appendChild(card);
+      });
+    }
+
+    /* Études */
+    var profil               = construireProfil();
+    var traitementsRecommandes = extraireTraitementsRecommandes(donnees);
+    renderEtudes(profil, traitementsRecommandes);
+
+    show('screen-results');
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     9. AFFICHER LES ÉTUDES PERTINENTES
+  ════════════════════════════════════════════════════════════ */
+
+  var SEUIL_SCORE = 40;
+
+  function renderEtudes(profil, traitementsRecommandes) {
+    var section = $('etudes-section');
+    if (!section) return;
+
+    section.innerHTML = '';
+
+    if (!etudes || etudes.length === 0) {
+      section.innerHTML = '<p style="color:#636e72;font-size:13px;margin-top:24px;">Aucune base d\'études disponible.</p>';
+      return;
+    }
+
+    console.group('[Atlas] 📚 Matching — ' + etudes.length + ' études');
+
+    var scored = etudes.map(function(etude) {
+      return {
+        etude: etude,
+        score: calculerScoreEtude(etude, profil, MAPPING, traitementsRecommandes)
+      };
+    });
+
+    console.groupEnd();
+
+    var retenues = scored
+      .filter(function(e) { return e.score >= SEUIL_SCORE; })
+      .sort(function(a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        return (parseInt(a.etude.niveau_preuve) || 99) - (parseInt(b.etude.niveau_preuve) || 99);
+      });
+
+    console.log('[Atlas] 📊 Retenues :', retenues.length + ' / ' + etudes.length + ' (seuil ' + SEUIL_SCORE + '%)');
+
+    if (retenues.length === 0) {
+      section.innerHTML =
+        '<div style="margin-top:32px;padding:20px;background:#f8f9fa;border-radius:12px;text-align:center;">' +
+        '<p style="color:#636e72;font-size:13px;">Aucune étude correspondant à ce profil (seuil : ' + SEUIL_SCORE + '%).</p>' +
+        '</div>';
+      return;
+    }
+
+    var titre = document.createElement('h3');
+    titre.textContent = 'Données issues de la littérature';
+    titre.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 8px;';
+    section.appendChild(titre);
+
+    var sous = document.createElement('p');
+    sous.textContent = retenues.length + ' étude(s) — classées par pertinence';
+    sous.style.cssText = 'font-size:13px;color:#636e72;margin-bottom:16px;';
+    section.appendChild(sous);
+
+    retenues.forEach(function(item) {
+      section.appendChild(creerCarteEtude(item.etude, item.score));
+    });
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     10. CARTE D'UNE ÉTUDE
+  ════════════════════════════════════════════════════════════ */
+
+  function scoreCouleur(score) {
+    if (score >= 80) return '#16a34a';
+    if (score >= 60) return '#d97706';
+    return '#6b7280';
+  }
+
+  function creerTag(texte, bg, couleur) {
+    return '<span style="display:inline-block;padding:2px 10px;border-radius:99px;' +
+           'font-size:11px;font-weight:500;background:' + bg + ';color:' + couleur + ';">' +
+           texte + '</span>';
+  }
+
+  function creerCarteEtude(etude, score) {
+    var card = document.createElement('div');
+    card.style.cssText =
+      'background:#fff;border:1px solid #e5e7eb;' +
+      'border-left:4px solid ' + scoreCouleur(score) + ';' +
+      'border-radius:12px;padding:18px 20px;margin-bottom:12px;' +
+      'cursor:pointer;transition:box-shadow .15s;';
+
+    card.onmouseenter = function() { this.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; };
+    card.onmouseleave = function() { this.style.boxShadow = 'none'; };
+
+    var traitement = (etude.traitements_evalues && etude.traitements_evalues.length)
+      ? creerTag(etude.traitements_evalues[0], '#fce7f3', '#9d174d')
+      : '';
+
+    card.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">' +
+        '<div style="flex:1;">' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">' +
+            creerTag('Niveau ' + (etude.niveau_preuve || '?'), '#dbeafe', '#1e40af') +
+            traitement +
+          '</div>' +
+          '<p style="font-size:13px;font-weight:500;line-height:1.5;color:#2d3436;">' +
+            (etude.auteur || '') + (etude.annee ? ' · ' + etude.annee : '') +
+            (etude.objectif ? ' — ' + etude.objectif : (etude.titre ? ' — ' + etude.titre : '')) +
+          '</p>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">' +
+          '<div style="width:44px;height:44px;border-radius:50%;border:2px solid ' + scoreCouleur(score) + ';' +
+               'display:flex;align-items:center;justify-content:center;">' +
+            '<span style="font-size:12px;font-weight:600;color:' + scoreCouleur(score) + ';">' + score + '%</span>' +
+          '</div>' +
+          '<span style="font-size:10px;color:#636e72;">match</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="etude-detail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">' +
+        (etude.conclusion_medecin || etude.conclusion
+          ? '<p style="font-size:13px;line-height:1.6;color:#2d3436;margin-bottom:10px;">' +
+            (etude.conclusion_medecin || etude.conclusion) + '</p>'
+          : '') +
+        (etude.lien
+          ? '<a href="' + etude.lien + '" target="_blank" style="font-size:12px;color:#2563eb;">' +
+            'Voir l\'article complet →</a>'
+          : '') +
+      '</div>';
+
+    /* Toggle détail au clic */
+    var ouvert = false;
+    card.addEventListener('click', function() {
+      ouvert = !ouvert;
+      card.querySelector('.etude-detail').style.display = ouvert ? 'block' : 'none';
+    });
+
+    return card;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     EXPOSITION GLOBALE
+  ════════════════════════════════════════════════════════════ */
+  window.demarrer           = demarrer;
+  window.reculer            = reculer;
+  window.recommencer        = recommencer;
+  window.accueil            = recommencer;
+  window.calculerScoreEtude = calculerScoreEtude; // testable depuis la console
+
   load();
+
 }());
