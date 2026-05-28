@@ -628,23 +628,12 @@
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
-  window.demarrer           = demarrer;
-  window.reculer            = reculer;
-  window.recommencer        = recommencer;
-  window.accueil            = recommencer;
-  window.calculerScoreEtude = calculerScoreEtude; // testable depuis la console
-// ... (tout le reste de votre code)
-  
-  window.recommencer = recommencer;
-  window.accueil     = recommencer;
-  
-  // LE TEST POUR IPAD :
-  alert("Type de calculerScoreEtude : " + typeof calculerScoreEtude);
-  
-  load();
-}());
+window.demarrer           = demarrer;
+  window.reculer            = reculer;
+  window.recommencer        = recommencer;
+  window.accueil            = recommencer;
+  window.calculerScoreEtude = calculerScoreEtude; 
 
-  
-  load();
-
+  // Lancement du chargement des données au démarrage
+  load();
 }());
