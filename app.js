@@ -471,7 +471,10 @@
     p.style.cssText = 'font-size:13px;color:#636e72;margin-bottom:16px;';
     section.appendChild(p);
 
-    retenues.forEach(function(item) { section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes)); });
+    retenues.forEach(function(item) { 
+        section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes)); 
+    });
+  }
 
   /* ════════════════════════════════════════════════════════════
      CARTE ÉTUDE
@@ -484,7 +487,7 @@
            'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
   }
 
- function creerCarteEtude(etude, score, colonnes) {
+  function creerCarteEtude(etude, score, colonnes) {
     var card = document.createElement('div');
     card.style.cssText =
       'background:#fff;border:1px solid #e5e7eb;border-left:4px solid '+scoreCouleur(score)+';' +
@@ -509,7 +512,6 @@
             ref + (etude.objectif?' — '+etude.objectif:'') +
           '</p>' +
         '</div>' +
-        // NOUVEAU : Affichage des colonnes qui matchent à la place du score rond
         '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;max-width:40%;text-align:right;">' +
           '<span style="font-size:10px;color:#636e72;text-transform:uppercase;letter-spacing:0.5px;">Critères validés</span>' +
           '<span style="font-size:12px;font-weight:600;color:'+scoreCouleur(score)+';">' + textColonnes + '</span>' +
