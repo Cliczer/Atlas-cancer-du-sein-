@@ -19,43 +19,36 @@
     },
     "etudes": [
         {
-            "reference": "Huang, E.H., Tucker, S.L. ...",
-            "objectif": "efficacité RT post M + CNA pour K localement avancé",
+            "reference": "Huang, E.H., Tucker, S.L. (2010)",
+            "objectif": "RT post mastectomie pour K localement avancé",
             "niveau_preuve": "2",
             "criteres": {
                 "T": "T4a, T3, T4b, T4c, T1, T2",
                 "N": "N2, N3, N0, N1",
-                "Chirurgie_mammaire": "MT",
-                "Chirurgie_axillaire": "NC",
-                "HER2": "NC",
-                "RE": "NC"
+                "Chirurgie_mammaire": "MT"
             },
-            "outcomes": {}
-        },
-        {
-            "reference": "Groupe d'essais sur les premiers essais sur le cancer du sein. (2014). Effet de la radiothérapie après mastectomie...",
-            "objectif": "Efficacité RT après M+CA // pN1-3",
-            "niveau_preuve": "1",
-            "criteres": {
-                "T": "NC",
-                "N": "pN1-3", 
-                "Chirurgie_mammaire": "MT",
-                "Chirurgie_axillaire": "CA",
-                "HER2": "NC",
-                "RE": "NC",
-                "RP": "NC",
-                "ki67": "NC",
-                "Marges et autres paramètres": "NC",
-                "Âge moyen / (median": "NC",
-                "Ménopause %": "NC",
-                "Triple N": "-1",
-                "Carcinome": "-1",
-                "Grade": "-1",
-                "Emboles": "-1",
-                "MCC": "-1"
+            "comparaison": {
+                "avec": { "valeur": 12.0, "unite": "% de récidive" },
+                "sans": { "valeur": 28.0, "unite": "% de récidive" }
             },
             "traitements_evalues": ["Radiothérapie"],
-            "outcomes": {}
+            "lien": "https://pubmed.ncbi.nlm.nih.gov/"
+        },
+        {
+            "reference": "EBCTCG - Méta-analyse (2014)",
+            "objectif": "Effet RT après M+CA pour pN1-3",
+            "niveau_preuve": "1",
+            "criteres": {
+                "N": "pN1-3",
+                "Chirurgie_mammaire": "MT",
+                "Chirurgie_axillaire": "CA"
+            },
+            "comparaison": {
+                "avec": { "valeur": 42.3, "unite": "% de mortalité à 15 ans" },
+                "sans": { "valeur": 50.2, "unite": "% de mortalité à 15 ans" }
+            },
+            "traitements_evalues": ["Radiothérapie"],
+            "lien": "https://doi.org/10.1016/S0140-6736(14)60488-8"
         }
     ]
 }
