@@ -137,36 +137,61 @@
   ════════════════════════════════════════════════════════════ */
 
 function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
-    // ... [Ton code de filtre traitement reste identique] ...
+    var nom = (etude.reference||etude.auteur||'').substring(0,40) + ' — ' + (etude.objectif||etude.titre||'');
+    console.group('[Atlas] 🔬 ' + nom);
 
+    // 1. Définition de la variable manquante ici pour être sûr qu'elle existe
+    var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
+
+    /* Filtre traitement */
+    var tE = etude.traitements_evalues;
+    if (tE && Array.isArray(tE) && tE.length > 0) {
+        var match = false;
+        traitementsRecommandes.forEach(function(tR) {
+            var eqR = MAPPING[tR] ? MAPPING[tR].map(normaliser) : [];
+            eqR.push(normaliser(tR));
+            tE.forEach(function(t) {
+                if (eqR.indexOf(normaliser(t)) !== -1) match = true;
+            });
+        });
+        if (!match) {
+            console.groupEnd();
+            return { valeur: 0, colonnes: [], mismatches: [] };
+        }
+    }
+
+    /* Scoring */
     var criteres = etude.criteres || {};
+    var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
-    var colonnesBloquantes = []; // NOUVEAU : On stocke les mismatches
+    var colonnesBloquantes = [];
 
-    Object.keys(criteres).forEach(function(nom) {
-        var vE = criteres[nom];
+    Object.keys(criteres).forEach(function(nomCritere) {
+        var vE = criteres[nomCritere];
         if (estJoker(vE)) {
-            colonnesGagnantes.push(nom);
+            pts++; evalues++; colonnesGagnantes.push(nomCritere);
             return;
         }
 
-        var vP = valeurPatient(profilPatient, nom);
+        var vP = valeurPatient(profilPatient, nomCritere);
         if (vP === undefined || String(vP).trim() === '') return;
 
-        var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
+        evalues++;
+        // Maintenant NUMERIQUES est bien connu ici
+        var s = NUMERIQUES.indexOf(nomCritere) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
+        pts += s;
         
-        if (s > 0) {
-            colonnesGagnantes.push(nom);
-        } else {
-            // NOUVEAU : Si ça ne matche pas, on enregistre le nom du critère
-            colonnesBloquantes.push(nom);
-        }
+        if (s > 0) colonnesGagnantes.push(nomCritere);
+        else colonnesBloquantes.push(nomCritere);
     });
+
+    var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
+    console.groupEnd();
 
     return { 
         valeur: final, 
         colonnes: colonnesGagnantes, 
-        mismatches: colonnesBloquantes // On renvoie la liste des erreurs
+        mismatches: colonnesBloquantes 
     };
 }
   /* ════════════════════════════════════════════════════════════
