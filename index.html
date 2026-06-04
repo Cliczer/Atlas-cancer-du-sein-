@@ -40,6 +40,10 @@
       min-height: 100vh;
       line-height: 1.6;
     }
+    /* Empêche le zoom accidentel (double-tap) sur tous les boutons et liens */
+    button, a {
+      touch-action: manipulation;
+    }
 
     /* ─────────────────────────────────────────
        UTILITAIRE : afficher / cacher les écrans
