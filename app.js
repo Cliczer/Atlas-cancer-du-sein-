@@ -461,11 +461,19 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
     var max = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
 
+   var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
+    var maxVal = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
+    var wAvec = Math.round((comp.avec.valeur / maxVal) * 100);
+    var wSans = Math.round((comp.sans.valeur / maxVal) * 100);
+
     card.innerHTML =
       '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-        '<div><h4>' + (etude.reference || etude.titre) + '</h4></div>' +
-        '<div style="text-align:center;">' +
-           '<div style="font-weight:bold; color:' + scoreCouleur(score) + '">' + score + '%</div>' +
+        '<div style="flex:1;"><h4>' + (etude.reference || etude.titre) + '</h4></div>' +
+        '<div style="width: 150px;">' +
+          '<div class="barre-header"><span class="barre-label">Avec</span><span class="barre-valeur">' + comp.avec.valeur + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + wAvec + '%"></div></div>' +
+          '<div class="barre-header" style="margin-top:4px;"><span class="barre-label">Sans</span><span class="barre-valeur">' + comp.sans.valeur + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + wSans + '%"></div></div>' +
         '</div>' +
       '</div>' +
       '<div class="etude-detail" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">' +
