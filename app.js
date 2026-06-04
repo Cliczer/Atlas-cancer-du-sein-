@@ -444,7 +444,14 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
  /* ════════════════════════════════════════════════════════════
      HELPERS D'AFFICHAGE ET CARTE ÉTUDE
   ════════════════════════════════════════════════════════════ */
-
+function expliquerScore(colonnes, mismatches) {
+    var totalCriteres = colonnes.length + mismatches.length;
+    if (totalCriteres === 0) return "";
+    
+    var explication = "<strong>Calcul du match :</strong> " + colonnes.length + " critère(s) validé(s) sur un total de " + totalCriteres + " analysés.";
+    return explication;
+  }
+  
   function scoreCouleur(s) { 
       return s >= 80 ? '#16a34a' : s >= 60 ? '#d97706' : '#6b7280'; 
   }
@@ -454,7 +461,7 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
            'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
   }
 
- function creerCarteEtude(etude, score, colonnes, mismatches) {
+function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;';
     
@@ -462,24 +469,28 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var valAvec = comp.avec.valeur || 0;
     var valSans = comp.sans.valeur || 0;
     
-    // Calcul mathématique des proportions
     var maxVal = Math.max(valAvec, valSans) || 1;
     var wAvec = Math.round((valAvec / maxVal) * 100);
     var wSans = Math.round((valSans / maxVal) * 100);
 
-    // Structure de la carte : Titre à gauche, Barres à droite
     card.innerHTML =
       '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">' +
         
-        // Bloc Titre
+        // Bloc de gauche : Titre + Explication + Détails
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 16px 0; font-size:15px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
+          '<h4 style="margin:0 0 12px 0; font-size:15px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
+          
+          // L'encadré d'explication du score
+          '<div style="background: #f8f9fa; padding: 8px 12px; border-radius: 6px; font-size: 12px; color: #636e72; margin-bottom: 12px;">' +
+             expliquerScore(colonnes, mismatches) +
+          '</div>' +
+
           (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13px; margin-bottom:4px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
           (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13px; margin-bottom:8px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
           (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13px; color:#2563eb; text-decoration:none;">Voir l\'article →</a>' : '') +
         '</div>' +
         
-        // Bloc Barres (Fixe à 200px de large)
+        // Bloc de droite : Barres de traitement
         '<div style="width: 200px; flex-shrink:0;">' +
           '<div class="barre-header"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill bonne" style="width:' + wAvec + '%"></div></div>' +
