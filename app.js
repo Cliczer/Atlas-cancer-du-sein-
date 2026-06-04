@@ -387,7 +387,7 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
   }
 
   /* ════════════════════════════════════════════════════════════
-     ÉTUDES
+     ÉTUDES — CORRIGÉ
   ════════════════════════════════════════════════════════════ */
 
   var SEUIL_SCORE = 40;
@@ -398,8 +398,7 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     section.innerHTML = '';
 
     if (!etudes || !etudes.length) {
-      section.innerHTML =
-        '<p style="color:#636e72;font-size:13px;margin-top:24px;">Aucune base d\'études disponible.</p>';
+      section.innerHTML = '<p style="color:#636e72;font-size:13px;margin-top:24px;">Aucune étude disponible.</p>';
       return;
     }
 
@@ -409,81 +408,62 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
           etude: e, 
           score: resultat.valeur,
           colonnes: resultat.colonnes,
-          mismatches: resultat.mismatches // Ajout ici
+          mismatches: resultat.mismatches // On récupère bien les erreurs
       };
     });
 
     var retenues = scored
       .filter(function(e) { return e.score >= SEUIL_SCORE; })
-      .sort(function(a,b) {
-        if (b.score !== a.score) return b.score - a.score;
-        return (parseInt(a.etude.niveau_preuve)||99) - (parseInt(b.etude.niveau_preuve)||99);
-      });
-
-    console.log('[Atlas] 📊 Études retenues :', retenues.length + '/' + etudes.length);
-
-    if (!retenues.length) {
-      section.innerHTML =
-        '<div style="margin-top:32px;padding:20px;background:#f8f9fa;border-radius:12px;text-align:center;">' +
-        '<p style="color:#636e72;font-size:13px;">Aucune étude correspondant à ce profil (seuil : '+SEUIL_SCORE+'%).</p></div>';
-      return;
-    }
+      .sort(function(a,b) { return b.score - a.score; });
 
     var h3 = document.createElement('h3');
     h3.textContent = 'Données issues de la littérature';
     h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 8px;';
     section.appendChild(h3);
 
-    var p = document.createElement('p');
-    p.textContent = retenues.length + ' étude(s) — classées par pertinence';
-    p.style.cssText = 'font-size:13px;color:#636e72;margin-bottom:16px;';
-    section.appendChild(p);
-
     retenues.forEach(function(item) { 
-        section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes)); 
+        section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes, item.mismatches)); 
     });
   }
 
   /* ════════════════════════════════════════════════════════════
-     CARTE ÉTUDE
+     CARTE ÉTUDE — AVEC BARRES ET MATCHING
   ════════════════════════════════════════════════════════════ */
 
-  function scoreCouleur(s) { return s>=80?'#16a34a':s>=60?'#d97706':'#6b7280'; }
-
-  function creerTag(t, bg, c) {
-    return '<span style="display:inline-block;padding:2px 10px;border-radius:99px;' +
-           'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
-  }
-
-  function creerCarteEtude(etude, score, colonnes) {
+  function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    card.style.cssText =
-      'background:#fff;border:1px solid #e5e7eb;border-left:4px solid '+scoreCouleur(score)+';' +
-      'border-radius:12px;padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:box-shadow .15s;';
-    card.onmouseenter = function() { this.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'; };
-    card.onmouseleave = function() { this.style.boxShadow='none'; };
-
-    var ttt = (etude.traitements_evalues && etude.traitements_evalues.length)
-      ? creerTag(etude.traitements_evalues[0],'#fce7f3','#9d174d') : '';
-    var ref = (etude.reference||etude.auteur||'').substring(0,60);
+    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin-bottom:12px;cursor:pointer;';
     
-    // Formatage du texte des colonnes gagnantes
-    var textColonnes = colonnes && colonnes.length > 0 ? colonnes.join(', ') : 'Aucun critère spécifique';
+    // Données comparaison
+    var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
+    var max = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
+    var wAvec = Math.round((comp.avec.valeur / max) * 100);
+    var wSans = Math.round((comp.sans.valeur / max) * 100);
 
-  card.innerHTML += 
-    '<div class="etude-detail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">' +
-      (colonnes.length > 0 ? '<p style="color:var(--green)">✅ Match : ' + colonnes.join(', ') + '</p>' : '') +
-      (colonnesBloquantes.length > 0 ? '<p style="color:#dc2626">❌ Non-match : ' + colonnesBloquantes.join(', ') + '</p>' : '') +
-      (etude.lien ? '<br><a href="'+etude.lien+'" target="_blank">Voir l\'article →</a>' : '') +
-    '</div>';
-    var ouvert = false;
+    card.innerHTML =
+      '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+        '<div style="flex:1; padding-right:20px;">' +
+          '<h4 style="margin-bottom:4px;">' + (etude.reference || etude.titre) + '</h4>' +
+        '</div>' +
+        '<div style="width: 180px;">' +
+          '<div class="barre-header"><span class="barre-label">Avec</span><span class="barre-valeur">' + comp.avec.valeur + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + wAvec + '%"></div></div>' +
+          '<div class="barre-header" style="margin-top:8px;"><span class="barre-label">Sans</span><span class="barre-valeur">' + comp.sans.valeur + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + wSans + '%"></div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="etude-detail" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">' +
+        (colonnes.length > 0 ? '<p style="color:var(--green); font-size:12px; margin-bottom:4px;">✅ Match : ' + colonnes.join(', ') + '</p>' : '') +
+        (mismatches && mismatches.length > 0 ? '<p style="color:#dc2626; font-size:12px;">❌ Non-match : ' + mismatches.join(', ') + '</p>' : '') +
+        (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="display:block; margin-top:8px; font-size:12px;">Voir l\'article →</a>' : '') +
+      '</div>';
+
     card.addEventListener('click', function() {
-      ouvert = !ouvert;
-      card.querySelector('.etude-detail').style.display = ouvert ? 'block' : 'none';
+      var detail = card.querySelector('.etude-detail');
+      detail.style.display = (detail.style.display === 'none') ? 'block' : 'none';
     });
     return card;
   }
-
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
