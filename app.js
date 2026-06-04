@@ -455,24 +455,13 @@
     var valAvec = comp.avec.valeur || 0;
     var valSans = comp.sans.valeur || 0;
     
+    // Echelle bloquée sur 100%
     var wAvec = valAvec;
     var wSans = valSans;
 
+    // Intégration des classes "etude-flex" et "etude-bars" pour le mobile
     card.innerHTML =
-      // 1. Ajout de class="etude-flex"
       '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
-        
-        '<div style="flex:1;">' +
-          // ... (tout ton code actuel avec le titre, le bouton, etc.)
-        '</div>' +
-        
-        // 2. Ajout de class="etude-bars"
-        '<div class="etude-bars" style="width: 240px; flex-shrink:0;">' +
-          // ... (tes barres)
-        '</div>' +
-        
-      '</div>';
-      '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         
         // Bloc de gauche : Titre + Bouton + Détails cachés
         '<div style="flex:1;">' +
@@ -490,8 +479,8 @@
           '</div>' +
         '</div>' +
         
-        // Bloc de droite : Barres de traitement
-        '<div style="width: 240px; flex-shrink:0;">' +
+        // Bloc de droite : Barres de traitement (avec la classe etude-bars)
+        '<div class="etude-bars" style="width: 240px; flex-shrink:0;">' +
           '<div class="barre-header" style="margin-bottom:6px;"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
           '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
           
@@ -501,25 +490,26 @@
         
       '</div>';
 
-    // Logique du bouton
+    // Logique du bouton avec sécurité (si le bouton existe, on lui attache l'action)
     var btnToggle = card.querySelector('.btn-toggle');
     var zoneDetails = card.querySelector('.zone-details');
 
-    btnToggle.addEventListener('click', function() {
-      if (zoneDetails.style.display === 'none') {
-        zoneDetails.style.display = 'block';
-        btnToggle.textContent = 'Cacher les détails ↑';
-        btnToggle.style.background = '#f8f9fa';
-      } else {
-        zoneDetails.style.display = 'none';
-        btnToggle.textContent = 'Voir les détails ↓';
-        btnToggle.style.background = 'transparent';
-      }
-    });
+    if (btnToggle && zoneDetails) {
+      btnToggle.addEventListener('click', function() {
+        if (zoneDetails.style.display === 'none') {
+          zoneDetails.style.display = 'block';
+          btnToggle.textContent = 'Cacher les détails ↑';
+          btnToggle.style.background = '#f8f9fa';
+        } else {
+          zoneDetails.style.display = 'none';
+          btnToggle.textContent = 'Voir les détails ↓';
+          btnToggle.style.background = 'transparent';
+        }
+      });
+    }
 
     return card;
   }
-
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
