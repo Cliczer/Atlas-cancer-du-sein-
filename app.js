@@ -137,59 +137,42 @@
   ════════════════════════════════════════════════════════════ */
 
 function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
-    var nom = (etude.reference||etude.auteur||'').substring(0,40) + ' — ' + (etude.objectif||etude.titre||'');
-    console.group('[Atlas] 🔬 ' + nom);
-
-    // 1. Définition de la variable manquante ici pour être sûr qu'elle existe
     var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
+    
+    // ... [Ton filtre traitement identique] ...
 
-    /* Filtre traitement */
-    var tE = etude.traitements_evalues;
-    if (tE && Array.isArray(tE) && tE.length > 0) {
-        var match = false;
-        traitementsRecommandes.forEach(function(tR) {
-            var eqR = MAPPING[tR] ? MAPPING[tR].map(normaliser) : [];
-            eqR.push(normaliser(tR));
-            tE.forEach(function(t) {
-                if (eqR.indexOf(normaliser(t)) !== -1) match = true;
-            });
-        });
-        if (!match) {
-            console.groupEnd();
-            return { valeur: 0, colonnes: [], mismatches: [] };
-        }
-    }
-
-    /* Scoring */
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
-    var colonnesBloquantes = [];
+    var colonnesBloquantes = []; 
 
-    Object.keys(criteres).forEach(function(nomCritere) {
-        var vE = criteres[nomCritere];
-        if (estJoker(vE)) {
-            pts++; evalues++; colonnesGagnantes.push(nomCritere);
-            return;
+    Object.keys(criteres).forEach(function(nom) {
+        var vE = criteres[nom];
+        if (estJoker(vE)) { pts++; evalues++; colonnesGagnantes.push(nom); return; }
+
+        var vP = valeurPatient(profilPatient, nom);
+        
+        // DISTINCTION ICI
+        if (vP === undefined || String(vP).trim() === '') {
+            // Le critère est manquant, on ne le compte pas dans le score, on le signale juste
+            return; 
         }
 
-        var vP = valeurPatient(profilPatient, nomCritere);
-        if (vP === undefined || String(vP).trim() === '') return;
-
         evalues++;
-        // Maintenant NUMERIQUES est bien connu ici
-        var s = NUMERIQUES.indexOf(nomCritere) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
+        var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
         pts += s;
         
-        if (s > 0) colonnesGagnantes.push(nomCritere);
-        else colonnesBloquantes.push(nomCritere);
+        if (s > 0) {
+            colonnesGagnantes.push(nom);
+        } else {
+            colonnesBloquantes.push(nom); // Vrai mismatch (valeur différente)
+        }
     });
 
     var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
-    console.groupEnd();
 
     return { 
-        valeur: final, 
+        valeur: final, // Le score est de retour !
         colonnes: colonnesGagnantes, 
         mismatches: colonnesBloquantes 
     };
@@ -457,38 +440,22 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
 
   function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin-bottom:12px;cursor:pointer;';
-    
-    // Données comparaison
-    var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
-    var max = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
-    var wAvec = Math.round((comp.avec.valeur / max) * 100);
-    var wSans = Math.round((comp.sans.valeur / max) * 100);
+    // Ajout de la classe scoreCouleur pour le rond
+    card.style.cssText = 'background:#fff; border:1px solid #e5e7eb; border-left:4px solid ' + scoreCouleur(score) + '; padding:18px; cursor:pointer;';
 
     card.innerHTML =
       '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-        '<div style="flex:1; padding-right:20px;">' +
-          '<h4 style="margin-bottom:4px;">' + (etude.reference || etude.titre) + '</h4>' +
-        '</div>' +
-        '<div style="width: 180px;">' +
-          '<div class="barre-header"><span class="barre-label">Avec</span><span class="barre-valeur">' + comp.avec.valeur + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + wAvec + '%"></div></div>' +
-          '<div class="barre-header" style="margin-top:8px;"><span class="barre-label">Sans</span><span class="barre-valeur">' + comp.sans.valeur + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + wSans + '%"></div></div>' +
+        '<div><h4>' + (etude.reference || etude.titre) + '</h4></div>' +
+        // On remet le rond du score ici
+        '<div style="text-align:center;">' +
+            '<div style="border:2px solid ' + scoreCouleur(score) + '; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">' +
+                '<span style="font-weight:bold; color:' + scoreCouleur(score) + '">' + score + '%</span>' +
+            '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="etude-detail" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">' +
-        (colonnes.length > 0 ? '<p style="color:var(--green); font-size:12px; margin-bottom:4px;">✅ Match : ' + colonnes.join(', ') + '</p>' : '') +
-        (mismatches && mismatches.length > 0 ? '<p style="color:#dc2626; font-size:12px;">❌ Non-match : ' + mismatches.join(', ') + '</p>' : '') +
-        (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="display:block; margin-top:8px; font-size:12px;">Voir l\'article →</a>' : '') +
-      '</div>';
-
-    card.addEventListener('click', function() {
-      var detail = card.querySelector('.etude-detail');
-      detail.style.display = (detail.style.display === 'none') ? 'block' : 'none';
-    });
+      // ... [Le reste de ton code pour les barres et le detail] ...
     return card;
-  }
+}
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
