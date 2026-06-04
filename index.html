@@ -387,6 +387,55 @@
       #screen-results .results-body { padding: 32px 16px; }
       .results-grid { grid-template-columns: 1fr; }
     }
+    /* ─────────────────────────────────────────
+       IMPRESSION (MODE PAPIER / PDF)
+    ───────────────────────────────────────── */
+    @media print {
+      /* 1. Forcer l'impression des couleurs de fond (vital pour tes barres de statistiques !) */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* 2. Cacher les boutons et les autres écrans */
+      .btn, #screen-home, #screen-quiz { 
+        display: none !important; 
+      }
+      
+      /* 3. Forcer l'affichage strict de l'écran des résultats */
+      #screen-results { 
+        display: block !important; 
+      }
+      
+      /* 4. Nettoyer le design pour le format A4 */
+      body { 
+        background: #fff; 
+        color: #000;
+      }
+      .header { 
+        position: static; 
+        padding: 0 0 20px 0; 
+        border-bottom: 2px solid #000; 
+        margin-bottom: 24px;
+      }
+      
+      /* 5. LE PLUS IMPORTANT POUR LES STATS : 
+         On déploie toutes les zones de détails et on cache les flèches */
+      .zone-details { 
+        display: block !important; 
+      }
+      .btn-toggle { 
+        display: none !important; 
+      }
+      
+      /* 6. Empêcher les cartes d'être coupées en deux au saut de page */
+      .result-card, div[style*="background:#fff"] { 
+        page-break-inside: avoid; 
+        break-inside: avoid; 
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -461,16 +510,20 @@
 
 <div id="screen-results" class="screen">
 
-  <header class="header">
+<header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
       <div class="header-logo-icon">
         <img src="curie.jpg" alt="Logo Curie" />
       </div>
       Atlas des facteurs pronostics en cancer du sein
     </a>
-    <button class="btn btn-ghost" onclick="recommencer()">↺ Nouvelle évaluation</button>
+    <div style="display: flex; gap: 12px;">
+      <!-- Nouveau bouton d'impression -->
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimer le rapport</button>
+      <button class="btn btn-primary" onclick="recommencer()" style="color: white;">↺ Nouvelle évaluation</button>
+    </div>
   </header>
-
+  
   <div class="results-body">
     <h2>Recommandations Thérapeutiques</h2>
 
