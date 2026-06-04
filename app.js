@@ -136,7 +136,7 @@
      CALCULER SCORE ÉTUDE
   ════════════════════════════════════════════════════════════ */
 
-  function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
+ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var nom = (etude.reference||etude.auteur||'').substring(0,40) +
               ' — ' + (etude.objectif||etude.titre||'');
     console.group('[Atlas] 🔬 ' + nom);
@@ -156,22 +156,24 @@
       if (!match) {
         console.log('  ❌ Traitement non pertinent → 0');
         console.groupEnd();
-        return 0;
+        return { valeur: 0, colonnes: [] }; // MODIFICATION ICI
       }
       console.log('  ✅ Filtre traitement OK');
     } else {
       console.warn('  ⚠️ traitements_evalues absent → filtre ignoré');
     }
 
-    /* Scoring */
+    /* Scoring et mémorisation des colonnes qui matchent */
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
+    var colonnesGagnantes = []; // NOUVEAU : On initialise notre tableau
     var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
 
     Object.keys(criteres).forEach(function(nom) {
       var vE = criteres[nom];
       if (estJoker(vE)) {
         pts++; evalues++;
+        colonnesGagnantes.push(nom); // Le joker compte comme un match
         console.log('  🃏 ['+nom+'] Joker → +1');
         return;
       }
@@ -183,13 +185,21 @@
       evalues++;
       var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP,vE) : matchCategoriel(vP,vE);
       pts += s;
+      
+      // NOUVEAU : Si c'est un match (total ou partiel), on enregistre la colonne
+      if (s > 0) {
+          colonnesGagnantes.push(nom);
+      }
+      
       console.log('  '+(s===1?'✅':s===0.5?'🟡':'❌')+' ['+nom+'] "'+vP+'" / "'+vE+'" → +'+s);
     });
 
     var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
     console.log('  📊 '+pts+'/'+evalues+' → '+final+'%');
     console.groupEnd();
-    return final;
+    
+    // NOUVEAU : On retourne un objet avec le score et les colonnes
+    return { valeur: final, colonnes: colonnesGagnantes }; 
   }
 
   /* ════════════════════════════════════════════════════════════
@@ -427,7 +437,12 @@
     }
 
     var scored = etudes.map(function(e) {
-      return { etude:e, score: calculerScoreEtude(e, profil, traitementsRecommandes) };
+      var resultat = calculerScoreEtude(e, profil, traitementsRecommandes);
+      return { 
+          etude: e, 
+          score: resultat.valeur,        // On garde le score numérique pour le tri
+          colonnes: resultat.colonnes    // On transmet les colonnes qui matchent
+      };
     });
 
     var retenues = scored
@@ -456,8 +471,7 @@
     p.style.cssText = 'font-size:13px;color:#636e72;margin-bottom:16px;';
     section.appendChild(p);
 
-    retenues.forEach(function(item) { section.appendChild(creerCarteEtude(item.etude, item.score)); });
-  }
+    retenues.forEach(function(item) { section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes)); });
 
   /* ════════════════════════════════════════════════════════════
      CARTE ÉTUDE
@@ -470,7 +484,7 @@
            'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
   }
 
-  function creerCarteEtude(etude, score) {
+ function creerCarteEtude(etude, score, colonnes) {
     var card = document.createElement('div');
     card.style.cssText =
       'background:#fff;border:1px solid #e5e7eb;border-left:4px solid '+scoreCouleur(score)+';' +
@@ -481,6 +495,9 @@
     var ttt = (etude.traitements_evalues && etude.traitements_evalues.length)
       ? creerTag(etude.traitements_evalues[0],'#fce7f3','#9d174d') : '';
     var ref = (etude.reference||etude.auteur||'').substring(0,60);
+    
+    // Formatage du texte des colonnes gagnantes
+    var textColonnes = colonnes && colonnes.length > 0 ? colonnes.join(', ') : 'Aucun critère spécifique';
 
     card.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">' +
@@ -492,12 +509,10 @@
             ref + (etude.objectif?' — '+etude.objectif:'') +
           '</p>' +
         '</div>' +
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">' +
-          '<div style="width:44px;height:44px;border-radius:50%;border:2px solid '+scoreCouleur(score)+';' +
-               'display:flex;align-items:center;justify-content:center;">' +
-            '<span style="font-size:12px;font-weight:600;color:'+scoreCouleur(score)+';">'+score+'%</span>' +
-          '</div>' +
-          '<span style="font-size:10px;color:#636e72;">match</span>' +
+        // NOUVEAU : Affichage des colonnes qui matchent à la place du score rond
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;max-width:40%;text-align:right;">' +
+          '<span style="font-size:10px;color:#636e72;text-transform:uppercase;letter-spacing:0.5px;">Critères validés</span>' +
+          '<span style="font-size:12px;font-weight:600;color:'+scoreCouleur(score)+';">' + textColonnes + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="etude-detail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">' +
