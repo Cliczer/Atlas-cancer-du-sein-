@@ -397,6 +397,9 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
   /* ════════════════════════════════════════════════════════════
      ÉTUDES — CORRIGÉ
   ════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+     ÉTUDES
+  ════════════════════════════════════════════════════════════ */
 
   var SEUIL_SCORE = 40;
 
@@ -416,7 +419,7 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
           etude: e, 
           score: resultat.valeur,
           colonnes: resultat.colonnes,
-          mismatches: resultat.mismatches // On récupère bien les erreurs
+          mismatches: resultat.mismatches
       };
     });
 
@@ -432,30 +435,38 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     retenues.forEach(function(item) { 
         section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes, item.mismatches)); 
     });
-  }
+  } // <--- CETTE ACCOLADE EST CRUCIALE POUR FERMER renderEtudes
 
   /* ════════════════════════════════════════════════════════════
-     CARTE ÉTUDE — AVEC BARRES ET MATCHING
+     CARTE ÉTUDE
   ════════════════════════════════════════════════════════════ */
 
   function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    // Ajout de la classe scoreCouleur pour le rond
-    card.style.cssText = 'background:#fff; border:1px solid #e5e7eb; border-left:4px solid ' + scoreCouleur(score) + '; padding:18px; cursor:pointer;';
+    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-bottom:12px;cursor:pointer;';
+    
+    var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
+    var max = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
 
     card.innerHTML =
       '<div style="display:flex; justify-content:space-between; align-items:center;">' +
         '<div><h4>' + (etude.reference || etude.titre) + '</h4></div>' +
-        // On remet le rond du score ici
         '<div style="text-align:center;">' +
-            '<div style="border:2px solid ' + scoreCouleur(score) + '; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center;">' +
-                '<span style="font-weight:bold; color:' + scoreCouleur(score) + '">' + score + '%</span>' +
-            '</div>' +
+           '<div style="font-weight:bold; color:' + scoreCouleur(score) + '">' + score + '%</div>' +
         '</div>' +
       '</div>' +
-      // ... [Le reste de ton code pour les barres et le detail] ...
-    return card;
-}
+      '<div class="etude-detail" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">' +
+        (colonnes.length > 0 ? '<p style="color:var(--green); font-size:12px;">✅ Match : ' + colonnes.join(', ') + '</p>' : '') +
+        (mismatches && mismatches.length > 0 ? '<p style="color:#dc2626; font-size:12px;">❌ Non-match : ' + mismatches.join(', ') + '</p>' : '') +
+        (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:12px;">Voir l\'article →</a>' : '') +
+      '</div>';
+
+    card.addEventListener('click', function() {
+      var d = card.querySelector('.etude-detail');
+      d.style.display = (d.style.display === 'none') ? 'block' : 'none';
+    });
+    return card; // <--- C'est ici qu'il renvoyait l'erreur "Unexpected token return" car il était mal placé
+  }
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
