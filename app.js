@@ -454,38 +454,42 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
            'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
   }
 
-  function creerCarteEtude(etude, score, colonnes, mismatches) {
+ function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-bottom:12px;cursor:pointer;';
+    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;';
     
     var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
-    var max = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
+    var valAvec = comp.avec.valeur || 0;
+    var valSans = comp.sans.valeur || 0;
+    
+    // Calcul mathématique des proportions
+    var maxVal = Math.max(valAvec, valSans) || 1;
+    var wAvec = Math.round((valAvec / maxVal) * 100);
+    var wSans = Math.round((valSans / maxVal) * 100);
 
-   var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
-    var maxVal = Math.max(comp.avec.valeur, comp.sans.valeur) || 1;
-    var wAvec = Math.round((comp.avec.valeur / maxVal) * 100);
-    var wSans = Math.round((comp.sans.valeur / maxVal) * 100);
-
+    // Structure de la carte : Titre à gauche, Barres à droite
     card.innerHTML =
-      '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-        '<div style="flex:1;"><h4>' + (etude.reference || etude.titre) + '</h4></div>' +
-        '<div style="width: 150px;">' +
-          '<div class="barre-header"><span class="barre-label">Avec</span><span class="barre-valeur">' + comp.avec.valeur + '%</span></div>' +
+      '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">' +
+        
+        // Bloc Titre
+        '<div style="flex:1;">' +
+          '<h4 style="margin:0 0 16px 0; font-size:15px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
+          (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13px; margin-bottom:4px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
+          (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13px; margin-bottom:8px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
+          (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13px; color:#2563eb; text-decoration:none;">Voir l\'article →</a>' : '') +
+        '</div>' +
+        
+        // Bloc Barres (Fixe à 200px de large)
+        '<div style="width: 200px; flex-shrink:0;">' +
+          '<div class="barre-header"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill bonne" style="width:' + wAvec + '%"></div></div>' +
-          '<div class="barre-header" style="margin-top:4px;"><span class="barre-label">Sans</span><span class="barre-valeur">' + comp.sans.valeur + '%</span></div>' +
+          
+          '<div class="barre-header"><span>Sans traitement</span><span>' + valSans + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + wSans + '%"></div></div>' +
         '</div>' +
-      '</div>' +
-      '<div class="etude-detail" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">' +
-        (colonnes.length > 0 ? '<p style="color:var(--green); font-size:12px;">✅ Match : ' + colonnes.join(', ') + '</p>' : '') +
-        (mismatches && mismatches.length > 0 ? '<p style="color:#dc2626; font-size:12px;">❌ Non-match : ' + mismatches.join(', ') + '</p>' : '') +
-        (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:12px;">Voir l\'article →</a>' : '') +
+        
       '</div>';
 
-    card.addEventListener('click', function() {
-      var d = card.querySelector('.etude-detail');
-      d.style.display = (d.style.display === 'none') ? 'block' : 'none';
-    });
     return card;
   }
   /* ════════════════════════════════════════════════════════════
