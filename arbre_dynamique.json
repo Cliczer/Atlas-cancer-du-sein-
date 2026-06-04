@@ -32,6 +32,7 @@
                                                             "choix": {
                                                                 "0.0": {
                                                                     "type": "resultat",
+                                                                    "source_senorif": "Arbre 4 : Traitement adjuvant des cancers infiltrants RH+ / HER2- (Page 45)",
                                                                     "donnees": {
                                                                         "OUT_Radiothérapie": "1.0",
                                                                         "OUT_Hormonothérapie seule": "1.0",
@@ -40,6 +41,7 @@
                                                                 },
                                                                 "1.0": {
                                                                     "type": "resultat",
+                                                                    "source_senorif": "Arbre 4 : Traitement adjuvant des cancers infiltrants RH+ / HER2- (Page 45)",
                                                                     "donnees": {
                                                                         "OUT_Radiothérapie": "1.0",
                                                                         "OUT_Hormonothérapie seule": "1.0"
@@ -49,6 +51,7 @@
                                                         },
                                                         "0.0": {
                                                             "type": "resultat",
+                                                            "source_senorif": "Arbre 5 : Traitement adjuvant des cancers infiltrants Triple Négatifs (Page 48)",
                                                             "donnees": {
                                                                 "OUT_Radiothérapie": "1.0",
                                                                 "OUT_Chimiothérapie": "1.0",
@@ -59,6 +62,7 @@
                                                 },
                                                 "1.0": {
                                                     "type": "resultat",
+                                                    "source_senorif": "Arbre 6 : Traitement adjuvant des cancers infiltrants HER2+ (Page 52)",
                                                     "donnees": {
                                                         "OUT_Radiothérapie": "1.0",
                                                         "OUT_Chimiothérapie": "1.0",
@@ -69,6 +73,7 @@
                                         },
                                         "pN0": {
                                             "type": "resultat",
+                                            "source_senorif": "Arbre 3 : Prise en charge des cancers infiltrants pN0 (Page 42)",
                                             "donnees": {
                                                 "OUT_Abstention": "0.5",
                                                 "OUT_RCP": "1.0"
@@ -78,6 +83,7 @@
                                 },
                                 "Ganglion sentinelle": {
                                     "type": "resultat",
+                                    "source_senorif": "Arbre 2 : Indications de la technique du ganglion sentinelle (Page 38)",
                                     "donnees": {
                                         "OUT_RCP": "1.0"
                                     }
@@ -86,6 +92,7 @@
                         },
                         "Conservateur": {
                             "type": "resultat",
+                            "source_senorif": "Arbre 7 : Traitement conservateur et indications de radiothérapie (Page 55)",
                             "donnees": {
                                 "OUT_Radiothérapie": "1.0",
                                 "OUT_RCP": "1.0"
@@ -95,6 +102,7 @@
                 },
                 "M1": {
                     "type": "resultat",
+                    "source_senorif": "Arbre 9 : Prise en charge des cancers du sein métastatiques d'emblée (Page 64)",
                     "donnees": {
                         "OUT_Traitement systémique palliatif": "1.0",
                         "OUT_RCP": "1.0"
@@ -108,12 +116,14 @@
             "choix": {
                 ">2": {
                     "type": "resultat",
+                    "source_senorif": "Arbre 1 : Prise en charge des carcinomes in situ (CCIS) (Page 32)",
                     "donnees": {
                         "OUT_Radiothérapie": "1.0"
                     }
                 },
                 "<2": {
                     "type": "resultat",
+                    "source_senorif": "Arbre 1 : Prise en charge des carcinomes in situ (CCIS) (Page 32)",
                     "donnees": {
                         "OUT_Reprise chirurgicale": "1.0"
                     }
