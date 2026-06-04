@@ -136,7 +136,7 @@
      CALCULER SCORE ÉTUDE
   ════════════════════════════════════════════════════════════ */
 
-function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
+  function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
     
     // ... [Ton filtre traitement identique] ...
@@ -176,7 +176,8 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
         colonnes: colonnesGagnantes, 
         mismatches: colonnesBloquantes 
     };
-}
+  }
+
   /* ════════════════════════════════════════════════════════════
      CHARGEMENT JSON
   ════════════════════════════════════════════════════════════ */
@@ -378,10 +379,7 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
       });
     }
 
-    /* ── IMPORTANT : show() AVANT renderEtudes()
-       Si renderEtudes plante, les recommandations SENORIF
-       sont déjà visibles — l'écran ne reste pas bloqué.
-    ────────────────────────────────────────────── */
+    /* ── IMPORTANT : show() AVANT renderEtudes() ── */
     show('screen-results');
 
     /* Études (dans un try/catch pour ne pas bloquer l'affichage) */
@@ -395,9 +393,6 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
   }
 
   /* ════════════════════════════════════════════════════════════
-     ÉTUDES — CORRIGÉ
-  ════════════════════════════════════════════════════════════ */
-/* ════════════════════════════════════════════════════════════
      ÉTUDES
   ════════════════════════════════════════════════════════════ */
 
@@ -435,16 +430,13 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     retenues.forEach(function(item) { 
         section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes, item.mismatches)); 
     });
-  } // <--- CETTE ACCOLADE EST CRUCIALE POUR FERMER renderEtudes
+  }
 
   /* ════════════════════════════════════════════════════════════
-     CARTE ÉTUDE
-  ════════════════════════════════════════════════════════════ */
-
- /* ════════════════════════════════════════════════════════════
      HELPERS D'AFFICHAGE ET CARTE ÉTUDE
   ════════════════════════════════════════════════════════════ */
-function expliquerScore(colonnes, mismatches) {
+  
+  function expliquerScore(colonnes, mismatches) {
     var totalCriteres = colonnes.length + mismatches.length;
     if (totalCriteres === 0) return "";
     
@@ -461,55 +453,58 @@ function expliquerScore(colonnes, mismatches) {
            'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
   }
 
-function creerCarteEtude(etude, score, colonnes, mismatches) {
+  function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;';
+    // Ajout d'un padding de 24px pour aérer
+    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;';
     
     var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
     var valAvec = comp.avec.valeur || 0;
     var valSans = comp.sans.valeur || 0;
     
-    var maxVal = Math.max(valAvec, valSans) || 1;
-    var wAvec = Math.round((valAvec / maxVal) * 100);
-    var wSans = Math.round((valSans / maxVal) * 100);
+    // CORRECTION MATHÉMATIQUE : Les barres utilisent la largeur absolue
+    var wAvec = valAvec;
+    var wSans = valSans;
 
+    // Ajout d'un gap de 40px pour bien espacer la droite et la gauche
     card.innerHTML =
-      '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         
-        // Bloc de gauche : Titre + Explication + Détails
+        // Bloc de gauche : Titre + Explication + Détails aérés
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 12px 0; font-size:15px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
+          '<h4 style="margin:0 0 16px 0; font-size:16px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
           
           // L'encadré d'explication du score
-          '<div style="background: #f8f9fa; padding: 8px 12px; border-radius: 6px; font-size: 12px; color: #636e72; margin-bottom: 12px;">' +
+          '<div style="background: #f8f9fa; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #636e72; margin-bottom: 16px; display:inline-block;">' +
              expliquerScore(colonnes, mismatches) +
           '</div>' +
 
-          (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13px; margin-bottom:4px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
-          (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13px; margin-bottom:8px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
-          (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13px; color:#2563eb; text-decoration:none;">Voir l\'article →</a>' : '') +
+          (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13.5px; margin-bottom:6px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
+          (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13.5px; margin-bottom:12px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
+          (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13.5px; color:#2563eb; text-decoration:none; font-weight:500;">Voir l\'article →</a>' : '') +
         '</div>' +
         
-        // Bloc de droite : Barres de traitement
-        '<div style="width: 200px; flex-shrink:0;">' +
-          '<div class="barre-header"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + wAvec + '%"></div></div>' +
+        // Bloc de droite : Barres de traitement (Largeur augmentée à 240px)
+        '<div style="width: 240px; flex-shrink:0;">' +
+          '<div class="barre-header" style="margin-bottom:6px;"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
+          '<div class="barre-track" style="background-color:#f1f5f9; height:10px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
           
-          '<div class="barre-header"><span>Sans traitement</span><span>' + valSans + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + wSans + '%"></div></div>' +
+          '<div class="barre-header" style="margin-top:20px; margin-bottom:6px;"><span>Sans traitement</span><span>' + valSans + '%</span></div>' +
+          '<div class="barre-track" style="background-color:#f1f5f9; height:10px;"><div class="barre-fill mauvaise" style="width:' + wSans + '%;"></div></div>' +
         '</div>' +
         
       '</div>';
 
     return card;
   }
+
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
-  window.demarrer           = demarrer;
-  window.reculer            = reculer;
-  window.recommencer        = recommencer;
-  window.accueil            = recommencer;
+  window.demarrer         = demarrer;
+  window.reculer          = reculer;
+  window.recommencer      = recommencer;
+  window.accueil          = recommencer;
   window.calculerScoreEtude = calculerScoreEtude;
 
   load();
