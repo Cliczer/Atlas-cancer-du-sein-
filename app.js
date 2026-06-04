@@ -441,6 +441,19 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
      CARTE ÉTUDE
   ════════════════════════════════════════════════════════════ */
 
+ /* ════════════════════════════════════════════════════════════
+     HELPERS D'AFFICHAGE ET CARTE ÉTUDE
+  ════════════════════════════════════════════════════════════ */
+
+  function scoreCouleur(s) { 
+      return s >= 80 ? '#16a34a' : s >= 60 ? '#d97706' : '#6b7280'; 
+  }
+
+  function creerTag(t, bg, c) {
+    return '<span style="display:inline-block;padding:2px 10px;border-radius:99px;' +
+           'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
+  }
+
   function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-bottom:12px;cursor:pointer;';
@@ -465,7 +478,7 @@ function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
       var d = card.querySelector('.etude-detail');
       d.style.display = (d.style.display === 'none') ? 'block' : 'none';
     });
-    return card; // <--- C'est ici qu'il renvoyait l'erreur "Unexpected token return" car il était mal placé
+    return card;
   }
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
