@@ -139,8 +139,6 @@
   function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
     
-    // ... [Ton filtre traitement identique] ...
-
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
@@ -152,9 +150,7 @@
 
         var vP = valeurPatient(profilPatient, nom);
         
-        // DISTINCTION ICI
         if (vP === undefined || String(vP).trim() === '') {
-            // Le critère est manquant, on ne le compte pas dans le score, on le signale juste
             return; 
         }
 
@@ -165,14 +161,14 @@
         if (s > 0) {
             colonnesGagnantes.push(nom);
         } else {
-            colonnesBloquantes.push(nom); // Vrai mismatch (valeur différente)
+            colonnesBloquantes.push(nom); 
         }
     });
 
     var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
 
     return { 
-        valeur: final, // Le score est de retour !
+        valeur: final, 
         colonnes: colonnesGagnantes, 
         mismatches: colonnesBloquantes 
     };
@@ -211,11 +207,6 @@
       tree     = results[0];
       maxDepth = depth(tree, 0) || 1;
 
-      /* ── Lecture base_etudes.json ──
-         Supporte :
-           Format A : [ {etude}, ... ]
-           Format B : { mapping: {...}, etudes: [...] }   ← ton format
-      ────────────────────────────────── */
       var base = results[1];
       if (Array.isArray(base)) {
         etudes     = base;
@@ -280,7 +271,8 @@
   ════════════════════════════════════════════════════════════ */
 
   function render(node) {
-    if (node.type === 'resultat') { renderResults(node.donnees); return; }
+    // MODIFICATION ICI : On passe tout le noeud à renderResults (pour la source_senorif)
+    if (node.type === 'resultat') { renderResults(node); return; }
 
     $('quiz-question').textContent = node.titre || '(Question sans titre)';
 
@@ -334,7 +326,11 @@
     return 'Non spécifié';
   }
 
-  function renderResults(donnees) {
+  // MODIFICATION ICI : Réception du noeud entier
+  function renderResults(node) {
+    var donnees = node.donnees || {};
+    var sourceSenorif = node.source_senorif || "Référentiel SENORIF (Arbre non précisé)";
+
     $('quiz-progress-bar').style.width = '100%';
     $('quiz-pct-label').textContent    = '100 %';
     $('quiz-step-label').textContent   = 'Terminé';
@@ -360,13 +356,21 @@
     /* Grille SENORIF */
     var grid = $('results-grid');
     grid.innerHTML = '';
-    var entries = Object.keys(donnees||{}).map(function(k) {
+
+    // --- NOUVEAU : Affichage de la source SENORIF ---
+    var sourceDiv = document.createElement('div');
+    sourceDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 16px; font-size: 13px; color: #636e72; display: flex; align-items: center; gap: 8px;';
+    sourceDiv.innerHTML = '<strong>📄 Source :</strong> ' + sourceSenorif;
+    grid.appendChild(sourceDiv);
+    // ----------------------------------------
+
+    var entries = Object.keys(donnees).map(function(k) {
       return {name: k.replace(/^OUT_/i,''), val: donnees[k], cls: cls(donnees[k])};
     });
     entries.sort(function(a,b) { return ({rec:0,nrec:1,ns:2}[a.cls]) - ({rec:0,nrec:1,ns:2}[b.cls]); });
 
     if (!entries.length) {
-      grid.innerHTML = '<p style="color:#636e72;">Aucune donnée disponible.</p>';
+      grid.innerHTML += '<p style="color:#636e72;">Aucune donnée disponible.</p>';
     } else {
       entries.forEach(function(e) {
         var card = document.createElement('div');
@@ -379,10 +383,9 @@
       });
     }
 
-    /* ── IMPORTANT : show() AVANT renderEtudes() ── */
     show('screen-results');
 
-    /* Études (dans un try/catch pour ne pas bloquer l'affichage) */
+    /* Études */
     try {
       var profil = construireProfil();
       var traitements = extraireTraitementsRecommandes(donnees);
@@ -440,60 +443,66 @@
     var totalCriteres = colonnes.length + mismatches.length;
     if (totalCriteres === 0) return "";
     
-    var explication = "<strong>Calcul du match :</strong> " + colonnes.length + " critère(s) validé(s) sur un total de " + totalCriteres + " analysés.";
-    return explication;
-  }
-  
-  function scoreCouleur(s) { 
-      return s >= 80 ? '#16a34a' : s >= 60 ? '#d97706' : '#6b7280'; 
+    return "<strong>Calcul du match :</strong> " + colonnes.length + " critère(s) validé(s) sur un total de " + totalCriteres + " analysés.";
   }
 
-  function creerTag(t, bg, c) {
-    return '<span style="display:inline-block;padding:2px 10px;border-radius:99px;' +
-           'font-size:11px;font-weight:500;background:'+bg+';color:'+c+';">'+t+'</span>';
-  }
-
+  // MODIFICATION ICI : Échelle absolue (100%) et ajout du bouton
   function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    // Ajout d'un padding de 24px pour aérer
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;';
     
     var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
     var valAvec = comp.avec.valeur || 0;
     var valSans = comp.sans.valeur || 0;
     
-    // CORRECTION MATHÉMATIQUE : Les barres utilisent la largeur absolue
     var wAvec = valAvec;
     var wSans = valSans;
 
-    // Ajout d'un gap de 40px pour bien espacer la droite et la gauche
     card.innerHTML =
       '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         
-        // Bloc de gauche : Titre + Explication + Détails aérés
+        // Bloc de gauche : Titre + Bouton + Détails cachés
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 16px 0; font-size:16px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
+          '<h4 style="margin:0 0 12px 0; font-size:16px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
           
-          // L'encadré d'explication du score
-          '<div style="background: #f8f9fa; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #636e72; margin-bottom: 16px; display:inline-block;">' +
-             expliquerScore(colonnes, mismatches) +
+          '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin-bottom: 12px;">Voir les détails ↓</button>' +
+          
+          '<div class="zone-details" style="display:none; padding-top: 8px;">' +
+            '<div style="background: #f8f9fa; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #636e72; margin-bottom: 16px; display:inline-block;">' +
+               expliquerScore(colonnes, mismatches) +
+            '</div>' +
+            (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13.5px; margin-bottom:6px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
+            (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13.5px; margin-bottom:12px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
+            (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13.5px; color:#2563eb; text-decoration:none; font-weight:500;">Voir l\'article →</a>' : '') +
           '</div>' +
-
-          (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13.5px; margin-bottom:6px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
-          (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13.5px; margin-bottom:12px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
-          (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13.5px; color:#2563eb; text-decoration:none; font-weight:500;">Voir l\'article →</a>' : '') +
         '</div>' +
         
-        // Bloc de droite : Barres de traitement (Largeur augmentée à 240px)
+        // Bloc de droite : Barres de traitement
         '<div style="width: 240px; flex-shrink:0;">' +
           '<div class="barre-header" style="margin-bottom:6px;"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
-          '<div class="barre-track" style="background-color:#f1f5f9; height:10px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
+          '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
           
           '<div class="barre-header" style="margin-top:20px; margin-bottom:6px;"><span>Sans traitement</span><span>' + valSans + '%</span></div>' +
-          '<div class="barre-track" style="background-color:#f1f5f9; height:10px;"><div class="barre-fill mauvaise" style="width:' + wSans + '%;"></div></div>' +
+          '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill mauvaise" style="width:' + wSans + '%;"></div></div>' +
         '</div>' +
         
       '</div>';
+
+    // Logique du bouton
+    var btnToggle = card.querySelector('.btn-toggle');
+    var zoneDetails = card.querySelector('.zone-details');
+
+    btnToggle.addEventListener('click', function() {
+      if (zoneDetails.style.display === 'none') {
+        zoneDetails.style.display = 'block';
+        btnToggle.textContent = 'Cacher les détails ↑';
+        btnToggle.style.background = '#f8f9fa';
+      } else {
+        zoneDetails.style.display = 'none';
+        btnToggle.textContent = 'Voir les détails ↓';
+        btnToggle.style.background = 'transparent';
+      }
+    });
 
     return card;
   }
