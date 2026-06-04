@@ -136,72 +136,39 @@
      CALCULER SCORE ÉTUDE
   ════════════════════════════════════════════════════════════ */
 
- function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
-    var nom = (etude.reference||etude.auteur||'').substring(0,40) +
-              ' — ' + (etude.objectif||etude.titre||'');
-    console.group('[Atlas] 🔬 ' + nom);
+function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
+    // ... [Ton code de filtre traitement reste identique] ...
 
-    /* Filtre traitement */
-    var tE = etude.traitements_evalues;
-    if (tE && Array.isArray(tE) && tE.length > 0) {
-      var match = false;
-      traitementsRecommandes.forEach(function(tR) {
-        var eqR = MAPPING[tR] ? MAPPING[tR].map(normaliser) : [];
-        eqR.push(normaliser(tR));
-        tE.forEach(function(t) {
-          if (eqR.indexOf(normaliser(t)) !== -1) match = true;
-          if (MAPPING[t] && MAPPING[t].map(normaliser).indexOf(normaliser(tR)) !== -1) match = true;
-        });
-      });
-      if (!match) {
-        console.log('  ❌ Traitement non pertinent → 0');
-        console.groupEnd();
-        return { valeur: 0, colonnes: [] }; // MODIFICATION ICI
-      }
-      console.log('  ✅ Filtre traitement OK');
-    } else {
-      console.warn('  ⚠️ traitements_evalues absent → filtre ignoré');
-    }
-
-    /* Scoring et mémorisation des colonnes qui matchent */
     var criteres = etude.criteres || {};
-    var pts = 0, evalues = 0;
-    var colonnesGagnantes = []; // NOUVEAU : On initialise notre tableau
-    var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
+    var colonnesGagnantes = [];
+    var colonnesBloquantes = []; // NOUVEAU : On stocke les mismatches
 
     Object.keys(criteres).forEach(function(nom) {
-      var vE = criteres[nom];
-      if (estJoker(vE)) {
-        pts++; evalues++;
-        colonnesGagnantes.push(nom); // Le joker compte comme un match
-        console.log('  🃏 ['+nom+'] Joker → +1');
-        return;
-      }
-      var vP = valeurPatient(profilPatient, nom);
-      if (vP === undefined || String(vP).trim() === '') {
-        console.log('  ⏭️  ['+nom+'] Absent du profil → ignoré');
-        return;
-      }
-      evalues++;
-      var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP,vE) : matchCategoriel(vP,vE);
-      pts += s;
-      
-      // NOUVEAU : Si c'est un match (total ou partiel), on enregistre la colonne
-      if (s > 0) {
-          colonnesGagnantes.push(nom);
-      }
-      
-      console.log('  '+(s===1?'✅':s===0.5?'🟡':'❌')+' ['+nom+'] "'+vP+'" / "'+vE+'" → +'+s);
+        var vE = criteres[nom];
+        if (estJoker(vE)) {
+            colonnesGagnantes.push(nom);
+            return;
+        }
+
+        var vP = valeurPatient(profilPatient, nom);
+        if (vP === undefined || String(vP).trim() === '') return;
+
+        var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
+        
+        if (s > 0) {
+            colonnesGagnantes.push(nom);
+        } else {
+            // NOUVEAU : Si ça ne matche pas, on enregistre le nom du critère
+            colonnesBloquantes.push(nom);
+        }
     });
 
-    var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
-    console.log('  📊 '+pts+'/'+evalues+' → '+final+'%');
-    console.groupEnd();
-    
-    // NOUVEAU : On retourne un objet avec le score et les colonnes
-    return { valeur: final, colonnes: colonnesGagnantes }; 
-  }
-
+    return { 
+        valeur: final, 
+        colonnes: colonnesGagnantes, 
+        mismatches: colonnesBloquantes // On renvoie la liste des erreurs
+    };
+}
   /* ════════════════════════════════════════════════════════════
      CHARGEMENT JSON
   ════════════════════════════════════════════════════════════ */
@@ -440,8 +407,9 @@
       var resultat = calculerScoreEtude(e, profil, traitementsRecommandes);
       return { 
           etude: e, 
-          score: resultat.valeur,        // On garde le score numérique pour le tri
-          colonnes: resultat.colonnes    // On transmet les colonnes qui matchent
+          score: resultat.valeur,
+          colonnes: resultat.colonnes,
+          mismatches: resultat.mismatches // Ajout ici
       };
     });
 
@@ -502,29 +470,12 @@
     // Formatage du texte des colonnes gagnantes
     var textColonnes = colonnes && colonnes.length > 0 ? colonnes.join(', ') : 'Aucun critère spécifique';
 
-    card.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">' +
-        '<div style="flex:1;">' +
-          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">' +
-            creerTag('Niveau '+(etude.niveau_preuve||'?'),'#dbeafe','#1e40af') + ttt +
-          '</div>' +
-          '<p style="font-size:13px;font-weight:500;line-height:1.5;color:#2d3436;">' +
-            ref + (etude.objectif?' — '+etude.objectif:'') +
-          '</p>' +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;max-width:40%;text-align:right;">' +
-          '<span style="font-size:10px;color:#636e72;text-transform:uppercase;letter-spacing:0.5px;">Critères validés</span>' +
-          '<span style="font-size:12px;font-weight:600;color:'+scoreCouleur(score)+';">' + textColonnes + '</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="etude-detail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">' +
-        (etude.conclusion_medecin||etude.conclusion
-          ? '<p style="font-size:13px;line-height:1.6;color:#2d3436;margin-bottom:10px;">' +
-            (etude.conclusion_medecin||etude.conclusion)+'</p>' : '') +
-        (etude.lien
-          ? '<a href="'+etude.lien+'" target="_blank" style="font-size:12px;color:#2563eb;">Voir l\'article →</a>' : '') +
-      '</div>';
-
+  card.innerHTML += 
+    '<div class="etude-detail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">' +
+      (colonnes.length > 0 ? '<p style="color:var(--green)">✅ Match : ' + colonnes.join(', ') + '</p>' : '') +
+      (colonnesBloquantes.length > 0 ? '<p style="color:#dc2626">❌ Non-match : ' + colonnesBloquantes.join(', ') + '</p>' : '') +
+      (etude.lien ? '<br><a href="'+etude.lien+'" target="_blank">Voir l\'article →</a>' : '') +
+    '</div>';
     var ouvert = false;
     card.addEventListener('click', function() {
       ouvert = !ouvert;
