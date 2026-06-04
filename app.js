@@ -459,6 +459,19 @@
     var wSans = valSans;
 
     card.innerHTML =
+      // 1. Ajout de class="etude-flex"
+      '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
+        
+        '<div style="flex:1;">' +
+          // ... (tout ton code actuel avec le titre, le bouton, etc.)
+        '</div>' +
+        
+        // 2. Ajout de class="etude-bars"
+        '<div class="etude-bars" style="width: 240px; flex-shrink:0;">' +
+          // ... (tes barres)
+        '</div>' +
+        
+      '</div>';
       '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         
         // Bloc de gauche : Titre + Bouton + Détails cachés
