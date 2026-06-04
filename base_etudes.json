@@ -22,6 +22,7 @@
             "reference": "Huang, E.H., Tucker, S.L. (2010)",
             "objectif": "RT post mastectomie pour K localement avancé",
             "niveau_preuve": "2",
+            "page_senorif": "Cité en page 43 du référentiel",
             "criteres": {
                 "T": "T4a, T3, T4b, T4c, T1, T2",
                 "N": "N2, N3, N0, N1",
@@ -38,6 +39,7 @@
             "reference": "EBCTCG - Méta-analyse (2014)",
             "objectif": "Effet RT après M+CA pour pN1-3",
             "niveau_preuve": "1",
+            "page_senorif": "Cité en page 45 du référentiel",
             "criteres": {
                 "N": "pN1-3",
                 "Chirurgie_mammaire": "MT",
