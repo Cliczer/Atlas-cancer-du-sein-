@@ -6,11 +6,11 @@
 (function () {
   'use strict';
 
-  var tree      = null;
-  var etudes    = [];
+  var tree       = null;
+  var etudes     = [];
   var keyMapping = {};
-  var current   = null;
-  var history   = [];
+  var current    = null;
+  var history    = [];
   var maxDepth  = 1;
 
   function $(id) { return document.getElementById(id); }
@@ -62,7 +62,6 @@
            n === 'nan' || n === '' || n === 'n/a' || n === 'nr';
   }
 
-  /* Résout la valeur patient en tenant compte du keyMapping */
   function valeurPatient(profil, nomCritere) {
     if (profil[nomCritere] !== undefined) return profil[nomCritere];
     var alts = keyMapping[nomCritere];
@@ -271,7 +270,6 @@
   ════════════════════════════════════════════════════════════ */
 
   function render(node) {
-    // MODIFICATION ICI : On passe tout le noeud à renderResults (pour la source_senorif)
     if (node.type === 'resultat') { renderResults(node); return; }
 
     $('quiz-question').textContent = node.titre || '(Question sans titre)';
@@ -326,7 +324,6 @@
     return 'Non spécifié';
   }
 
-  // MODIFICATION ICI : Réception du noeud entier
   function renderResults(node) {
     var donnees = node.donnees || {};
     var sourceSenorif = node.source_senorif || "Référentiel SENORIF (Arbre non précisé)";
@@ -357,12 +354,10 @@
     var grid = $('results-grid');
     grid.innerHTML = '';
 
-    // --- NOUVEAU : Affichage de la source SENORIF ---
     var sourceDiv = document.createElement('div');
     sourceDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 16px; font-size: 13px; color: #636e72; display: flex; align-items: center; gap: 8px;';
     sourceDiv.innerHTML = '<strong>📄 Source :</strong> ' + sourceSenorif;
     grid.appendChild(sourceDiv);
-    // ----------------------------------------
 
     var entries = Object.keys(donnees).map(function(k) {
       return {name: k.replace(/^OUT_/i,''), val: donnees[k], cls: cls(donnees[k])};
@@ -385,7 +380,6 @@
 
     show('screen-results');
 
-    /* Études */
     try {
       var profil = construireProfil();
       var traitements = extraireTraitementsRecommandes(donnees);
@@ -446,7 +440,6 @@
     return "<strong>Calcul du match :</strong> " + colonnes.length + " critère(s) validé(s) sur un total de " + totalCriteres + " analysés.";
   }
 
-  // MODIFICATION ICI : Échelle absolue (100%) et ajout du bouton
   function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;';
@@ -455,11 +448,9 @@
     var valAvec = comp.avec.valeur || 0;
     var valSans = comp.sans.valeur || 0;
     
-    // Echelle bloquée sur 100%
     var wAvec = valAvec;
     var wSans = valSans;
 
-    // Intégration des classes "etude-flex" et "etude-bars" pour le mobile
     card.innerHTML =
       '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         
@@ -471,7 +462,7 @@
           
           '<div class="zone-details" style="display:none; padding-top: 8px;">' +
             '<div style="background: #f8f9fa; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #636e72; margin-bottom: 16px; display:inline-block;">' +
-               expliquerScore(colonnes, mismatches) +
+                 expliquerScore(colonnes, mismatches) +
             '</div>' +
             (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13.5px; margin-bottom:6px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
             (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13.5px; margin-bottom:12px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
@@ -479,18 +470,19 @@
           '</div>' +
         '</div>' +
         
-        // Bloc de droite : Barres de traitement (avec la classe etude-bars)
-        '<div class="etude-bars" style="width: 240px; flex-shrink:0;">' +
-          '<div class="barre-header" style="margin-bottom:6px;"><span>Avec traitement</span><span>' + valAvec + '%</span></div>' +
-          '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
+        // Bloc de droite : Barres de traitement (Modifié pour la survie et la radiothérapie)
+        '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
+          '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">📊 Taux de survie à 5 ans / 10 ans</div>' +
           
-          '<div class="barre-header" style="margin-top:20px; margin-bottom:6px;"><span>Sans traitement</span><span>' + valSans + '%</span></div>' +
+          '<div class="barre-header" style="margin-bottom:4px;"><span>Avec Radiothérapie</span><span>' + valAvec + '%</span></div>' +
+          '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
+                    
+          '<div class="barre-header" style="margin-top:18px; margin-bottom:4px;"><span>Sans Radiothérapie</span><span>' + valSans + '%</span></div>' +
           '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill mauvaise" style="width:' + wSans + '%;"></div></div>' +
         '</div>' +
         
       '</div>';
 
-    // Logique du bouton avec sécurité (si le bouton existe, on lui attache l'action)
     var btnToggle = card.querySelector('.btn-toggle');
     var zoneDetails = card.querySelector('.zone-details');
 
@@ -510,6 +502,7 @@
 
     return card;
   }
+
   /* ════════════════════════════════════════════════════════════
      EXPOSITION GLOBALE
   ════════════════════════════════════════════════════════════ */
