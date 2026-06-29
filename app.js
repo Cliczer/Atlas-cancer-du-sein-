@@ -460,16 +460,33 @@
     }).join('');
   }
 
+  // Titre/auteurs séparés si renseignés (champs dédiés) ; sinon on retombe sur la
+  // référence brute complète (citation non encore découpée par un humain dans l'éditeur).
+  function titreEtude(etude) {
+    return (etude.titre && etude.titre.trim()) || etude.reference || '(étude sans titre)';
+  }
+  function auteursEtude(etude) {
+    return (etude.auteurs && etude.auteurs.trim()) || '';
+  }
+
   function creerCarteEtude(etude, score, total, colonnes, mismatches) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
-    var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
+    var comp = etude.comparaison || { avec: {valeur: 0, unite: ''}, sans: {valeur: 0, unite: ''} };
     var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
+    var auteurs = auteursEtude(etude);
 
     card.innerHTML =
       '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 8px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + esc(etude.reference || etude.titre) + '</h4>' +
+          '<h4 style="margin:0 0 4px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + esc(titreEtude(etude)) + '</h4>' +
+          (auteurs ? '<div style="font-size:12px; color:#9aa1a8; margin-bottom:10px;">' + esc(auteurs) + '</div>' : '<div style="margin-bottom:10px;"></div>') +
+          (etude.niveau_preuve || etude.objectif ?
+            '<div style="font-size:12px; color:#636e72; margin-bottom:10px;">' +
+              (etude.niveau_preuve ? '<span style="font-weight:700;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</span>' : '') +
+              (etude.niveau_preuve && etude.objectif ? ' — ' : '') +
+              (etude.objectif ? esc(etude.objectif) : '') +
+            '</div>' : '') +
           '<span class="badge-correspondance ' + corr.cls + '">' + corr.texte + '</span>' +
           '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin: 10px 0 0; display:block;">Voir le détail des critères ↓</button>' +
           '<div class="zone-details" style="display:none; padding-top: 10px;">' +
@@ -480,10 +497,10 @@
           '</div>' +
         '</div>' +
         '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
-          '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px;">📊 Taux de survie observé</div>' +
-          '<div class="barre-header" style="margin-bottom:4px;"><span>Bras Standard</span><span>' + (comp.avec.valeur || 0) + '%</span></div>' +
+          '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px;">📊 Résultats chiffrés</div>' +
+          '<div class="barre-header" style="margin-bottom:4px;"><span>Bras Standard' + (comp.avec.unite ? ' (' + esc(comp.avec.unite) + ')' : '') + '</span><span>' + (comp.avec.valeur || 0) + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill bonne" style="width:' + (comp.avec.valeur || 0) + '%;"></div></div>' +
-          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Bras Contrôle</span><span>' + (comp.sans.valeur || 0) + '%</span></div>' +
+          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Bras Contrôle' + (comp.sans.unite ? ' (' + esc(comp.sans.unite) + ')' : '') + '</span><span>' + (comp.sans.valeur || 0) + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + (comp.sans.valeur || 0) + '%;"></div></div>' +
         '</div>' +
       '</div>';
