@@ -1,0 +1,1755 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Éditeur arbre JSON SENORIF</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111}
+header{padding:10px;background:white;border-bottom:1px solid #ddd;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{padding:8px 10px;border:1px solid #ccc;border-radius:8px;background:white;font-weight:700;cursor:pointer}
+button.primary{background:#2563eb;color:white}
+button.success{background:#16a34a;color:white;border-color:#16a34a}
+.main{display:grid;grid-template-columns:300px 1fr 330px;height:calc(100vh - 58px)}
+.panel{background:white;padding:12px;border-right:1px solid #ddd;overflow:auto}
+.panel.right{border-left:1px solid #ddd;border-right:0}
+#canvas{position:relative;overflow:scroll;cursor:grab;background-image:linear-gradient(#e5e7eb 1px,transparent 1px),linear-gradient(90deg,#e5e7eb 1px,transparent 1px);background-size:24px 24px}
+#world{position:relative;width:6000px;height:4000px;transform-origin:0 0}
+.node{position:absolute;width:240px;min-height:76px;border:2px solid #2563eb;background:#eff6ff;border-radius:12px;padding:10px;box-shadow:0 3px 10px #0002;cursor:pointer;user-select:none}
+.node.result{border-color:#16a34a;background:#ecfdf5}
+.node.selected{outline:4px solid #fbbf24}
+.type{font-size:11px;font-weight:bold;color:#555;margin-bottom:5px}
+.title{font-weight:bold;font-size:13px;white-space:pre-wrap}
+.small{font-size:12px;color:#555;margin-top:5px}
+.edge{position:absolute;height:2px;background:#777;transform-origin:left center}
+.label{position:absolute;background:white;border:1px solid #ccc;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:bold;cursor:pointer;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+textarea,input,select{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:8px;font-family:inherit}
+textarea{min-height:90px}
+.json{font-family:monospace;font-size:12px;min-height:220px}
+label{font-size:13px;font-weight:bold;margin-top:10px;display:block}
+.help{font-size:12px;color:#555;line-height:1.35}
+.zoomBox{display:flex;gap:6px;align-items:center}
+#zoomValue{font-size:13px;font-weight:700;min-width:48px;text-align:center}
+.notice{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;line-height:1.4;color:#78350f}
+.ok{background:#dcfce7;border:1px solid #16a34a;color:#14532d}
+</style>
+</head>
+<body>
+<header>
+<strong>Éditeur arbre JSON SENORIF</strong>
+<button onclick="addQuestion()">+ Question</button>
+<button onclick="addResult()">+ Résultat</button>
+<button onclick="toggleConnect()">Relier deux nœuds</button>
+<button class="primary" onclick="exportJSON()">Exporter JSON</button>
+<button class="success" onclick="saveForGithub()">Enregistrer pour GitHub</button>
+<button onclick="reloadRealTree()">Recharger arbre GitHub</button>
+<button onclick="loadExample()">Charger arbre SENORIF</button>
+<button onclick="saveLocal()">Sauver local</button>
+<button onclick="loadLocal()">Recharger local</button>
+<span class="zoomBox">
+  <button onclick="zoomOut()">−</button>
+  <input id="zoomSlider" type="range" min="3" max="200" value="100" oninput="setZoom(this.value/100)" style="width:130px">
+  <button onclick="zoomIn()">+</button>
+  <span id="zoomValue">100%</span>
+  <button onclick="fitView()">Tout voir</button>
+</span>
+</header>
+
+<div class="main">
+<div class="panel">
+<p class="help">
+<b>Mode d'emploi :</b><br>
+1. Clique sur un nœud pour le modifier.<br>
+2. Glisse un nœud pour le déplacer.<br>
+3. Pour relier : bouton “Relier”, puis clique parent puis enfant.<br>
+4. Utilise les barres de défilement, le zoom, ou clique-glisse sur le fond pour te déplacer dans les gros arbres.
+</p>
+
+<div id="loadStatus" class="notice">Chargement de arbre_dynamique.json…</div>
+
+<label>Importer fichier JSON</label>
+<input type="file" id="fileInput" accept=".json">
+
+<label>Ou coller JSON</label>
+<textarea id="pasteBox" class="json"></textarea>
+<button onclick="importPasted()">Importer JSON collé</button>
+
+<div class="notice"><b>Mise à jour GitHub :</b><br>1. Clique sur “Enregistrer pour GitHub”.<br>2. Va dans le dépôt GitHub de l’Atlas.<br>3. Supprime l’ancien <code>arbre_dynamique.json</code>.<br>4. Ajoute le fichier téléchargé.<br>5. Vérifie qu’il s’appelle exactement <code>arbre_dynamique.json</code>.<br>6. Clique sur “Commit changes”.</div>
+
+<h3>Nœuds</h3>
+<div id="list"></div>
+</div>
+
+<div id="canvas">
+<div id="world"></div>
+</div>
+
+<div class="panel right">
+<h3>Édition</h3>
+<div id="editEmpty">Clique sur un nœud ou une branche.</div>
+
+<div id="nodeEdit" style="display:none">
+<label>Type</label>
+<select id="editType" onchange="updateNode()">
+<option value="question">question</option>
+<option value="resultat">resultat</option>
+<option value="decision">decision (legacy)</option>
+</select>
+
+<label>Question ou nom du résultat</label>
+<textarea id="editTitle" oninput="updateNode()"></textarea>
+
+<label>Données résultat JSON</label>
+<textarea id="editData" class="json" onchange="updateNodeData()"></textarea>
+
+<label>Source SENORIF</label>
+<input id="editSource" oninput="updateNode()">
+
+<button onclick="deleteNode()" style="margin-top:8px;color:#b91c1c">Supprimer ce nœud</button>
+</div>
+
+<div id="edgeEdit" style="display:none">
+<label>Réponse / branche</label>
+<input id="editEdgeLabel" oninput="updateEdge()">
+<button onclick="deleteEdge()" style="margin-top:8px;color:#b91c1c">Supprimer branche</button>
+</div>
+
+<h3>Aperçu JSON</h3>
+<textarea id="preview" class="json" readonly></textarea>
+</div>
+</div>
+
+<script>
+let nodes=[], edges=[];
+let selectedNode=null, selectedEdge=null;
+let connectMode=false, connectSource=null;
+let drag=null;
+let pan=null;
+let zoom=1;
+
+const NODE_W=240;
+const NODE_H=96;
+const X_GAP=80;
+const Y_GAP=190;
+
+function setStatus(text, ok){
+ const el=document.getElementById("loadStatus");
+ if(!el)return;
+ el.textContent=text;
+ el.className= ok ? "notice ok" : "notice";
+}
+
+// Arbre de décision SENORIF réel (sert de secours hors-ligne si arbre_dynamique.json
+// n'est pas accessible depuis ce dossier, et de point de départ via "Charger arbre SENORIF").
+function example(){
+ return {
+  "type": "question",
+  "titre": "Où en êtes-vous dans le parcours de soins ?",
+  "choix": {
+    "Une anomalie a été vue à l’imagerie, mais le diagnostic n’est pas encore confirmé": {
+      "type": "question",
+      "titre": "Quel type d’anomalie a été vu à l’imagerie ?",
+      "choix": {
+        "Calcifications groupées vues à la mammographie": {
+          "type": "question",
+          "titre": "Comment les calcifications ont-elles été classées sur le compte-rendu d’imagerie ?",
+          "choix": {
+            "ACR 2 bénin": {
+              "type": "resultat",
+              "donnees": {
+                "Surveillance habituelle": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.37"
+              }
+            },
+            "ACR 3 probablement bénin": {
+              "type": "resultat",
+              "donnees": {
+                "Surveillance rapprochée": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.37"
+              }
+            },
+            "ACR 4 ou ACR 5": {
+              "type": "question",
+              "titre": "Biopsie indiquée ?",
+              "choix": {
+                "Oui": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Biopsie stéréotaxique / macrobiopsie": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.37"
+                  }
+                },
+                "Non / impossible": {
+                  "type": "resultat",
+                  "donnees": {
+                    "RCP": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.37"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.37"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.37"
+          }
+        },
+        "Masse ou boule dans le sein": {
+          "type": "question",
+          "titre": "Comment la masse a-t-elle été classée sur le compte-rendu d’imagerie ?",
+          "choix": {
+            "ACR 2 bénin": {
+              "type": "resultat",
+              "donnees": {
+                "Surveillance habituelle": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.38"
+              }
+            },
+            "ACR 3 probablement bénin": {
+              "type": "resultat",
+              "donnees": {
+                "Contrôle rapproché": "0.5",
+                "Biopsie": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.38"
+              }
+            },
+            "ACR 4 ou ACR 5": {
+              "type": "resultat",
+              "donnees": {
+                "Biopsie écho-guidée": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.38"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.38"
+          }
+        },
+        "Lésion vue uniquement ou principalement à l’IRM": {
+          "type": "question",
+          "titre": "La lésion vue à l’IRM est-elle aussi visible sur une échographie ou une mammographie ciblée ?",
+          "choix": {
+            "Oui, visible en échographie ou mammographie ciblée": {
+              "type": "resultat",
+              "donnees": {
+                "Biopsie guidée modalité visible": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.39"
+              }
+            },
+            "Non, visible uniquement en IRM": {
+              "type": "resultat",
+              "donnees": {
+                "Biopsie sous IRM": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.39"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.39"
+          }
+        },
+        "Biopsies avant traitement avant chirurgie": {
+          "type": "question",
+          "titre": "Un traitement avant la chirurgie est-il envisagé ?",
+          "choix": {
+            "Oui": {
+              "type": "resultat",
+              "donnees": {
+                "Biopsie tumeur": "1",
+                "Clip tumoral": "1",
+                "Évaluation axillaire": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.41"
+              }
+            },
+            "Non": {
+              "type": "resultat",
+              "donnees": {
+                "Parcours diagnostique standard": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.41"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.41"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.37-41"
+      }
+    },
+    "Cancer du sein non infiltrant (CCIS)": {
+      "type": "question",
+      "titre": "Quel type de chirurgie est prévu ou a été réalisé pour le CCIS ?",
+      "choix": {
+        "Chirurgie conservatrice : le sein est gardé": {
+          "type": "question",
+          "titre": "Les marges sont-elles saines, c’est-à-dire la tumeur a-t-elle été retirée complètement avec une zone de sécurité ?",
+          "choix": {
+            "Oui": {
+              "type": "resultat",
+              "donnees": {
+                "Radiothérapie sein": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.72"
+              }
+            },
+            "Non": {
+              "type": "question",
+              "titre": "Est-il possible de refaire une chirurgie en gardant le sein ?",
+              "choix": {
+                "Oui": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Reprise chirurgicale": "1",
+                    "Radiothérapie sein": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.72"
+                  }
+                },
+                "Non": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Mastectomie": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.72"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.72"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.72"
+          }
+        },
+        "Mastectomie : le sein est retiré": {
+          "type": "resultat",
+          "donnees": {
+            "Radiothérapie": "0",
+            "RCP si cas particulier": "0.5"
+          },
+          "infos_science": {
+            "source": "SENORIF p.72"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.72"
+      }
+    },
+    "Cancer du sein infiltrant, sans métastase connue": {
+      "type": "question",
+      "titre": "Quel est le type biologique du cancer ?",
+      "choix": {
+        "RH+ / HER2- : cancer hormonosensible, HER2 négatif": {
+          "type": "question",
+          "titre": "Y a-t-il une raison de proposer un traitement avant la chirurgie ?",
+          "choix": {
+            "Oui": {
+              "type": "question",
+              "titre": "La patiente est-elle ménopausée ?",
+              "choix": {
+                "Oui": {
+                  "type": "question",
+                  "titre": "Le cancer RH+ / HER2- présente-t-il des critères qui justifient un traitement avant la chirurgie ?",
+                  "choix": {
+                    "cN2 ou taille/grade/Ki67 défavorables": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Chimiothérapie néoadjuvante": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.76"
+                      }
+                    },
+                    "Autre situation": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Chirurgie première": "0.5",
+                        "Hormonothérapie néoadjuvante": "0.5",
+                        "RCP": "0.5"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.76",
+                        "note": "Cancer lobulaire : RCP"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.76"
+                  }
+                },
+                "Non": {
+                  "type": "question",
+                  "titre": "Le cancer RH+ / HER2- présente-t-il des critères qui justifient un traitement avant la chirurgie ?",
+                  "choix": {
+                    "cN1 ou taille/grade/Ki67 défavorables": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Chimiothérapie néoadjuvante": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.76"
+                      }
+                    },
+                    "Autre situation": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Chirurgie première": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.76",
+                        "note": "Cancer lobulaire : RCP"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.76"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.76"
+              }
+            },
+            "Non": {
+              "type": "resultat",
+              "donnees": {
+                "Chirurgie première": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.76"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.76"
+          }
+        },
+        "HER2+ : cancer avec surexpression HER2": {
+          "type": "question",
+          "titre": "Au diagnostic, la tumeur mesure-t-elle au moins 2 cm ou y a-t-il des ganglions atteints ?",
+          "choix": {
+            "Oui": {
+              "type": "question",
+              "titre": "Après le traitement avant chirurgie puis l’opération, que montre l’analyse de la pièce opératoire ?",
+              "choix": {
+                "RCB 0 / pCR": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Trastuzumab ± pertuzumab": "1",
+                    "Hormonothérapie si RH+": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.78"
+                  }
+                },
+                "RCB I-III": {
+                  "type": "resultat",
+                  "donnees": {
+                    "T-DM1": "1",
+                    "Hormonothérapie si RH+": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.78"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.78"
+              }
+            },
+            "Non": {
+              "type": "resultat",
+              "donnees": {
+                "Chirurgie première": "1",
+                "Traitement néoadjuvant à discuter si T ≥15 mm N0": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.78"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.78"
+          }
+        },
+        "Triple négatif : RH-, HER2-": {
+          "type": "question",
+          "titre": "Au diagnostic, la tumeur mesure-t-elle au moins 2 cm ou y a-t-il des ganglions atteints ?",
+          "choix": {
+            "Oui": {
+              "type": "question",
+              "titre": "Quel traitement a été utilisé avant la chirurgie ?",
+              "choix": {
+                "KEYNOTE-522": {
+                  "type": "question",
+                  "titre": "Après la chirurgie, reste-t-il de la maladie sur l’analyse de la pièce opératoire ?",
+                  "choix": {
+                    "RCB 0 / pCR": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Pembrolizumab poursuite": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.81"
+                      }
+                    },
+                    "RCB I-III + pas de mutation BRCA1/2 constitutionnelle": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Capécitabine": "1",
+                        "Pembrolizumab poursuite": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.81"
+                      }
+                    },
+                    "RCB I-III + mutation BRCA1/2 constitutionnelle": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Olaparib": "1",
+                        "Pembrolizumab poursuite": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.81"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.81"
+                  }
+                },
+                "Dose dense sans pembrolizumab": {
+                  "type": "question",
+                  "titre": "Après la chirurgie, reste-t-il de la maladie sur l’analyse de la pièce opératoire ?",
+                  "choix": {
+                    "RCB 0 / pCR": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Pas de traitement adjuvant": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.81"
+                      }
+                    },
+                    "RCB I-III + pas de mutation BRCA1/2 constitutionnelle": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Capécitabine": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.81"
+                      }
+                    },
+                    "RCB I-III + mutation BRCA1/2 constitutionnelle": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Olaparib": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.81"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.81"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.81"
+              }
+            },
+            "Non": {
+              "type": "resultat",
+              "donnees": {
+                "Chirurgie première": "1",
+                "Traitement néoadjuvant à discuter si T 10-15 mm N0": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.80"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.80-81"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.76-81"
+      }
+    },
+    "Décision concernant les ganglions de l’aisselle": {
+      "type": "question",
+      "titre": "Dans quel contexte la chirurgie des ganglions est-elle discutée ?",
+      "choix": {
+        "Chirurgie faite en premier": {
+          "type": "question",
+          "titre": "Au départ, les ganglions de l’aisselle semblaient-ils atteints ?",
+          "choix": {
+            "Aucun ganglion suspect au départ (cN0)": {
+              "type": "question",
+              "titre": "Peut-on éviter le ganglion sentinelle ?",
+              "choix": {
+                "Oui : cT1N0 + RH+ HER2- + ménopausée + traitement conservateur + RT prévue": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Abstention ganglion sentinelle": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.90",
+                    "note": "Sous réserve d'une échographie axillaire ciblée prouvant N0 ; pas de désescalade pour cancer lobulaire et grade III"
+                  }
+                },
+                "Non": {
+                  "type": "question",
+                  "titre": "Quel est le résultat du ganglion sentinelle ?",
+                  "choix": {
+                    "Négatif / cellules isolées / micrométastatique": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Ganglion sentinelle": "1",
+                        "Stop pas de curage": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.90"
+                      }
+                    },
+                    "Macrométastatique": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Ganglion sentinelle": "1",
+                        "Curage axillaire": "1"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.90"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.90"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.90"
+              }
+            },
+            "Ganglion(s) suspect(s) au départ (cN1)": {
+              "type": "question",
+              "titre": "Tous les critères permettant d’éviter le curage axillaire sont-ils réunis ?",
+              "choix": {
+                "Oui : non pT4d + ≤2 GS+ + traitement médical adjuvant + RT sein/paroi + pas de CI à RT": {
+                  "type": "resultat",
+                  "donnees": {
+                    "RT loco-régionale": "1",
+                    "Curage axillaire": "0"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.90"
+                  }
+                },
+                "Non": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Curage axillaire": "1",
+                    "RT loco-régionale": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.90"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.90"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.90"
+          }
+        },
+        "Après un traitement avant la chirurgie": {
+          "type": "question",
+          "titre": "Après la chimiothérapie avant chirurgie, quelle est la situation des ganglions ?",
+          "choix": {
+            "Tout T cN0 → ycN0": {
+              "type": "question",
+              "titre": "Quel est le résultat du ganglion sentinelle ?",
+              "choix": {
+                "Négatif": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Ganglion sentinelle": "1",
+                    "Stop pas de curage": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.91"
+                  }
+                },
+                "Cellules isolées / micro / macro": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Curage axillaire": "0.5",
+                    "RCP": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.91"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.91"
+              }
+            },
+            "cT1-3 cN1 → ycN0": {
+              "type": "question",
+              "titre": "Quel est le résultat de la chirurgie ciblée des ganglions ?",
+              "choix": {
+                "Négatif / ganglion stérilisé": {
+                  "type": "resultat",
+                  "donnees": {
+                    "TAD": "1",
+                    "RT loco-régionale": "1",
+                    "Curage axillaire": "0"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.91"
+                  }
+                },
+                "Micrométastatique ou macrométastatique": {
+                  "type": "resultat",
+                  "donnees": {
+                    "TAD": "1",
+                    "Curage axillaire": "1",
+                    "RT loco-régionale": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.91"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.91"
+              }
+            },
+            "cN1 / ycN1 / ypN1 ou T4d N+": {
+              "type": "resultat",
+              "donnees": {
+                "Curage axillaire": "1",
+                "RT loco-régionale": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.91"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.91"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.90-91"
+      }
+    },
+    "Traitements après la chirurgie : chimiothérapie, hormonothérapie ou traitements ciblés": {
+      "type": "question",
+      "titre": "Dans quel contexte discute-t-on les traitements après chirurgie ?",
+      "choix": {
+        "Tumeur de plus de 1 cm ou situation équivalente (≥ pT1c)": {
+          "type": "question",
+          "titre": "Quel est le type biologique du cancer ?",
+          "choix": {
+            "Triple négatif : RH-, HER2-": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "1",
+                "Olaparib si indiqué": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.104"
+              }
+            },
+            "HER2+ : cancer avec surexpression HER2": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "1",
+                "Anti-HER2": "1",
+                "Hormonothérapie si RH+": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.104"
+              }
+            },
+            "RH+ HER2-": {
+              "type": "question",
+              "titre": "Quel est le niveau de risque clinique estimé ?",
+              "choix": {
+                "Bas risque": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Hormonothérapie": "1",
+                    "Chimiothérapie": "0"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.104"
+                  }
+                },
+                "Risque intermédiaire": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Signature génomique": "1",
+                    "Hormonothérapie": "1",
+                    "Chimiothérapie": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.104"
+                  }
+                },
+                "Haut risque": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Chimiothérapie": "1",
+                    "Hormonothérapie": "1",
+                    "CDK4/6 si indiqué": "0.5",
+                    "Olaparib si indiqué": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.104"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.104"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.104"
+          }
+        },
+        "Petite tumeur sans ganglion atteint (pT1a/b pN0)": {
+          "type": "question",
+          "titre": "Quel est le type biologique du cancer ?",
+          "choix": {
+            "HER2+ : cancer avec surexpression HER2": {
+              "type": "question",
+              "titre": "Quelle est la taille de la tumeur ?",
+              "choix": {
+                "pT1a": {
+                  "type": "question",
+                  "titre": "Les récepteurs hormonaux sont-ils positifs ?",
+                  "choix": {
+                    "RH+": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Hormonothérapie seule": "0.5",
+                        "Abstention": "0.5"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.105"
+                      }
+                    },
+                    "RH- ou facteurs de gravité": {
+                      "type": "resultat",
+                      "donnees": {
+                        "RCP": "1",
+                        "Chimiothérapie + trastuzumab": "0.5"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.105"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                },
+                "pT1b": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Chimiothérapie + trastuzumab": "1",
+                    "Hormonothérapie si RH+": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.105"
+              }
+            },
+            "Triple négatif : RH-, HER2-": {
+              "type": "question",
+              "titre": "Quelle est la taille de la tumeur ?",
+              "choix": {
+                "pT1a": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Chimiothérapie": "0",
+                    "Abstention chimiothérapie": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                },
+                "pT1b": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Chimiothérapie": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.105"
+              }
+            },
+            "RH+ HER2-": {
+              "type": "question",
+              "titre": "Quelle est la taille de la tumeur ?",
+              "choix": {
+                "pT1a": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Hormonothérapie": "0.5",
+                    "Abstention": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                },
+                "pT1b avec critères de gravité": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Hormonothérapie": "1",
+                    "Signature génomique": "0.5",
+                    "Chimiothérapie": "0.5"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                },
+                "pT1b sans critères de gravité": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Hormonothérapie": "1",
+                    "Chimiothérapie": "0"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.105"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.105"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.105"
+          }
+        },
+        "Test génomique pour cancer RH+ / HER2-": {
+          "type": "question",
+          "titre": "Quel est le statut ménopausique et le résultat du test génomique ?",
+          "choix": {
+            "Ménopausée : risque faible ou RS≤25": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "0",
+                "Hormonothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.109-111"
+              }
+            },
+            "Ménopausée : risque élevé / RS>25": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "1",
+                "Hormonothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.109-111"
+              }
+            },
+            "Non ménopausée : RS<16 ou risque faible": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "0",
+                "Hormonothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.109-111"
+              }
+            },
+            "Non ménopausée : RS16-21 bas risque clinique": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "0",
+                "Hormonothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.109-111"
+              }
+            },
+            "Non ménopausée : RS≥21 ou risque élevé": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "1",
+                "Hormonothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.109-111"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.109-111"
+          }
+        },
+        "Traitements ciblés complémentaires après chirurgie": {
+          "type": "question",
+          "titre": "Y a-t-il une indication pour un traitement complémentaire ciblé ?",
+          "choix": {
+            "Olaparib / mutation BRCA avec critères": {
+              "type": "resultat",
+              "donnees": {
+                "Olaparib": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.119"
+              }
+            },
+            "CDK4/6 haut risque RH+ HER2-": {
+              "type": "resultat",
+              "donnees": {
+                "Inhibiteur CDK4/6": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.120"
+              }
+            },
+            "Prévention osseuse / résorption osseuse": {
+              "type": "resultat",
+              "donnees": {
+                "Inhibiteur résorption osseuse": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.121"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.119-121"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.104-121"
+      }
+    },
+    "Radiothérapie après chirurgie d’un cancer infiltrant": {
+      "type": "question",
+      "titre": "Dans quel contexte la radiothérapie est-elle discutée ?",
+      "choix": {
+        "Après chirurgie conservatrice du sein": {
+          "type": "question",
+          "titre": "Les marges sont-elles saines ?",
+          "choix": {
+            "Oui": {
+              "type": "resultat",
+              "donnees": {
+                "Radiothérapie sein": "1",
+                "Boost lit opératoire": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.129"
+              }
+            },
+            "Non": {
+              "type": "question",
+              "titre": "Est-il possible de refaire une chirurgie en gardant le sein ?",
+              "choix": {
+                "Oui": {
+                  "type": "resultat",
+                  "donnees": {
+                    "Reprise conservatrice": "1",
+                    "Radiothérapie sein": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.129"
+                  }
+                },
+                "Non": {
+                  "type": "question",
+                  "titre": "Quel type d’atteinte des marges est décrit ?",
+                  "choix": {
+                    "Unifocale in situ sans résiduel MCC": {
+                      "type": "question",
+                      "titre": "Quel est l’âge de la patiente et la taille/stade de la tumeur ?",
+                      "choix": {
+                        "Âge ≤40 ans ou pT2": {
+                          "type": "resultat",
+                          "donnees": {
+                            "Mastectomie": "1"
+                          },
+                          "infos_science": {
+                            "source": "SENORIF p.129"
+                          }
+                        },
+                        "Âge >40 ans et pT1": {
+                          "type": "resultat",
+                          "donnees": {
+                            "Mastectomie": "0.5",
+                            "Radiothérapie sein": "0.5",
+                            "Boost": "0.5"
+                          },
+                          "infos_science": {
+                            "source": "SENORIF p.129"
+                          }
+                        }
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.129"
+                      }
+                    },
+                    "Atteinte étendue unifocale ou multifocale": {
+                      "type": "resultat",
+                      "donnees": {
+                        "Mastectomie totale simple": "1",
+                        "RMI": "0.5"
+                      },
+                      "infos_science": {
+                        "source": "SENORIF p.129"
+                      }
+                    }
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.129"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.129"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.129"
+          }
+        },
+        "Après mastectomie": {
+          "type": "question",
+          "titre": "Quel est le statut des ganglions sur l’analyse après chirurgie ?",
+          "choix": {
+            "pN0(i-), pN0(i+), pN1mi": {
+              "type": "question",
+              "titre": "Existe-t-il un critère justifiant une radiothérapie de la paroi thoracique ?",
+              "choix": {
+                "pT3-T4": {
+                  "type": "resultat",
+                  "donnees": {
+                    "RT paroi": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.130"
+                  }
+                },
+                "Berges latérales atteintes": {
+                  "type": "resultat",
+                  "donnees": {
+                    "RT paroi": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.130"
+                  }
+                },
+                "≥2 facteurs risque paroi (âge<40, emboles, TN/grade III, pT2)": {
+                  "type": "resultat",
+                  "donnees": {
+                    "RT paroi": "1"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.130"
+                  }
+                },
+                "Aucun": {
+                  "type": "resultat",
+                  "donnees": {
+                    "RT paroi": "0"
+                  },
+                  "infos_science": {
+                    "source": "SENORIF p.130"
+                  }
+                }
+              },
+              "infos_science": {
+                "source": "SENORIF p.130"
+              }
+            },
+            "pN ≥1": {
+              "type": "resultat",
+              "donnees": {
+                "RT paroi": "1",
+                "RT ganglionnaire": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.130"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.130"
+          }
+        },
+        "Radiothérapie des zones ganglionnaires": {
+          "type": "question",
+          "titre": "Quel est le résultat des ganglions et quelle chirurgie axillaire a été réalisée ?",
+          "choix": {
+            "pN0(i-), pN0(i+), pN1mi sans critère": {
+              "type": "resultat",
+              "donnees": {
+                "RT ganglionnaire": "0"
+              },
+              "infos_science": {
+                "source": "SENORIF p.131"
+              }
+            },
+            "pN0/pN1mi + tumeur centrale/interne ou pT3 ou ≥2 critères risque": {
+              "type": "resultat",
+              "donnees": {
+                "RT CMI+niveaux3-4": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.131"
+              }
+            },
+            "pN≥1 avec GS positif sans curage": {
+              "type": "resultat",
+              "donnees": {
+                "RT CMI + sus/sous-claviculaire + axillaire": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.131"
+              }
+            },
+            "pN≥1 avec curage + envahissement >50% ou <6 ganglions examinés": {
+              "type": "resultat",
+              "donnees": {
+                "RT ganglionnaire": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.131"
+              }
+            },
+            "pN≥1 avec curage sans critère défavorable": {
+              "type": "resultat",
+              "donnees": {
+                "RT ganglionnaire complète": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.131"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.131"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.129-131"
+      }
+    },
+    "Cancer du sein avec métastases": {
+      "type": "question",
+      "titre": "Quel est le type biologique du cancer métastatique ?",
+      "choix": {
+        "HER2+ : cancer avec surexpression HER2": {
+          "type": "question",
+          "titre": "S’agit-il du premier traitement de la maladie métastatique ou d’un traitement après progression ?",
+          "choix": {
+            "Premier traitement de la maladie métastatique": {
+              "type": "resultat",
+              "donnees": {
+                "Traitement anti-HER2 1L": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.186"
+              }
+            },
+            "Traitement après progression de la maladie": {
+              "type": "resultat",
+              "donnees": {
+                "Traitement anti-HER2 ligne ultérieure": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.186"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.186"
+          }
+        },
+        "RH+ / HER2- : cancer hormonosensible, HER2 négatif": {
+          "type": "question",
+          "titre": "Existe-t-il une situation urgente ou une résistance importante à l’hormonothérapie ?",
+          "choix": {
+            "Non": {
+              "type": "resultat",
+              "donnees": {
+                "Hormonothérapie": "1",
+                "CDK4/6": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.193"
+              }
+            },
+            "Oui": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.193"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.193"
+          }
+        },
+        "Triple négatif : RH-, HER2-": {
+          "type": "question",
+          "titre": "Quels biomarqueurs sont disponibles ?",
+          "choix": {
+            "PD-L1 positif": {
+              "type": "resultat",
+              "donnees": {
+                "Immunothérapie": "1",
+                "Chimiothérapie": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.195"
+              }
+            },
+            "Mutation BRCA": {
+              "type": "resultat",
+              "donnees": {
+                "Inhibiteur PARP": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.195"
+              }
+            },
+            "Autre situation ou traitement plus tardif": {
+              "type": "resultat",
+              "donnees": {
+                "Chimiothérapie": "1",
+                "Anticorps drogue-conjugué": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.195"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.195"
+          }
+        },
+        "Métastases osseuses à traiter localement": {
+          "type": "question",
+          "titre": "Les métastases osseuses provoquent-elles des symptômes ou un risque local ?",
+          "choix": {
+            "Douleur / risque fracturaire / compression / oligométastatique": {
+              "type": "resultat",
+              "donnees": {
+                "Radiothérapie osseuse": "0.5",
+                "Chirurgie / cimentoplastie / traitement local": "0.5"
+              },
+              "infos_science": {
+                "source": "SENORIF p.197"
+              }
+            },
+            "Pas d'indication locale immédiate": {
+              "type": "resultat",
+              "donnees": {
+                "Traitement systémique": "1",
+                "Soins de support": "1"
+              },
+              "infos_science": {
+                "source": "SENORIF p.197"
+              }
+            }
+          },
+          "infos_science": {
+            "source": "SENORIF p.197"
+          }
+        }
+      },
+      "infos_science": {
+        "source": "SENORIF p.186,193,195,197"
+      }
+    }
+  },
+  "infos_science": {
+    "source": "SENORIF 2025-2026, arbres pages 37,38,39,41,72,76,78,80,81,90,91,104,105,114,119,120,121,129,130,131,186,193,195,197",
+    "avertissement": "Questionnaire structuré à faire relire/valider par un médecin avant usage clinique. Les modules diagnostiques et métastatiques sont structurés à partir des arbres extraits et peuvent nécessiter vérification experte.",
+    "note_interface": "Libellés reformulés en langage plus clair pour patientes et cliniciens ; les termes médicaux essentiels sont conservés entre parenthèses."
+  }
+};
+}
+
+function uid(p){return p+Math.random().toString(36).slice(2,9)}
+function node(id){return nodes.find(n=>n.id===id)}
+function edge(id){return edges.find(e=>e.id===id)}
+
+function resultTitleFromData(t){
+ let keys=Object.keys(t.donnees||{});
+ return keys.length ? keys.map(k=>k.replace(/^OUT_/i,"")).join(", ") : "Résultat";
+}
+
+function countLeaves(t){
+ if(!t || t.type==="resultat" || !t.choix || !Object.keys(t.choix).length) return 1;
+ return Object.values(t.choix).reduce((sum,child)=>sum+countLeaves(child),0);
+}
+
+function treeToGraph(tree){
+ nodes=[]; edges=[];
+ let count=1;
+ let cursorX=300;
+
+ function walk(t, depth, parent, label){
+  let myLeaves=countLeaves(t);
+  let children=t && t.type!=="resultat" && t.choix ? Object.entries(t.choix) : [];
+  let id="n"+count++;
+  let x, y=80+depth*Y_GAP;
+
+  if(children.length===0){
+    x=cursorX;
+    cursorX += NODE_W + X_GAP;
+  } else {
+    let childIds=[];
+    children.forEach(([lab,child])=>{
+      childIds.push(walk(child, depth+1, id, lab));
+    });
+    let childNodes=childIds.map(id=>node(id));
+    x=(Math.min(...childNodes.map(n=>n.x))+Math.max(...childNodes.map(n=>n.x)))/2;
+  }
+
+  nodes.push({
+    id:id,
+    type:t.type||"question",
+    titre:t.titre || (t.type==="resultat" ? resultTitleFromData(t) : ""),
+    donnees:t.donnees||{},
+    infos_science:t.infos_science||{},
+    source_senorif:t.source_senorif || (t.infos_science && t.infos_science.source) || "",
+    x:x,
+    y:y
+  });
+
+  if(parent) edges.push({id:uid("e"),source:parent,target:id,label:label||"Réponse"});
+  return id;
+ }
+
+ walk(tree,0,null,"");
+
+ // Comme les enfants sont créés avant le parent, on recentre verticalement proprement et on remet la racine au-dessus.
+ nodes.sort((a,b)=>{
+   let na=parseInt(a.id.slice(1),10), nb=parseInt(b.id.slice(1),10);
+   return na-nb;
+ });
+
+ resizeWorld();
+ render();
+ setTimeout(fitView, 50);
+}
+
+function graphToTree(){
+ let targets=new Set(edges.map(e=>e.target));
+ let root=nodes.find(n=>!targets.has(n.id))||nodes[0];
+ function build(n){
+  if(!n) return {};
+  if(n.type==="resultat") return {
+    type:"resultat",
+    titre:n.titre||"",
+    donnees:n.donnees||{},
+    infos_science:n.infos_science||{},
+    source_senorif:n.source_senorif||""
+  };
+  let choix={};
+  edges.filter(e=>e.source===n.id).forEach(e=>{
+   let child=node(e.target);
+   if(child) choix[e.label||"Réponse"]=build(child);
+  });
+  return {
+    type:n.type||"question",
+    titre:n.titre||"Question sans titre",
+    choix:choix,
+    infos_science:n.infos_science||{},
+    source_senorif:n.source_senorif||""
+  };
+ }
+ return build(root);
+}
+
+function resizeWorld(){
+ let w=document.getElementById("world");
+ if(!nodes.length){w.style.width="2500px"; w.style.height="1800px"; return;}
+ let maxX=Math.max(...nodes.map(n=>n.x))+700;
+ let maxY=Math.max(...nodes.map(n=>n.y))+500;
+ w.style.width=Math.max(2500,maxX)+"px";
+ w.style.height=Math.max(1800,maxY)+"px";
+}
+
+function render(){
+ resizeWorld();
+ let w=document.getElementById("world");
+ w.innerHTML="";
+ edges.forEach(renderEdge);
+ nodes.forEach(renderNode);
+ renderList();
+ renderEditor();
+ document.getElementById("preview").value=JSON.stringify(graphToTree(),null,2);
+}
+
+function renderNode(n){
+ let w=document.getElementById("world");
+ let el=document.createElement("div");
+ el.className="node "+(n.type==="resultat"?"result ":"")+(selectedNode===n.id?"selected":"");
+ el.style.left=n.x+"px"; el.style.top=n.y+"px";
+ let typeLabel = n.type==="resultat" ? "résultat" : n.type;
+ let titleLabel = n.titre || (n.type==="resultat" ? summary(n) : "Question sans titre");
+ let smallLabel = n.type==="resultat" ? "" : summary(n);
+
+ el.innerHTML =
+   "<div class='type'>"+esc(typeLabel)+"</div>" +
+   "<div class='title'>"+esc(titleLabel)+"</div>" +
+   (smallLabel ? "<div class='small'>"+esc(smallLabel)+"</div>" : "");
+ el.onpointerdown=function(ev){
+  ev.preventDefault();
+  if(connectMode){connectClick(n.id);return}
+  selectedNode=n.id; selectedEdge=null;
+  drag={id:n.id,sx:ev.clientX,sy:ev.clientY,ox:n.x,oy:n.y};
+  render();
+ };
+ w.appendChild(el);
+}
+
+document.addEventListener("pointermove",function(ev){
+ if(!drag)return;
+ let n=node(drag.id);
+ n.x=drag.ox+(ev.clientX-drag.sx)/zoom;
+ n.y=drag.oy+(ev.clientY-drag.sy)/zoom;
+ render();
+});
+document.addEventListener("pointerup",()=>{
+ drag=null;
+ pan=null;
+ document.getElementById("canvas").style.cursor="grab";
+});
+
+document.getElementById("canvas").addEventListener("pointerdown",function(ev){
+ if(ev.target.id!=="canvas" && ev.target.id!=="world") return;
+ pan={
+   sx:ev.clientX,
+   sy:ev.clientY,
+   sl:this.scrollLeft,
+   st:this.scrollTop
+ };
+ this.style.cursor="grabbing";
+ ev.preventDefault();
+});
+
+document.getElementById("canvas").addEventListener("pointermove",function(ev){
+ if(!pan) return;
+ this.scrollLeft=pan.sl-(ev.clientX-pan.sx);
+ this.scrollTop=pan.st-(ev.clientY-pan.sy);
+});
+
+document.getElementById("canvas").addEventListener("pointerleave",function(){
+ pan=null;
+ this.style.cursor="grab";
+});
+
+function renderEdge(e){
+ let s=node(e.source), t=node(e.target);
+ if(!s||!t)return;
+ let w=document.getElementById("world");
+ let x1=s.x+NODE_W/2,y1=s.y+NODE_H,x2=t.x+NODE_W/2,y2=t.y;
+ let dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
+ let line=document.createElement("div");
+ line.className="edge"; line.style.left=x1+"px"; line.style.top=y1+"px"; line.style.width=len+"px"; line.style.transform="rotate("+ang+"deg)";
+ w.appendChild(line);
+ let lab=document.createElement("div");
+ lab.className="label"; lab.style.left=((x1+x2)/2-40)+"px"; lab.style.top=((y1+y2)/2-10)+"px"; lab.textContent=e.label||"Réponse";
+ lab.onclick=function(){selectedEdge=e.id;selectedNode=null;render()};
+ w.appendChild(lab);
+}
+
+function summary(n){
+ if(n.type==="resultat"){let k=Object.keys(n.donnees||{});return k.length?k.slice(0,3).join(", "):"(vide)"}
+ let out=edges.filter(e=>e.source===n.id);return out.length?out.map(e=>e.label).join(" / "):"(aucune réponse)"
+}
+
+function renderList(){
+ let list=document.getElementById("list"); list.innerHTML="";
+ nodes.forEach(n=>{
+  let d=document.createElement("div");
+  d.style.padding="6px"; d.style.borderBottom="1px solid #eee"; d.textContent=n.type+" — "+(n.type==="resultat"?(n.titre||summary(n)):n.titre);
+  d.onclick=()=>{selectedNode=n.id;selectedEdge=null;centerOnNode(n.id);render()};
+  list.appendChild(d);
+ });
+}
+
+function renderEditor(){
+ let n=node(selectedNode), e=edge(selectedEdge);
+ document.getElementById("editEmpty").style.display=n||e?"none":"block";
+ document.getElementById("nodeEdit").style.display=n?"block":"none";
+ document.getElementById("edgeEdit").style.display=e?"block":"none";
+ if(n){
+  document.getElementById("editType").value=n.type;
+  document.getElementById("editTitle").value=n.titre||"";
+  document.getElementById("editData").value=JSON.stringify(n.donnees||{},null,2);
+  document.getElementById("editSource").value=n.source_senorif||"";
+ }
+ if(e) document.getElementById("editEdgeLabel").value=e.label||"";
+}
+
+function updateNode(){
+ let n=node(selectedNode);if(!n)return;
+ n.type=document.getElementById("editType").value;
+ n.titre=document.getElementById("editTitle").value;
+ n.source_senorif=document.getElementById("editSource").value;
+ render()
+}
+function updateNodeData(){let n=node(selectedNode);if(!n)return;try{n.donnees=JSON.parse(document.getElementById("editData").value||"{}");if(n.type==="resultat"&&!n.titre)n.titre=resultTitleFromData(n);render()}catch(err){alert("JSON données invalide: "+err.message)}}
+function updateEdge(){let e=edge(selectedEdge);if(!e)return;e.label=document.getElementById("editEdgeLabel").value;render()}
+
+function addQuestion(){nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:120,y:120});render()}
+function addResult(){nodes.push({id:uid("n"),type:"resultat",titre:"Nouveau résultat",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:160,y:300});render()}
+function deleteNode(){if(!selectedNode)return;nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;render()}
+function deleteEdge(){if(!selectedEdge)return;edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;render()}
+function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Clique le parent puis l'enfant":"Mode liaison désactivé")}
+function connectClick(id){if(!connectSource){connectSource=id;return}else{edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;render()}}
+
+function importPasted(){try{treeToGraph(JSON.parse(document.getElementById("pasteBox").value));setStatus("JSON collé importé.", true)}catch(e){alert("JSON invalide: "+e.message)}}
+document.getElementById("fileInput").addEventListener("change",function(ev){
+ let f=ev.target.files[0]; if(!f)return;
+ let r=new FileReader();
+ r.onload=()=>{try{treeToGraph(JSON.parse(r.result));setStatus("Fichier JSON importé : "+f.name, true)}catch(e){alert("JSON invalide: "+e.message)}};
+ r.readAsText(f);
+});
+
+function downloadTree(filename){
+ let txt=JSON.stringify(graphToTree(),null,2);
+ let blob=new Blob([txt],{type:"application/json;charset=utf-8"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download=filename || "arbre_dynamique.json";
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function exportJSON(){downloadTree("arbre_dynamique.json")}
+function saveForGithub(){
+ downloadTree("arbre_dynamique.json");
+ alert("Le fichier arbre_dynamique.json a été téléchargé. Remplace maintenant l'ancien fichier dans GitHub, puis commit les changements.");
+}
+function saveLocal(){localStorage.setItem("arbre_senorif_editor",JSON.stringify({nodes,edges}));alert("Sauvegardé")}
+function loadLocal(){let s=localStorage.getItem("arbre_senorif_editor");if(!s)return alert("Pas de sauvegarde");let o=JSON.parse(s);nodes=o.nodes;edges=o.edges;render();setTimeout(fitView,50)}
+function loadExample(){treeToGraph(example());setStatus("Arbre SENORIF chargé.", true)}
+
+function setZoom(z){
+ zoom=Math.max(0.03,Math.min(2,z));
+ document.getElementById("world").style.transform="scale("+zoom+")";
+ document.getElementById("zoomSlider").value=Math.round(zoom*100);
+ document.getElementById("zoomValue").textContent=Math.round(zoom*100)+"%";
+}
+function zoomIn(){setZoom(zoom+0.1)}
+function zoomOut(){setZoom(zoom-0.1)}
+
+function fitView(){
+ if(!nodes.length)return;
+ let canvas=document.getElementById("canvas");
+ let minX=Math.min(...nodes.map(n=>n.x));
+ let maxX=Math.max(...nodes.map(n=>n.x+NODE_W));
+ let minY=Math.min(...nodes.map(n=>n.y));
+ let maxY=Math.max(...nodes.map(n=>n.y+NODE_H));
+ let treeW=maxX-minX+300;
+ let treeH=maxY-minY+300;
+ let z=Math.min(canvas.clientWidth/treeW, canvas.clientHeight/treeH, 1);
+ setZoom(z);
+ canvas.scrollLeft=Math.max(0,(minX-150)*zoom);
+ canvas.scrollTop=Math.max(0,(minY-120)*zoom);
+}
+
+function centerOnNode(id){
+ let n=node(id); if(!n)return;
+ let canvas=document.getElementById("canvas");
+ canvas.scrollLeft=Math.max(0,(n.x-300)*zoom);
+ canvas.scrollTop=Math.max(0,(n.y-200)*zoom);
+}
+
+function reloadRealTree(){
+ setStatus("Chargement de arbre_dynamique.json…", false);
+ fetch("arbre_dynamique.json?_v="+Date.now())
+   .then(r=>{
+     if(!r.ok) throw new Error("HTTP "+r.status);
+     return r.json();
+   })
+   .then(tree=>{
+     treeToGraph(tree);
+     setStatus("Arbre chargé depuis arbre_dynamique.json.", true);
+   })
+   .catch(err=>{
+     console.warn("Impossible de charger arbre_dynamique.json :", err);
+     setStatus("Impossible de charger arbre_dynamique.json. Arbre SENORIF local chargé à la place.", false);
+     loadExample();
+   });
+}
+
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+
+reloadRealTree();
+</script>
+</body>
+</html>
