@@ -325,8 +325,8 @@
     grid.innerHTML = '';
 
     var sourceDiv = document.createElement('div');
-    sourceDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 16px; font-size: 13.5px; color: #636e72;';
-    sourceDiv.innerHTML = '<strong>📄 Conclusion :</strong> ' + (node.titre || 'Orientation thérapeutique validée');
+    sourceDiv.className = 'recommendation-box';
+    sourceDiv.innerHTML = '<span class="recommendation-label">✅ Recommandation</span><span class="recommendation-text">' + (node.titre || 'Orientation thérapeutique validée') + '</span>';
     grid.appendChild(sourceDiv);
 
     var entries = Object.keys(donnees).map(function(k) {

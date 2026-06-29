@@ -9,7 +9,7 @@
     "choix": {
       "Carcinome Canalaire In Situ": {
         "type": "etape",
-        "titre": "CARCINOME CANALAIRE IN SITU STRICT - Chirurgie mammaire conservatrice",
+        "titre": "Carcinome canalaire in situ strict - Chirurgie mammaire conservatrice",
         "suite": {
           "type": "etape",
           "titre": "Analyse histologique et mammographie post-opératoire",
@@ -17,13 +17,13 @@
             "type": "question",
             "titre": "Marges ≥ 2 mm et absence de microcalcifications résiduelles ?",
             "choix": {
-              "OUI": { "type": "resultat", "titre": "Radiothérapie du sein" },
-              "NON": {
+              "Oui": { "type": "resultat", "titre": "Radiothérapie du sein" },
+              "Non": {
                 "type": "question",
                 "titre": "Reprise chirurgicale conservatrice avec marges ≥ 2 mm possible ?",
                 "choix": {
-                  "OUI": { "type": "etape", "titre": "Reprise chirurgicale avec marges ≥ 2 mm", "suite": { "type": "resultat", "titre": "Radiothérapie du sein" } },
-                  "NON": {
+                  "Oui": { "type": "etape", "titre": "Reprise chirurgicale avec marges ≥ 2 mm", "suite": { "type": "resultat", "titre": "Radiothérapie du sein" } },
+                  "Non": {
                     "type": "question",
                     "titre": "Nature de l'atteinte",
                     "choix": {
@@ -46,7 +46,7 @@
       },
       "Carcinome Infiltrant (Mastectomie)": {
         "type": "etape",
-        "titre": "CARCINOME INFILTRANT - Mastectomie totale",
+        "titre": "Carcinome infiltrant - Mastectomie totale",
         "suite": {
           "type": "question",
           "titre": "Statut ganglionnaire pathologique",
@@ -58,18 +58,18 @@
       },
       "Carcinome Infiltrant (Conservateur)": {
         "type": "etape",
-        "titre": "CARCINOME INFILTRANT - Chirurgie mammaire conservatrice",
+        "titre": "Carcinome infiltrant - Chirurgie mammaire conservatrice",
         "suite": {
           "type": "question",
           "titre": "Marges saines ?",
           "choix": {
-            "OUI": { "type": "resultat", "titre": "Radiothérapie du sein" },
-            "NON": {
+            "Oui": { "type": "resultat", "titre": "Radiothérapie du sein" },
+            "Non": {
               "type": "question",
               "titre": "Reprise chirurgicale conservatrice avec marges saines possible ?",
               "choix": {
-                "OUI": { "type": "etape", "titre": "Reprise chirurgicale conservatrice", "suite": { "type": "resultat", "titre": "Radiothérapie du sein" } },
-                "NON": {
+                "Oui": { "type": "etape", "titre": "Reprise chirurgicale conservatrice", "suite": { "type": "resultat", "titre": "Radiothérapie du sein" } },
+                "Non": {
                   "type": "question",
                   "titre": "Type d'atteinte",
                   "choix": {
