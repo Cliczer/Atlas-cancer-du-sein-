@@ -42,6 +42,12 @@
     'Hormonothérapie': ['Hormonothérapie','Tamoxifène','tamoxifene'],
     'Trastuzumab':     ['Trastuzumab','Herceptin','anti-HER2'],
     'RCP':             ['RCP','rcp'],
+    // Mutation BRCA : seul critère d'étude dont le vocabulaire patient (réponses du quiz,
+    // ex. "Mutation", "BRCA muté") peut être relié au vocabulaire des études ("BRCA1, BRCA2").
+    // Les autres critères (T, N, M, RE, RP, HER2, Ki67, Marges, Grade, Emboles...) ne sont
+    // demandés par aucune question du quiz sous une forme comparable : ils restent neutres.
+    'Mutation':        ['BRCA1','BRCA2'],
+    'BRCA muté':       ['BRCA1','BRCA2'],
   };
 
   function normaliser(v) {
