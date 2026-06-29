@@ -165,7 +165,9 @@
         if (s > 0) colonnesGagnantes.push(nom); else colonnesBloquantes.push(nom);
     });
 
-    var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
+    // Aucun critère comparable avec le profil patient : pas de score plausible,
+    // l'étude ne doit pas être classée comme "match" (cf. renderEtudes).
+    var final = evalues === 0 ? null : Math.round((pts/evalues)*100);
     return { valeur: final, total: evalues, colonnes: colonnesGagnantes, mismatches: colonnesBloquantes };
   }
 
@@ -418,7 +420,7 @@
     });
 
     var retenues = scored
-      .filter(function(e) { return e.score >= 40; })
+      .filter(function(e) { return e.total > 0 && e.score >= 40; })
       .sort(function(a,b) { return b.score - a.score; });
 
     if (retenues.length === 0) return;
