@@ -1,0 +1,74 @@
+{
+  "metadata": {
+    "titre": "Protocoles de Traitement Néoadjuvant SENORIF",
+    "date_maj": "2026-06-29"
+  },
+  "tree": {
+    "type": "question",
+    "titre": "Indication de traitement néoadjuvant",
+    "choix": {
+      "Évaluation locorégionale (avant traitement)": {
+        "type": "question",
+        "titre": "État de l'évaluation locorégionale",
+        "choix": {
+          "Complète (avec au mieux IRM), pas de lésion additionnelle": { "type": "etape", "titre": "Prélèvements +/- congélation + coils", "suite": { "type": "resultat", "titre": "Traitement médical" } },
+          "Incomplète (lésions non prélevées)": { "type": "etape", "titre": "Complément d'imagerie + prélèvements/coils", "suite": { "type": "resultat", "titre": "Consultation chirurgie ou Réunion de Concertation Pluridisciplinaire" } },
+          "Complète MAIS lésion additionnelle ou ganglion non prélevé": { "type": "etape", "titre": "Prélèvements/coils", "suite": { "type": "resultat", "titre": "Consultation chirurgie ou Réunion de Concertation Pluridisciplinaire" } }
+        }
+      },
+      "RH+ / HER2-": {
+        "type": "question",
+        "titre": "Indications de traitement néoadjuvant (RH+/HER2-)",
+        "choix": {
+          "Supérieur ou égal à cT2 et/ou Supérieur ou égal à N1": {
+            "type": "question",
+            "titre": "Ménopause ?",
+            "choix": {
+              "Oui": { "type": "etape", "titre": "Évaluation (cN2, Taille, grade, Ki67)", "choix": { "Chimiothérapie": { "type": "resultat", "titre": "Chimiothérapie" }, "Chirurgie ou Hormonothérapie": { "type": "question", "titre": "Décision", "choix": { "Chirurgie": { "type": "resultat", "titre": "Chirurgie" }, "Hormonothérapie": { "type": "resultat", "titre": "Hormonothérapie" } } } } },
+              "Non": { "type": "etape", "titre": "Évaluation (cN1, Taille, grade, Ki67)", "choix": { "Chimiothérapie": { "type": "resultat", "titre": "Chimiothérapie" }, "Chirurgie": { "type": "resultat", "titre": "Chirurgie" } } }
+            }
+          },
+          "T < 15 mm et N0 (optionnel)": { "type": "resultat", "titre": "Traitement néoadjuvant à discuter au cas par cas" }
+        }
+      },
+      "TNBC (Triple Négatif) - Keynote 522": {
+        "type": "etape",
+        "titre": "Chimiothérapie néoadjuvante schéma KEYNOTE 522",
+        "suite": {
+          "type": "etape",
+          "titre": "Chirurgie mammaire + geste ganglionnaire (Ganglion Sentinelle) +/- curage",
+          "choix": {
+            "RCB 0 (Réponse complète pathologique)": { "type": "resultat", "titre": "Poursuite PEMBROLIZUMAB" },
+            "RCB I-III": {
+              "type": "question",
+              "titre": "Mutation constitutionnelle BRCA 1 ou 2 ?",
+              "choix": {
+                "Pas de mutation": { "type": "resultat", "titre": "CAPÉCITABINE + Poursuite PEMBROLIZUMAB" },
+                "Mutation": { "type": "resultat", "titre": "OLAPARIB + Poursuite PEMBROLIZUMAB" }
+              }
+            }
+          }
+        }
+      },
+      "TNBC (Triple Négatif) - Dose dense": {
+        "type": "etape",
+        "titre": "Chimiothérapie néoadjuvante schéma dose dense",
+        "suite": {
+          "type": "etape",
+          "titre": "Chirurgie mammaire + geste ganglionnaire (Ganglion Sentinelle) +/- curage",
+          "choix": {
+            "RCB 0 (Réponse complète pathologique)": { "type": "resultat", "titre": "Pas de traitement adjuvant" },
+            "RCB I-III": {
+              "type": "question",
+              "titre": "Mutation constitutionnelle BRCA 1 ou 2 ?",
+              "choix": {
+                "Pas de mutation": { "type": "resultat", "titre": "CAPÉCITABINE" },
+                "Mutation": { "type": "resultat", "titre": "OLAPARIB" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
