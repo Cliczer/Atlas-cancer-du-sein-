@@ -1,0 +1,66 @@
+{
+  "type": "question",
+  "titre": "Chirurgie première ?",
+  "choix": {
+    "Oui": {
+      "type": "etape",
+      "titre": "Chirurgie axillaire",
+      "choix": {
+        "Branche 1": {
+          "type": "etape",
+          "titre": "CN0",
+          "choix": {},
+          "infos_science": {},
+          "source_senorif": ""
+        },
+        "Branche 2": {
+          "type": "etape",
+          "titre": "CN1",
+          "choix": {
+            "Branche 1": {
+              "type": "resultat",
+              "titre": "Curage axillaire",
+              "donnees": {
+                "Traitement": "1"
+              },
+              "infos_science": {},
+              "source_senorif": ""
+            },
+            "Branche 2": {
+              "type": "question",
+              "titre": "Non pT4d, <2 GS + TT médical ",
+              "choix": {
+                "Oui": {
+                  "type": "resultat",
+                  "titre": "RT loco régionale",
+                  "donnees": {
+                    "Traitement": "1"
+                  },
+                  "infos_science": {},
+                  "source_senorif": ""
+                },
+                "Non": {
+                  "type": "resultat",
+                  "titre": "Curage axillaire",
+                  "donnees": {
+                    "Traitement": "1"
+                  },
+                  "infos_science": {},
+                  "source_senorif": ""
+                }
+              },
+              "infos_science": {},
+              "source_senorif": ""
+            }
+          },
+          "infos_science": {},
+          "source_senorif": ""
+        }
+      },
+      "infos_science": {},
+      "source_senorif": ""
+    }
+  },
+  "infos_science": {},
+  "source_senorif": "Arbres de décision pour la chirurgie axillaire"
+}
