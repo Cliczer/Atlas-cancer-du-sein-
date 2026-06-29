@@ -1,0 +1,7 @@
+{
+  "protocoles": [
+    { "id": "calcifications", "nom": "Foyer de Calcifications", "fichier": "calcifications.json" },
+    { "id": "tnbc", "nom": "Traitement Néoadjuvant TNBC", "fichier": "tnbc_neoadj.json" },
+    { "id": "ccis", "nom": "Carcinome Canalaire In Situ", "fichier": "ccis.json" }
+  ]
+}
