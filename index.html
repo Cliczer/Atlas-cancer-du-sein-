@@ -188,6 +188,18 @@
     .barre-fill.bonne { background-color: var(--green); }
     .barre-fill.mauvaise { background-color: var(--orange); }
 
+    /* Badge "X/Y critères concordants" — visible immédiatement sur chaque étude */
+    .badge-correspondance { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px; }
+    .badge-correspondance.badge-ok     { background: var(--green-bg); color: var(--green); }
+    .badge-correspondance.badge-ko     { background: var(--red-bg);   color: var(--red); }
+    .badge-correspondance.badge-mixte  { background: #fef3c7;         color: #92400e; }
+    .badge-correspondance.badge-neutre { background: var(--grey-bg);  color: var(--muted); }
+
+    /* Chips de critères (remplacent les phrases en prose) */
+    .critere-chip { display: inline-block; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 99px; margin: 0 6px 6px 0; }
+    .critere-chip.chip-ok { background: var(--green-bg); color: var(--green); }
+    .critere-chip.chip-ko { background: var(--red-bg);   color: var(--red); }
+
     @media (max-width: 700px) {
       .header { padding: 12px 16px; height: auto; flex-direction: column; gap: 12px; }
       #screen-home .hero { padding: 48px 20px; min-height: auto; }

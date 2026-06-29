@@ -142,27 +142,31 @@
     return t;
   }
 
+  // Un critère "joker" (-1, nc, vide…) signifie que l'étude ne s'est pas prononcée
+  // sur ce critère. Il est neutre : ni compté dans le score, ni affiché comme "concordant" —
+  // sinon il dilue les vrais désaccords (ex. 1 vrai mismatch + 10 jokers ≈ 91%, alors que
+  // sur les seuls critères réellement évalués, c'est 0%).
   function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
-    var colonnesBloquantes = []; 
+    var colonnesBloquantes = [];
 
     Object.keys(criteres).forEach(function(nom) {
         var vE = criteres[nom];
-        if (estJoker(vE)) { pts++; evalues++; colonnesGagnantes.push(nom); return; }
+        if (estJoker(vE)) return; // critère non évalué par l'étude : ignoré, pas un "match"
         var vP = valeurPatient(profilPatient, nom);
-        if (vP === undefined || String(vP).trim() === '') return; 
+        if (vP === undefined || String(vP).trim() === '') return;
 
         evalues++;
         var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
         pts += s;
-        if (s > 0) colonnesGagnantes.push(nom); else colonnesBloquantes.push(nom); 
+        if (s > 0) colonnesGagnantes.push(nom); else colonnesBloquantes.push(nom);
     });
 
     var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
-    return { valeur: final, colonnes: colonnesGagnantes, mismatches: colonnesBloquantes };
+    return { valeur: final, total: evalues, colonnes: colonnesGagnantes, mismatches: colonnesBloquantes };
   }
 
   function depth(node, d) {
@@ -410,7 +414,7 @@
 
     var scored = etudes.map(function(e) {
       var res = calculerScoreEtude(e, profil, traitementsRecommandes);
-      return { etude: e, score: res.valeur, colonnes: res.colonnes, mismatches: res.mismatches };
+      return { etude: e, score: res.valeur, total: res.total, colonnes: res.colonnes, mismatches: res.mismatches };
     });
 
     var retenues = scored
@@ -424,28 +428,55 @@
     h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 16px;color:var(--text);';
     section.appendChild(h3);
 
-    retenues.forEach(function(item) { 
-        section.appendChild(creerCarteEtude(item.etude, item.score, item.colonnes, item.mismatches)); 
+    retenues.forEach(function(item) {
+        section.appendChild(creerCarteEtude(item.etude, item.score, item.total, item.colonnes, item.mismatches));
     });
   }
 
-  function creerCarteEtude(etude, score, colonnes, mismatches) {
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
+    });
+  }
+
+  // Badge visible immédiatement (sans dépli) : combien de critères concordent réellement,
+  // sur combien évalués par l'étude — pour ne plus avoir à déduire ça d'un pourcentage.
+  function badgeCorrespondance(total, nbMatch, nbMismatch) {
+    if (total === 0) {
+      return { texte: 'Critères cliniques non renseignés', cls: 'badge-neutre' };
+    }
+    if (nbMismatch === 0) {
+      return { texte: '✅ ' + nbMatch + '/' + total + ' critères concordants', cls: 'badge-ok' };
+    }
+    if (nbMatch === 0) {
+      return { texte: '❌ 0/' + total + ' critère concordant', cls: 'badge-ko' };
+    }
+    return { texte: '⚠️ ' + nbMatch + '/' + total + ' critères concordants', cls: 'badge-mixte' };
+  }
+
+  function chips(noms, cls) {
+    return noms.map(function(n) {
+      return '<span class="critere-chip ' + cls + '">' + esc(n) + '</span>';
+    }).join('');
+  }
+
+  function creerCarteEtude(etude, score, total, colonnes, mismatches) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
     var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
+    var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
 
     card.innerHTML =
       '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 12px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + (etude.reference || etude.titre) + '</h4>' +
-          '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin-bottom: 12px;">Voir l\'analyse clinique ↓</button>' +
-          '<div class="zone-details" style="display:none; padding-top: 8px;">' +
-            '<div style="background: #f8f9fa; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #636e72; margin-bottom: 16px; display:inline-block;">' +
-              '<strong>Indice de corrélation patient :</strong> ' + score + '% de correspondance sur les critères cliniques.' +
-            '</div>' +
-            (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13px; margin-bottom:6px;">✅ Critères concordants : ' + colonnes.join(', ') + '</div>' : '') +
-            (mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13px; margin-bottom:12px;">❌ Critères divergents : ' + mismatches.join(', ') + '</div>' : '') +
-            (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13px; color:var(--orange); text-decoration:none; font-weight:600;">Ouvrir l\'article PubMed →</a>' : '') +
+          '<h4 style="margin:0 0 8px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + esc(etude.reference || etude.titre) + '</h4>' +
+          '<span class="badge-correspondance ' + corr.cls + '">' + corr.texte + '</span>' +
+          '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin: 10px 0 0; display:block;">Voir le détail des critères ↓</button>' +
+          '<div class="zone-details" style="display:none; padding-top: 10px;">' +
+            (colonnes.length > 0 ? '<div style="margin-bottom:8px;">' + chips(colonnes, 'chip-ok') + '</div>' : '') +
+            (mismatches.length > 0 ? '<div style="margin-bottom:8px;">' + chips(mismatches, 'chip-ko') + '</div>' : '') +
+            '<div style="font-size:12px;color:#9aa1a8;margin-bottom:10px;">Indice de correspondance global : ' + score + '%</div>' +
+            (etude.lien ? '<a href="'+esc(etude.lien)+'" target="_blank" style="font-size:13px; color:var(--orange); text-decoration:none; font-weight:600;">Ouvrir l\'article PubMed →</a>' : '') +
           '</div>' +
         '</div>' +
         '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
@@ -462,9 +493,9 @@
     if (btnToggle && zoneDetails) {
       btnToggle.addEventListener('click', function() {
         if (zoneDetails.style.display === 'none') {
-          zoneDetails.style.display = 'block'; btnToggle.textContent = 'Masquer l\'analyse ↑';
+          zoneDetails.style.display = 'block'; btnToggle.textContent = 'Masquer le détail ↑';
         } else {
-          zoneDetails.style.display = 'none'; btnToggle.textContent = 'Voir l\'analyse clinique ↓';
+          zoneDetails.style.display = 'none'; btnToggle.textContent = 'Voir le détail des critères ↓';
         }
       });
     }
