@@ -5,7 +5,7 @@
   },
   "tree": {
     "type": "question",
-    "titre": "Indication de traitement néoadjuvant",
+    "titre": "Quelle est la situation clinique justifiant (ou non) un traitement néoadjuvant ?",
     "choix": {
       "Évaluation locorégionale (avant traitement)": {
         "type": "question",
@@ -22,9 +22,9 @@
         "choix": {
           "Supérieur ou égal à cT2 et/ou Supérieur ou égal à N1": {
             "type": "question",
-            "titre": "Ménopause ?",
+            "titre": "La patiente est-elle ménopausée ?",
             "choix": {
-              "Oui": { "type": "etape", "titre": "Évaluation (cN2, Taille, grade, Ki67)", "choix": { "Chimiothérapie": { "type": "resultat", "titre": "Chimiothérapie" }, "Chirurgie ou Hormonothérapie": { "type": "question", "titre": "Décision", "choix": { "Chirurgie": { "type": "resultat", "titre": "Chirurgie" }, "Hormonothérapie": { "type": "resultat", "titre": "Hormonothérapie" } } } } },
+              "Oui": { "type": "etape", "titre": "Évaluation (cN2, Taille, grade, Ki67)", "choix": { "Chimiothérapie": { "type": "resultat", "titre": "Chimiothérapie" }, "Chirurgie ou Hormonothérapie": { "type": "question", "titre": "Quelle option choisir entre chirurgie et hormonothérapie ?", "choix": { "Chirurgie": { "type": "resultat", "titre": "Chirurgie" }, "Hormonothérapie": { "type": "resultat", "titre": "Hormonothérapie" } } } } },
               "Non": { "type": "etape", "titre": "Évaluation (cN1, Taille, grade, Ki67)", "choix": { "Chimiothérapie": { "type": "resultat", "titre": "Chimiothérapie" }, "Chirurgie": { "type": "resultat", "titre": "Chirurgie" } } }
             }
           },

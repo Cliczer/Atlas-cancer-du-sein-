@@ -5,7 +5,7 @@
   },
   "tree": {
     "type": "question",
-    "titre": "Prise en charge des Carcinomes",
+    "titre": "Quel type de carcinome mammaire faut-il prendre en charge ?",
     "choix": {
       "Carcinome Canalaire In Situ": {
         "type": "etape",
@@ -32,7 +32,7 @@
                         "titre": "Âge et Taille de la tumeur",
                         "choix": {
                           "Âge ≤ 40 ans ou pT2": { "type": "resultat", "titre": "Mastectomie" },
-                          "Âge > 40 ans et pT1": { "type": "question", "titre": "Décision", "choix": { "Mastectomie": { "type": "resultat", "titre": "Mastectomie" }, "Radiothérapie": { "type": "resultat", "titre": "Radiothérapie du sein avec boost" } } }
+                          "Âge > 40 ans et pT1": { "type": "question", "titre": "Quelle option thérapeutique choisir entre mastectomie et radiothérapie ?", "choix": { "Mastectomie": { "type": "resultat", "titre": "Mastectomie" }, "Radiothérapie": { "type": "resultat", "titre": "Radiothérapie du sein avec boost" } } }
                         }
                       },
                       "Atteinte étendue ou multifocale": { "type": "resultat", "titre": "Mastectomie totale simple avec proposition de Reconstruction Mammaire Immédiate" }
@@ -78,7 +78,7 @@
                       "titre": "Âge et Taille de la tumeur",
                       "choix": {
                         "Âge ≤ 40 ans ou pT2": { "type": "resultat", "titre": "Mastectomie" },
-                        "Âge > 40 ans et pT1": { "type": "question", "titre": "Décision", "choix": { "Mastectomie": { "type": "resultat", "titre": "Mastectomie" }, "Radiothérapie": { "type": "resultat", "titre": "Radiothérapie du sein avec boost" } } }
+                        "Âge > 40 ans et pT1": { "type": "question", "titre": "Quelle option thérapeutique choisir entre mastectomie et radiothérapie ?", "choix": { "Mastectomie": { "type": "resultat", "titre": "Mastectomie" }, "Radiothérapie": { "type": "resultat", "titre": "Radiothérapie du sein avec boost" } } }
                       }
                     },
                     "Atteinte étendue ou multifocale": { "type": "resultat", "titre": "Mastectomie totale simple avec proposition de Reconstruction Mammaire Immédiate" }

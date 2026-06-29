@@ -5,7 +5,7 @@
   },
   "tree": {
     "type": "question",
-    "titre": "Orientation Diagnostic",
+    "titre": "Quel type de lésion mammaire faut-il caractériser ?",
     "choix": {
       "Foyer de Calcifications (ACR3, 4, 5)": {
         "type": "etape",
