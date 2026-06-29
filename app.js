@@ -87,12 +87,34 @@
     return 0;
   }
 
+  // Critère d'étude (vE) au format : valeur exacte ("2"), plage ("10-50"),
+  // ou comparaison ("<2", "<=2", ">2", ">=2"). Valeur patient (vP) toujours un nombre brut.
   function matchNumerique(vP, vE) {
     var nP = normaliser(vP), nE = normaliser(vE);
     if (nP === nE) return 1;
-    var numP = parseFloat(nP.replace(/[^0-9.-]/g,'')),
-        numE = parseFloat(nE.replace(/[^0-9.-]/g,''));
-    if (!isNaN(numP) && !isNaN(numE)) {
+
+    var numP = parseFloat(nP.replace(',', '.'));
+    if (isNaN(numP)) return 0;
+
+    var plage = nE.match(/^(-?\d+(?:[.,]\d+)?)\s*-\s*(-?\d+(?:[.,]\d+)?)$/);
+    if (plage) {
+      var lo = parseFloat(plage[1].replace(',', '.')), hi = parseFloat(plage[2].replace(',', '.'));
+      return (numP >= lo && numP <= hi) ? 1 : 0;
+    }
+
+    var cmp = nE.match(/^(<=|>=|<|>)\s*(-?\d+(?:[.,]\d+)?)$/);
+    if (cmp) {
+      var seuil = parseFloat(cmp[2].replace(',', '.'));
+      switch (cmp[1]) {
+        case '<':  return numP <  seuil ? 1 : 0;
+        case '<=': return numP <= seuil ? 1 : 0;
+        case '>':  return numP >  seuil ? 1 : 0;
+        case '>=': return numP >= seuil ? 1 : 0;
+      }
+    }
+
+    var numE = parseFloat(nE.replace(/[^0-9.-]/g,''));
+    if (!isNaN(numE)) {
       if (numP === numE) return 1;
       if (Math.abs(numP-numE)/Math.max(Math.abs(numE),1) <= 0.2) return 0.5;
     }
@@ -154,10 +176,33 @@
     return max;
   }
 
-  // 1. Chargement de base_etudes au démarrage
-  function load() {
+  // 1a. Chargement de la liste des protocoles (registre unique : protocoles/index.json)
+  function chargerListeProtocoles() {
     var v = '?_v=' + Date.now();
-    fetch('base_etudes.json' + v).then(function(r) {
+    return fetch('protocoles/index.json' + v).then(function(r) {
+      if (!r.ok) throw new Error('protocoles/index.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(reg) {
+      var select = $('protocol-select');
+      var liste = (reg && reg.protocoles) || [];
+      if (select) {
+        liste.forEach(function(p, i) {
+          var opt = document.createElement('option');
+          opt.value = 'protocoles/' + p.fichier;
+          opt.textContent = (i + 1) + '. ' + p.nom;
+          select.appendChild(opt);
+        });
+      }
+      console.log('[Atlas] ✅ Registre des protocoles chargé :', liste.length);
+    }).catch(function(err) {
+      console.error('[Atlas] Impossible de charger protocoles/index.json :', err.message);
+    });
+  }
+
+  // 1b. Chargement de la base de littérature (base_etudes.json)
+  function chargerLitterature() {
+    var v = '?_v=' + Date.now();
+    return fetch('base_etudes.json' + v).then(function(r) {
       if (!r.ok) throw new Error('base_etudes.json HTTP ' + r.status);
       return r.json();
     }).then(function(base) {
@@ -169,16 +214,20 @@
         keyMapping = base.mapping || {};
       }
       console.log('[Atlas] ✅ Littérature chargée. Études disponibles :', etudes.length);
-      var bh = $('btn-start-hero');
-      if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
     }).catch(function(err) {
       console.warn('[Atlas] Littérature non disponible ou erreur :', err.message);
-      var bh = $('btn-start-hero');
-      if (bh) { bh.disabled = false; bh.textContent = 'Commencer (Arbre seul) →'; }
     });
   }
 
-  // 2. Chargement asynchrone du protocole sélectionné au clic
+  // 2. Chargement initial : registre des protocoles + littérature, en parallèle
+  function load() {
+    Promise.all([chargerListeProtocoles(), chargerLitterature()]).then(function() {
+      var bh = $('btn-start-hero');
+      if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
+    });
+  }
+
+  // 3. Chargement asynchrone du protocole sélectionné au clic
   function demarrer() {
     var selector = $('protocol-select');
     var file = selector ? selector.value : '';

@@ -1,7 +1,9 @@
 {
   "protocoles": [
-    { "id": "calcifications", "nom": "Foyer de Calcifications", "fichier": "calcifications.json" },
-    { "id": "tnbc", "nom": "Traitement Néoadjuvant TNBC", "fichier": "tnbc_neoadj.json" },
-    { "id": "ccis", "nom": "Carcinome Canalaire In Situ", "fichier": "ccis.json" }
+    { "id": "diagnostic_biopsie",   "nom": "Diagnostic et Biopsie",                 "fichier": "diagnostic_biopsie.json" },
+    { "id": "situ_infiltrant",      "nom": "Carcinomes In Situ et Infiltrants",     "fichier": "situ_infiltrant.json" },
+    { "id": "traitement_neoadjuvant", "nom": "Traitement Néoadjuvant",              "fichier": "traitement_neoadjuvant.json" },
+    { "id": "chirurgie_axillaire",  "nom": "Chirurgie Axillaire",                   "fichier": "chirurgie_axillaire.json" },
+    { "id": "radiotherapie_avance", "nom": "Radiothérapie et Cancer Avancé",        "fichier": "radiotherapie_avance.json" }
   ]
 }
