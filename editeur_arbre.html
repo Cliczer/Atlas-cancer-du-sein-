@@ -5,63 +5,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Éditeur arbre JSON SENORIF</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111}
-header{padding:10px;background:white;border-bottom:1px solid #ddd;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
-button{padding:8px 10px;border:1px solid #ccc;border-radius:8px;background:white;font-weight:700;cursor:pointer}
-button.primary{background:#2563eb;color:white}
-button.success{background:#16a34a;color:white;border-color:#16a34a}
-button:disabled{opacity:.4;cursor:not-allowed}
-.grp{display:flex;flex-direction:column;gap:4px;border-right:1px solid #e5e7eb;padding-right:10px}
-.grpLabel{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.03em}
+:root{
+ --bg:#eef1f7;
+ --surface:#ffffff;
+ --surface-alt:#f6f8fc;
+ --border:#e2e8f0;
+ --text:#0f172a;
+ --text-muted:#64748b;
+ --primary:#2563eb;
+ --primary-dark:#1d4ed8;
+ --success:#16a34a;
+ --success-dark:#15803d;
+ --warning:#f59e0b;
+ --danger:#dc2626;
+ --radius:14px;
+ --shadow:0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.05);
+ --shadow-md:0 6px 18px rgba(15,23,42,.10);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ background:var(--bg);color:var(--text)}
+
+header{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow)}
+.headerTop{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.brand .icon{font-size:20px}
+.toolbar{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;padding:10px 20px 14px}
+
+button{appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);
+ font-weight:600;font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer;
+ transition:transform .1s ease,box-shadow .1s ease,background .1s ease,border-color .1s ease;
+ box-shadow:0 1px 2px rgba(15,23,42,.04)}
+button:hover{border-color:#cbd5e1;background:#f8fafc;transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,23,42,.10)}
+button:active{transform:translateY(0)}
+button.primary{background:var(--primary);border-color:var(--primary);color:white}
+button.primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+button.success{background:var(--success);color:white;border-color:var(--success)}
+button.success:hover{background:var(--success-dark);border-color:var(--success-dark)}
+button.danger{background:var(--surface);color:var(--danger);border-color:#fecaca}
+button.danger:hover{background:#fef2f2;border-color:var(--danger)}
+button.ghost{background:var(--surface-alt)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+.grp{display:flex;flex-direction:column;gap:6px;background:var(--surface-alt);border:1px solid var(--border);
+ border-radius:12px;padding:8px 10px}
+.grpLabel{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
 .grpBtns{display:flex;gap:6px;flex-wrap:wrap}
-.grpBtns button{padding:6px 8px;font-size:12.5px}
-.main{display:grid;grid-template-columns:300px 1fr 330px;height:calc(100vh - 70px)}
-.panel{background:white;padding:12px;border-right:1px solid #ddd;overflow:auto}
-.panel.right{border-left:1px solid #ddd;border-right:0}
-#canvas{position:relative;overflow:scroll;cursor:grab;background-image:linear-gradient(#e5e7eb 1px,transparent 1px),linear-gradient(90deg,#e5e7eb 1px,transparent 1px);background-size:24px 24px}
+.grpBtns button{padding:6px 10px;font-size:12.5px}
+
+.zoomBox,.searchBox{display:flex;gap:6px;align-items:center;background:var(--surface-alt);
+ border:1px solid var(--border);border-radius:12px;padding:8px 10px}
+#zoomValue{font-size:12.5px;font-weight:700;min-width:44px;text-align:center;color:var(--text-muted)}
+.searchBox input{width:190px}
+
+.main{flex:1;min-height:0;display:grid;grid-template-columns:300px 1fr 330px;gap:16px;padding:16px}
+.panel{background:var(--surface);padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+ box-shadow:var(--shadow);overflow:auto}
+#canvas{position:relative;overflow:scroll;cursor:grab;border:1px solid var(--border);border-radius:var(--radius);
+ box-shadow:var(--shadow);background-color:#fbfcfe;
+ background-image:radial-gradient(circle,#dbe3ee 1.2px,transparent 1.2px);background-size:22px 22px}
 #world{position:relative;width:6000px;height:4000px;transform-origin:0 0}
-.node{position:absolute;width:260px;height:112px;border:2px solid #2563eb;background:#eff6ff;border-radius:12px;padding:10px;box-shadow:0 3px 10px #0002;cursor:pointer;user-select:none;overflow:hidden;box-sizing:border-box}
-.node.result{border-color:#16a34a;background:#ecfdf5}
-.node.decision{border-color:#9333ea;background:#f5f3ff}
-.node.selected{outline:4px solid #fbbf24}
-.type{font-size:10px;font-weight:bold;color:#555;margin-bottom:4px;text-transform:uppercase}
-.title{font-weight:bold;font-size:13px;white-space:pre-wrap;overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.small{font-size:11px;color:#555;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.edge{position:absolute;height:2px;background:#777;transform-origin:left center}
-.edge.selected{background:#f59e0b;height:3px}
-.label{position:absolute;background:white;border:1px solid #ccc;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:bold;cursor:pointer;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.label.selected{background:#fbbf24;border-color:#d97706;color:#78350f}
-textarea,input,select{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:8px;font-family:inherit}
+
+h3{font-size:13.5px;font-weight:800;margin:0 0 10px;color:var(--text)}
+h3 .hint{font-size:11px;color:var(--text-muted);font-weight:500}
+
+.node{position:absolute;width:260px;height:112px;border:2px solid var(--primary);
+ background:linear-gradient(180deg,#eff6ff,#e2ecfd);border-radius:16px;padding:12px;
+ box-shadow:0 4px 14px rgba(37,99,235,.16);cursor:pointer;user-select:none;overflow:hidden;
+ box-sizing:border-box;transition:transform .12s ease,box-shadow .12s ease}
+.node:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,.24)}
+.node.result{border-color:var(--success);background:linear-gradient(180deg,#ecfdf5,#d9f5e3);
+ box-shadow:0 4px 14px rgba(22,163,74,.16)}
+.node.result:hover{box-shadow:0 8px 20px rgba(22,163,74,.24)}
+.node.decision{border-color:#9333ea;background:linear-gradient(180deg,#f5f3ff,#ebe5fb)}
+.node.selected{outline:3px solid var(--warning);outline-offset:2px}
+.type{font-size:9.5px;font-weight:800;color:rgba(15,23,42,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em}
+.title{font-weight:700;font-size:13px;line-height:1.3;color:var(--text);white-space:pre-wrap;overflow-wrap:break-word;
+ display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.small{font-size:10.5px;color:var(--text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.edge{position:absolute;height:2px;background:#a8b4c5;transform-origin:left center}
+.edge.selected{background:var(--warning);height:3px}
+.label{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:999px;
+ padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;max-width:220px;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(15,23,42,.10);transition:transform .1s ease}
+.label:hover{transform:translateY(-1px)}
+.label.selected{background:#fef3c7;border-color:var(--warning);color:#92400e;box-shadow:0 3px 8px rgba(245,158,11,.35)}
+
+textarea,input,select{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:10px;
+ padding:9px 10px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface-alt);
+ transition:border-color .12s ease,box-shadow .12s ease}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);
+ box-shadow:0 0 0 3px rgba(37,99,235,.15);background:var(--surface)}
 textarea{min-height:90px}
-.json{font-family:monospace;font-size:12px;min-height:220px}
-label{font-size:13px;font-weight:bold;margin-top:10px;display:block}
-.help{font-size:12px;color:#555;line-height:1.35}
-.zoomBox{display:flex;gap:6px;align-items:center}
-#zoomValue{font-size:13px;font-weight:700;min-width:48px;text-align:center}
-.notice{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;line-height:1.4;color:#78350f}
-.ok{background:#dcfce7;border:1px solid #16a34a;color:#14532d}
-.searchBox{display:flex;gap:6px;align-items:center}
-.searchBox input{width:180px}
-.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#444;margin:8px 0}
-.legend span{display:inline-flex;align-items:center;gap:4px}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.listRow{padding:5px 7px;border-radius:6px;cursor:pointer;font-size:12.5px;margin:3px 0;border-left:4px solid #2563eb;background:#f9fafb}
-.listRow:hover{background:#eef2ff}
-.listRow.sel{background:#fef3c7}
-details.listGroup{margin-left:10px}
+.json{font-family:"SF Mono",Consolas,monospace;font-size:12px;min-height:220px}
+label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;
+ margin-top:14px;margin-bottom:6px;display:block}
+.help{font-size:12.5px;color:var(--text-muted);line-height:1.55}
+.divider{margin:18px 0;border:none;border-top:1px solid var(--border)}
+
+.notice{background:#fef3c7;border:1px solid var(--warning);border-radius:10px;padding:10px 12px;
+ margin-bottom:14px;font-size:12px;line-height:1.4;color:#78350f}
+.notice.ok{background:#dcfce7;border-color:var(--success);color:#14532d}
+
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin:0 0 14px;
+ padding-bottom:14px;border-bottom:1px solid var(--border)}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 3px rgba(15,23,42,.05)}
+
+#editEmpty{color:var(--text-muted);font-size:13px;padding:26px 12px;text-align:center;
+ border:1.5px dashed var(--border);border-radius:12px}
+
+.listRow{padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12.5px;margin:4px 0;line-height:1.4;
+ border-left:4px solid var(--primary);background:var(--surface-alt);transition:background .12s ease,transform .12s ease}
+.listRow:hover{background:#eef2ff;transform:translateX(2px)}
+.listRow.sel{background:#fef3c7;border-left-color:var(--warning);box-shadow:0 1px 4px rgba(245,158,11,.25)}
+details.listGroup{margin:6px 0}
 details.listGroup>summary{list-style:none}
 details.listGroup>summary::-webkit-details-marker{display:none}
-.overlay{display:none;position:fixed;inset:0;background:#0007;z-index:50;align-items:center;justify-content:center}
+details.listGroup>summary::before{content:"▸ ";color:var(--text-muted);font-size:10px}
+details.listGroup[open]>summary::before{content:"▾ "}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);
+ z-index:50;align-items:center;justify-content:center;padding:20px}
 .overlay.show{display:flex}
-.modalBox{background:white;max-width:560px;width:90%;max-height:82vh;overflow:auto;padding:20px;border-radius:14px}
+.modalBox{background:var(--surface);max-width:560px;width:100%;max-height:85vh;overflow:auto;
+ padding:24px;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.35)}
+.modalBox h2{margin-top:0;font-size:18px}
 </style>
 </head>
 <body>
 <header>
-<strong>Éditeur arbre JSON SENORIF</strong>
+<div class="headerTop">
+ <span class="brand"><span class="icon">🌳</span> Éditeur arbre JSON SENORIF</span>
+ <button class="ghost" onclick="toggleHelp()">❓ Aide</button>
+</div>
+
+<div class="toolbar">
 
 <div class="grp">
- <span class="grpLabel">Charger arbre à modifier</span>
+ <span class="grpLabel">📂 Charger arbre à modifier</span>
  <span class="grpBtns">
   <button onclick="document.getElementById('fileInput').click()">Depuis mon ordinateur</button>
   <button onclick="reloadRealTree()">Depuis GitHub</button>
@@ -69,7 +154,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 </div>
 
 <div class="grp">
- <span class="grpLabel">Éditeur</span>
+ <span class="grpLabel">✏️ Éditeur</span>
  <span class="grpBtns">
   <button onclick="addQuestion()">+ Question</button>
   <button onclick="addResult()">+ Décision</button>
@@ -78,7 +163,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 </div>
 
 <div class="grp">
- <span class="grpLabel">Historique</span>
+ <span class="grpLabel">🕓 Historique</span>
  <span class="grpBtns">
   <button id="undoBtn" onclick="undo()" title="Ctrl+Z">↶ Annuler</button>
   <button id="redoBtn" onclick="redo()" title="Ctrl+Maj+Z">↷ Rétablir</button>
@@ -86,7 +171,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 </div>
 
 <div class="grp">
- <span class="grpLabel">Enregistrer les modifications</span>
+ <span class="grpLabel">💾 Enregistrer les modifications</span>
  <span class="grpBtns">
   <button class="primary" onclick="exportJSON()">Télécharger JSON</button>
   <button class="success" onclick="saveForGithub()">Vers GitHub</button>
@@ -104,10 +189,10 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 <span class="searchBox">
   <input id="searchBox" placeholder="Rechercher un mot-clé…" oninput="liveSearch()" onkeydown="if(event.key==='Enter')searchNode()">
   <button onclick="searchNode()">Chercher</button>
-  <span id="searchStatus" style="font-size:11px;color:#777;min-width:90px"></span>
+  <span id="searchStatus" style="font-size:11px;color:var(--text-muted);min-width:90px"></span>
 </span>
 
-<button onclick="toggleHelp()" style="margin-left:auto">Aide</button>
+</div>
 </header>
 
 <input type="file" id="fileInput" accept=".json" style="display:none">
@@ -126,12 +211,13 @@ details.listGroup>summary::-webkit-details-marker{display:none}
   7. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
   </p>
   <div class="notice"><b>Mise à jour GitHub :</b><br>1. Cliquez sur « Vers GitHub ».<br>2. Allez dans le dépôt GitHub de l'Atlas.<br>3. Supprimez l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoutez le fichier téléchargé.<br>5. Vérifiez qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Cliquez sur « Commit changes ».</div>
-  <div style="margin-top:12px">
-   <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b><br>
+  <hr class="divider">
+  <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b>
+  <div style="margin-top:8px;display:flex;gap:8px">
    <button onclick="saveLocal()">Sauver brouillon</button>
    <button onclick="loadLocal()">Recharger brouillon</button>
   </div>
-  <button class="primary" style="margin-top:16px" onclick="toggleHelp()">Fermer</button>
+  <button class="primary" style="width:100%;margin-top:18px" onclick="toggleHelp()">Fermer</button>
  </div>
 </div>
 
@@ -144,7 +230,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
  <span><i class="dot" style="background:#16a34a"></i> Décision</span>
 </div>
 
-<h3>Questions <span style="font-size:11px;color:#777;font-weight:normal">(cliquez pour voir les réponses)</span></h3>
+<h3>Questions <span class="hint">(cliquez pour voir les réponses)</span></h3>
 <div id="list"></div>
 </div>
 
@@ -172,22 +258,23 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 <label>Source SENORIF</label>
 <input id="editSource">
 
-<button class="primary" style="width:100%;margin-top:12px" onclick="applyNodeEdits()">✓ Valider les modifications</button>
+<button class="primary" style="width:100%;margin-top:16px" onclick="applyNodeEdits()">✓ Valider les modifications</button>
 
-<hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb">
-<button onclick="deleteNode()" style="color:#b91c1c">Supprimer ce nœud</button>
+<hr class="divider">
+<button class="danger" style="width:100%" onclick="deleteNode()">🗑 Supprimer ce nœud</button>
 </div>
 
 <div id="edgeEdit" style="display:none">
 <label>Réponse / branche</label>
 <input id="editEdgeLabel">
-<button class="primary" style="width:100%;margin-top:12px" onclick="applyEdgeEdits()">✓ Valider la réponse</button>
+<button class="primary" style="width:100%;margin-top:16px" onclick="applyEdgeEdits()">✓ Valider la réponse</button>
 
-<hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb">
-<button onclick="deleteEdge()" style="color:#b91c1c">Supprimer branche</button>
+<hr class="divider">
+<button class="danger" style="width:100%" onclick="deleteEdge()">🗑 Supprimer branche</button>
 </div>
 
-<button onclick="togglePreview()" style="margin-top:10px">Afficher / masquer l'aperçu JSON</button>
+<hr class="divider">
+<button onclick="togglePreview()" style="width:100%">Afficher / masquer l'aperçu JSON</button>
 <div id="previewBox" style="display:none">
 <h3>Aperçu JSON</h3>
 <textarea id="preview" class="json" readonly></textarea>
