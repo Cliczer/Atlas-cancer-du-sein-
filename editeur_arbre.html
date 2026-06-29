@@ -28,7 +28,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .title{font-weight:bold;font-size:13px;white-space:pre-wrap;overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .small{font-size:11px;color:#555;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .edge{position:absolute;height:2px;background:#777;transform-origin:left center}
+.edge.selected{background:#f59e0b;height:3px}
 .label{position:absolute;background:white;border:1px solid #ccc;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:bold;cursor:pointer;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.label.selected{background:#fbbf24;border-color:#d97706;color:#78350f}
 textarea,input,select{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:8px;font-family:inherit}
 textarea{min-height:90px}
 .json{font-family:monospace;font-size:12px;min-height:220px}
@@ -78,8 +80,8 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 <div class="grp">
  <span class="grpLabel">Historique</span>
  <span class="grpBtns">
-  <button id="undoBtn" onclick="undo()" title="Ctrl+Z">Annuler</button>
-  <button id="redoBtn" onclick="redo()" title="Ctrl+Maj+Z">Rétablir</button>
+  <button id="undoBtn" onclick="undo()" title="Ctrl+Z">↶ Annuler</button>
+  <button id="redoBtn" onclick="redo()" title="Ctrl+Maj+Z">↷ Rétablir</button>
  </span>
 </div>
 
@@ -115,12 +117,13 @@ details.listGroup>summary::-webkit-details-marker{display:none}
   <h2 style="margin-top:0">Aide</h2>
   <p class="help">
   <b>Mode d'emploi :</b><br>
-  1. Cliquez sur un nœud (ou une ligne de la liste à gauche) pour le modifier dans le panneau de droite.<br>
-  2. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez une question, une décision ou une branche.<br>
-  3. Pour relier deux nœuds : bouton « Relier deux nœuds », puis cliquez le parent puis l'enfant.<br>
-  4. Pour vous déplacer : cliquez-glissez sur le fond, utilisez les barres de défilement, ou la molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
-  5. Utilisez la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.<br>
-  6. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
+  1. Cliquez sur un nœud (ou une question de la liste à gauche, ou une réponse de son menu déplié) pour le modifier dans le panneau de droite.<br>
+  2. Une fois vos modifications faites dans le panneau de droite, cliquez sur « Valider » pour les appliquer à l'arbre.<br>
+  3. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez une question, une décision ou une branche.<br>
+  4. Pour relier deux nœuds : bouton « Relier deux nœuds », puis cliquez le parent puis l'enfant.<br>
+  5. Pour vous déplacer : cliquez-glissez sur le fond, utilisez les barres de défilement, ou la molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
+  6. Utilisez la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.<br>
+  7. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
   </p>
   <div class="notice"><b>Mise à jour GitHub :</b><br>1. Cliquez sur « Vers GitHub ».<br>2. Allez dans le dépôt GitHub de l'Atlas.<br>3. Supprimez l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoutez le fichier téléchargé.<br>5. Vérifiez qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Cliquez sur « Commit changes ».</div>
   <div style="margin-top:12px">
@@ -141,13 +144,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
  <span><i class="dot" style="background:#16a34a"></i> Décision</span>
 </div>
 
-<details>
- <summary style="cursor:pointer;font-weight:bold;font-size:13px">Coller du JSON</summary>
- <textarea id="pasteBox" class="json"></textarea>
- <button onclick="importPasted()">Importer JSON collé</button>
-</details>
-
-<h3>Nœuds <span style="font-size:11px;color:#777;font-weight:normal">(cliquez pour déplier les réponses)</span></h3>
+<h3>Questions <span style="font-size:11px;color:#777;font-weight:normal">(cliquez pour voir les réponses)</span></h3>
 <div id="list"></div>
 </div>
 
@@ -161,27 +158,33 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 
 <div id="nodeEdit" style="display:none">
 <label>Type</label>
-<select id="editType" onfocus="pushHistory()" onchange="updateNode()">
+<select id="editType">
 <option value="question">question</option>
 <option value="resultat">décision</option>
 </select>
 
 <label>Question ou nom de la décision</label>
-<textarea id="editTitle" onfocus="pushHistory()" oninput="updateNode()" onblur="capitalizeTitle()"></textarea>
+<textarea id="editTitle" style="min-height:60px"></textarea>
 
 <label>Données décision JSON</label>
-<textarea id="editData" class="json" onfocus="pushHistory()" onchange="updateNodeData()"></textarea>
+<textarea id="editData" class="json" style="min-height:140px"></textarea>
 
 <label>Source SENORIF</label>
-<input id="editSource" onfocus="pushHistory()" oninput="updateNode()">
+<input id="editSource">
 
-<button onclick="deleteNode()" style="margin-top:8px;color:#b91c1c">Supprimer ce nœud</button>
+<button class="primary" style="width:100%;margin-top:12px" onclick="applyNodeEdits()">✓ Valider les modifications</button>
+
+<hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb">
+<button onclick="deleteNode()" style="color:#b91c1c">Supprimer ce nœud</button>
 </div>
 
 <div id="edgeEdit" style="display:none">
 <label>Réponse / branche</label>
-<input id="editEdgeLabel" onfocus="pushHistory()" oninput="updateEdge()">
-<button onclick="deleteEdge()" style="margin-top:8px;color:#b91c1c">Supprimer branche</button>
+<input id="editEdgeLabel">
+<button class="primary" style="width:100%;margin-top:12px" onclick="applyEdgeEdits()">✓ Valider la réponse</button>
+
+<hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb">
+<button onclick="deleteEdge()" style="color:#b91c1c">Supprimer branche</button>
 </div>
 
 <button onclick="togglePreview()" style="margin-top:10px">Afficher / masquer l'aperçu JSON</button>
@@ -428,11 +431,12 @@ function renderEdge(e){
  let w=document.getElementById("world");
  let x1=s.x+NODE_W/2,y1=s.y+NODE_H,x2=t.x+NODE_W/2,y2=t.y;
  let dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
+ let sel=selectedEdge===e.id;
  let line=document.createElement("div");
- line.className="edge"; line.style.left=x1+"px"; line.style.top=y1+"px"; line.style.width=len+"px"; line.style.transform="rotate("+ang+"deg)";
+ line.className="edge"+(sel?" selected":""); line.style.left=x1+"px"; line.style.top=y1+"px"; line.style.width=len+"px"; line.style.transform="rotate("+ang+"deg)";
  w.appendChild(line);
  let lab=document.createElement("div");
- lab.className="label"; lab.style.left=((x1+x2)/2-40)+"px"; lab.style.top=((y1+y2)/2-10)+"px"; lab.textContent=e.label||"Réponse";
+ lab.className="label"+(sel?" selected":""); lab.style.left=((x1+x2)/2-40)+"px"; lab.style.top=((y1+y2)/2-10)+"px"; lab.textContent=e.label||"Réponse";
  lab.onclick=function(){selectedEdge=e.id;selectedNode=null;render()};
  w.appendChild(lab);
 }
@@ -448,48 +452,47 @@ function nodeColor(type){
  return "#2563eb";
 }
 
-function buildListNode(n, seenSet, edgeLabel){
- seenSet.add(n.id);
+// Liste à plat de TOUTES les questions (quel que soit leur niveau dans l'arbre) :
+// chaque question est repliable et révèle ses réponses, avec le nœud (question ou décision)
+// vers lequel chacune mène.
+function buildQuestionRow(n){
  let childEdges=edges.filter(e=>e.source===n.id);
- let label=(edgeLabel?("↳ "+edgeLabel+" — "):"")+(n.titre||"(sans titre)");
-
- if(!childEdges.length){
-  let row=document.createElement("div");
-  row.className="listRow"+(selectedNode===n.id?" sel":"");
-  row.style.borderLeftColor=nodeColor(n.type);
-  row.textContent=label;
-  row.onclick=()=>{selectedNode=n.id;selectedEdge=null;centerOnNode(n.id);render()};
-  return row;
- }
-
  let det=document.createElement("details");
  det.className="listGroup";
  det.open=false;
  let sum=document.createElement("summary");
  sum.className="listRow"+(selectedNode===n.id?" sel":"");
  sum.style.borderLeftColor=nodeColor(n.type);
- sum.textContent=label;
- sum.onclick=function(ev){
-  // Permet de sélectionner le nœud sans empêcher le repli/dépli du menu déroulant.
-  selectedNode=n.id; selectedEdge=null; centerOnNode(n.id); render();
- };
+ sum.textContent=n.titre||"(sans titre)";
+ sum.onclick=function(){selectedNode=n.id; selectedEdge=null; centerOnNode(n.id); render();};
  det.appendChild(sum);
+
+ if(!childEdges.length){
+  let empty=document.createElement("div");
+  empty.className="listRow"; empty.style.marginLeft="14px"; empty.style.opacity=".6";
+  empty.textContent="(aucune réponse)";
+  det.appendChild(empty);
+ }
  childEdges.forEach(e=>{
   let child=node(e.target);
-  if(!child || seenSet.has(child.id)) return;
-  det.appendChild(buildListNode(child, seenSet, e.label));
+  let row=document.createElement("div");
+  row.className="listRow"+(selectedEdge===e.id?" sel":"");
+  row.style.marginLeft="14px"; row.style.borderLeftColor="#f59e0b";
+  row.textContent="↳ « "+(e.label||"Réponse")+" » → "+(child?(child.titre||"(sans titre)"):"?");
+  row.onclick=function(ev){
+   ev.stopPropagation();
+   selectedEdge=e.id; selectedNode=null;
+   if(child) centerOnNode(child.id);
+   render();
+  };
+  det.appendChild(row);
  });
  return det;
 }
 
 function renderList(){
  let list=document.getElementById("list"); list.innerHTML="";
- let incoming=new Set(edges.map(e=>e.target));
- let roots=nodes.filter(n=>!incoming.has(n.id));
- if(!roots.length && nodes.length) roots=[nodes[0]];
- let seenSet=new Set();
- roots.forEach(r=>list.appendChild(buildListNode(r,seenSet,null)));
- nodes.forEach(n=>{ if(!seenSet.has(n.id)) list.appendChild(buildListNode(n,seenSet,null)); });
+ nodes.filter(n=>n.type!=="resultat").forEach(n=>list.appendChild(buildQuestionRow(n)));
 }
 
 function renderEditor(){
@@ -545,21 +548,29 @@ function capFirst(s){
  if(!s) return s;
  return s.charAt(0).toUpperCase()+s.slice(1);
 }
-function capitalizeTitle(){
+
+// Les champs ne s'appliquent qu'au clic sur "Valider", pour éviter qu'une frappe en cours
+// ne déclenche un rendu (et perde le curseur) ou une alerte JSON à chaque caractère tapé.
+function applyNodeEdits(){
  let n=node(selectedNode); if(!n) return;
- n.titre=capFirst(n.titre);
+ pushHistory();
+ n.type=document.getElementById("editType").value;
+ n.titre=capFirst(document.getElementById("editTitle").value);
+ n.source_senorif=document.getElementById("editSource").value;
+ try{
+  n.donnees=JSON.parse(document.getElementById("editData").value||"{}");
+  if(n.type==="resultat"&&!n.titre) n.titre=resultTitleFromData(n);
+ }catch(err){
+  alert("JSON données invalide : "+err.message+"\nLes autres champs ont été appliqués, mais pas les données.");
+ }
  render();
 }
-
-function updateNode(){
- let n=node(selectedNode);if(!n)return;
- n.type=document.getElementById("editType").value;
- n.titre=document.getElementById("editTitle").value;
- n.source_senorif=document.getElementById("editSource").value;
- render()
+function applyEdgeEdits(){
+ let e=edge(selectedEdge); if(!e) return;
+ pushHistory();
+ e.label=document.getElementById("editEdgeLabel").value;
+ render();
 }
-function updateNodeData(){let n=node(selectedNode);if(!n)return;try{n.donnees=JSON.parse(document.getElementById("editData").value||"{}");if(n.type==="resultat"&&!n.titre)n.titre=resultTitleFromData(n);render()}catch(err){alert("JSON données invalide: "+err.message)}}
-function updateEdge(){let e=edge(selectedEdge);if(!e)return;e.label=document.getElementById("editEdgeLabel").value;render()}
 
 function addQuestion(){pushHistory();nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
 function addResult(){pushHistory();nodes.push({id:uid("n"),type:"resultat",titre:"Nouvelle décision",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
@@ -628,7 +639,6 @@ function togglePreview(){
  box.style.display = box.style.display==="none" ? "block" : "none";
 }
 
-function importPasted(){try{treeToGraph(JSON.parse(document.getElementById("pasteBox").value));setStatus("JSON collé importé.", true)}catch(e){alert("JSON invalide: "+e.message)}}
 document.getElementById("fileInput").addEventListener("change",function(ev){
  let f=ev.target.files[0]; if(!f)return;
  let r=new FileReader();
