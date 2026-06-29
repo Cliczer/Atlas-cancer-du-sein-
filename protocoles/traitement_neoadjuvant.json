@@ -38,13 +38,13 @@
           "type": "etape",
           "titre": "Chirurgie mammaire + geste ganglionnaire (Ganglion Sentinelle) +/- curage",
           "choix": {
-            "RCB 0 (Réponse complète pathologique)": { "type": "resultat", "titre": "Poursuite PEMBROLIZUMAB" },
+            "RCB 0 (Réponse complète pathologique)": { "type": "resultat", "titre": "Poursuite Pembrolizumab" },
             "RCB I-III": {
               "type": "question",
               "titre": "Mutation constitutionnelle BRCA 1 ou 2 ?",
               "choix": {
-                "Pas de mutation": { "type": "resultat", "titre": "CAPÉCITABINE + Poursuite PEMBROLIZUMAB" },
-                "Mutation": { "type": "resultat", "titre": "OLAPARIB + Poursuite PEMBROLIZUMAB" }
+                "Pas de mutation": { "type": "resultat", "titre": "Capécitabine + Poursuite Pembrolizumab" },
+                "Mutation": { "type": "resultat", "titre": "Olaparib + Poursuite Pembrolizumab" }
               }
             }
           }
@@ -62,8 +62,8 @@
               "type": "question",
               "titre": "Mutation constitutionnelle BRCA 1 ou 2 ?",
               "choix": {
-                "Pas de mutation": { "type": "resultat", "titre": "CAPÉCITABINE" },
-                "Mutation": { "type": "resultat", "titre": "OLAPARIB" }
+                "Pas de mutation": { "type": "resultat", "titre": "Capécitabine" },
+                "Mutation": { "type": "resultat", "titre": "Olaparib" }
               }
             }
           }
