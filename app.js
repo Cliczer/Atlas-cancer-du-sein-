@@ -500,9 +500,9 @@
         '</div>' +
         '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
           '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px;">📊 Résultats chiffrés</div>' +
-          '<div class="barre-header" style="margin-bottom:4px;"><span>Bras Standard' + (comp.avec.unite ? ' (' + esc(comp.avec.unite) + ')' : '') + '</span><span>' + (comp.avec.valeur || 0) + '%</span></div>' +
+          '<div class="barre-header" style="margin-bottom:4px;"><span>Standard' + (comp.avec.unite ? ' (' + esc(comp.avec.unite) + ')' : '') + '</span><span>' + (comp.avec.valeur || 0) + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill bonne" style="width:' + (comp.avec.valeur || 0) + '%;"></div></div>' +
-          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Bras Contrôle' + (comp.sans.unite ? ' (' + esc(comp.sans.unite) + ')' : '') + '</span><span>' + (comp.sans.valeur || 0) + '%</span></div>' +
+          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Contrôle' + (comp.sans.unite ? ' (' + esc(comp.sans.unite) + ')' : '') + '</span><span>' + (comp.sans.valeur || 0) + '%</span></div>' +
           '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + (comp.sans.valeur || 0) + '%;"></div></div>' +
         '</div>' +
       '</div>';
