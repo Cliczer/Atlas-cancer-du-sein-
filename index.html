@@ -8,16 +8,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     /* ─────────────────────────────────────────
-       RESET & BASE
-    ───────────────────────────────────────── */
+        RESET & BASE
+       ───────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* Couleurs : Orange Institut Curie */
       --orange:       #F07D00;  
       --orange-light: #FEF2E6;  
       --orange-dark:  #C86800;  
-
       --dark:       #1a1a2e;
       --text:       #2d3436;
       --muted:      #636e72;
@@ -40,20 +38,14 @@
       min-height: 100vh;
       line-height: 1.6;
     }
-    /* Empêche le zoom accidentel (double-tap) sur tous les boutons et liens */
-    button, a {
-      touch-action: manipulation;
-    }
+    button, a { touch-action: manipulation; }
 
-    /* ─────────────────────────────────────────
-       UTILITAIRE : afficher / cacher les écrans
-    ───────────────────────────────────────── */
     .screen { display: none; }
     .screen.active { display: block; }
 
     /* ─────────────────────────────────────────
-       HEADER COMMUN
-    ───────────────────────────────────────── */
+        HEADER COMMUN
+       ───────────────────────────────────────── */
     .header {
       background: var(--white);
       border-bottom: 1px solid var(--border);
@@ -85,16 +77,11 @@
       flex-shrink: 0;
       overflow: hidden;
     }
-    .header-logo-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    svg { display: block; overflow: visible; }
+    .header-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ─────────────────────────────────────────
-       BOUTONS
-    ───────────────────────────────────────── */
+        BOUTONS & FORMULAIRES
+       ───────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -111,25 +98,34 @@
     }
     .btn:active { transform: scale(.98); }
     .btn:disabled { opacity: .45; cursor: not-allowed; }
-
     .btn-primary { background: var(--orange); color: var(--white); }
     .btn-primary:not(:disabled):hover { background: var(--orange-dark); }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--muted);
-      border: 1.5px solid var(--border);
-      padding: 9px 18px;
-      font-size: 14px;
-    }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); padding: 9px 18px; font-size: 14px; }
     .btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
-
     .btn-white { background: var(--white); color: var(--orange); }
     .btn-white:hover { background: var(--orange-light); }
 
+    .select-protocol {
+      width: 100%;
+      max-width: 460px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      outline: none;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+    .select-protocol:focus { border-color: var(--orange); }
+
     /* ─────────────────────────────────────────
-       ÉCRAN 1 : ACCUEIL
-    ───────────────────────────────────────── */
+        ÉCRANS
+       ───────────────────────────────────────── */
     #screen-home .hero {
       background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
       color: var(--white);
@@ -137,337 +133,111 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: calc(100vh - 150px); /* Prend presque toute la hauteur de l'écran */
+      min-height: calc(100vh - 150px);
       text-align: center;
     }
     #screen-home .hero-text { max-width: 800px; display: flex; flex-direction: column; align-items: center; }
-    #screen-home .hero-text h1 {
-      font-size: clamp(32px, 5vw, 54px);
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 20px;
-    }
-    #screen-home .hero-text p {
-      font-size: 17px;
-      opacity: .88;
-      margin-bottom: 32px;
-      max-width: 580px;
-    }
+    #screen-home .hero-text h1 { font-size: clamp(32px, 5vw, 54px); font-weight: 800; line-height: 1.2; margin-bottom: 20px; }
+    #screen-home .hero-text p { font-size: 17px; opacity: .88; margin-bottom: 32px; max-width: 580px; }
 
-    #screen-home footer {
-      text-align: center;
-      padding: 24px 40px;
-      font-size: 12px;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      background: var(--white);
-    }
+    #screen-quiz .quiz-progress { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 40px; display: flex; align-items: center; gap: 20px; }
+    .progress-label { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--orange), var(--orange-dark)); border-radius: 99px; transition: width .4s ease; width: 0%; }
+    .progress-pct { font-size: 13px; font-weight: 700; color: var(--orange); white-space: nowrap; }
 
-    /* ─────────────────────────────────────────
-       ÉCRAN 2 : QUESTIONNAIRE
-    ───────────────────────────────────────── */
-    #screen-quiz .quiz-progress {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 40px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    #screen-quiz .progress-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    #screen-quiz .progress-track {
-      flex: 1;
-      height: 6px;
-      background: var(--border);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    #screen-quiz .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, var(--orange), var(--orange-dark));
-      border-radius: 99px;
-      transition: width .4s ease;
-      width: 0%;
-    }
-    #screen-quiz .progress-pct {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--orange);
-      white-space: nowrap;
-    }
+    .quiz-body { display: flex; justify-content: center; padding: 48px 24px; }
+    .quiz-card { background: var(--white); border-radius: 16px; box-shadow: var(--shadow); padding: 48px; width: 100%; max-width: 680px; }
+    .quiz-card h2 { font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 32px; color: var(--text); }
 
-    #screen-quiz .quiz-body {
-      display: flex;
-      justify-content: center;
-      padding: 48px 24px;
-    }
-    #screen-quiz .quiz-card {
-      background: var(--white);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 48px;
-      width: 100%;
-      max-width: 680px;
-    }
-    #screen-quiz .quiz-card h2 {
-      font-size: 22px;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 32px;
-      color: var(--text);
-    }
-
-    /* Boutons de choix */
-    .choice-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 16px 20px;
-      margin-bottom: 10px;
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-      cursor: pointer;
-      text-align: left;
-      transition: border-color .15s, background .15s, transform .1s;
-    }
-    .choice-btn:hover {
-      border-color: var(--orange);
-      background: var(--orange-light);
-      transform: translateX(4px);
-    }
+    .choice-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 16px 20px; margin-bottom: 10px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s, background .15s, transform .1s; }
+    .choice-btn:hover { border-color: var(--orange); background: var(--orange-light); transform: translateX(4px); }
     .choice-btn:active { transform: translateX(2px); }
-    .choice-btn .arrow {
-      color: var(--orange);
-      font-size: 18px;
-      opacity: 0;
-      transition: opacity .15s;
-      flex-shrink: 0;
-    }
+    .choice-btn .arrow { color: var(--orange); font-size: 18px; opacity: 0; transition: opacity .15s; flex-shrink: 0; }
     .choice-btn:hover .arrow { opacity: 1; }
+    .quiz-footer { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 
-    .quiz-footer {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
+    #screen-results .results-body { max-width: 880px; margin: 0 auto; padding: 48px 24px; }
+    #screen-results h2 { font-size: 26px; font-weight: 800; margin-bottom: 28px; }
 
-    /* ─────────────────────────────────────────
-       ÉCRAN 3 : RÉSULTATS
-    ───────────────────────────────────────── */
-    #screen-results .results-body {
-      max-width: 880px;
-      margin: 0 auto;
-      padding: 48px 24px;
-    }
-    #screen-results h2 {
-      font-size: 26px;
-      font-weight: 800;
-      margin-bottom: 28px;
-    }
-
-    /* Bandeau parcours */
-    .path-banner {
-      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
-      color: var(--white);
-      border-radius: 14px;
-      padding: 24px 28px;
-      margin-bottom: 32px;
-    }
-    .path-banner h3 {
-      font-size: 13px;
-      font-weight: 600;
-      opacity: .8;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: 12px;
-    }
-    .path-steps {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-    .path-step {
-      background: rgba(255,255,255,.22);
-      border-radius: 20px;
-      padding: 4px 14px;
-      font-size: 13px;
-      font-weight: 500;
-    }
+    .path-banner { background: linear-gradient(135deg, var(--orange), var(--orange-dark)); color: var(--white); border-radius: 14px; padding: 24px 28px; margin-bottom: 32px; }
+    .path-banner h3 { font-size: 13px; font-weight: 600; opacity: .8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+    .path-steps { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .path-step { background: rgba(255,255,255,.22); border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 500; }
     .path-sep { font-size: 14px; opacity: .5; }
 
-    /* Grille résultats */
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 14px;
-      margin-bottom: 32px;
-    }
-    .result-card {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.05);
-      border-left: 4px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      transition: transform .15s;
-    }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 32px; }
+    .result-card { background: var(--white); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.05); border-left: 4px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: transform .15s; }
     .result-card:hover { transform: translateY(-2px); }
     .result-card.rec  { border-left-color: var(--green); }
     .result-card.nrec { border-left-color: var(--red); }
     .result-card h4 { font-size: 14px; font-weight: 600; color: var(--text); }
-    .badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 11px;
-      border-radius: 99px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+    .badge { font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
     .badge.rec  { background: var(--green-bg); color: var(--green); }
     .badge.nrec { background: var(--red-bg);   color: var(--red); }
     .badge.ns   { background: var(--grey-bg);  color: var(--muted); }
 
-    .warning-box {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      font-size: 13px;
-      color: #78350f;
-      line-height: 1.6;
-    }
-/* ─────────────────────────────────────────
-       BARRES DE COMPARAISON (ÉTUDES)
-    ───────────────────────────────────────── */
-    .barre-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--text);
-    }
-    .barre-track {
-      height: 8px;
-      background-color: var(--border);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .barre-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.5s ease;
-    }
-    .barre-fill.bonne {
-      background-color: var(--green);
-    }
-    .barre-fill.mauvaise {
-      background-color: var(--orange); 
-    }
-    /* ─────────────────────────────────────────
-       RESPONSIVE
-    ───────────────────────────────────────── */
-/* ─────────────────────────────────────────
-       RESPONSIVE (TÉLÉPHONES ET PETITS ÉCRANS)
-    ───────────────────────────────────────── */
+    .warning-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius); padding: 16px 20px; font-size: 13px; color: #78350f; line-height: 1.6; }
+    .barre-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+    .barre-track { height: 8px; background-color: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
+    .barre-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+    .barre-fill.bonne { background-color: var(--green); }
+    .barre-fill.mauvaise { background-color: var(--orange); }
+
     @media (max-width: 700px) {
-      /* Adaptation de l'entête et des boutons */
-      .header { 
-        padding: 12px 16px; 
-        height: auto; 
-        flex-direction: column; /* Empile le logo et les boutons */
-        gap: 12px; 
-      }
-      .header-logo { justify-content: center; text-align: center; }
-      .header > div { flex-wrap: wrap; justify-content: center; }
-      
-      /* Adaptation générale */
+      .header { padding: 12px 16px; height: auto; flex-direction: column; gap: 12px; }
       #screen-home .hero { padding: 48px 20px; min-height: auto; }
       #screen-quiz .quiz-card { padding: 28px 20px; }
-      #screen-quiz .quiz-progress { padding: 14px 16px; }
-      #screen-results .results-body { padding: 32px 16px; }
       .results-grid { grid-template-columns: 1fr; }
-      
-      /* Adaptation des cartes d'études de la littérature */
-      .etude-flex { 
-        flex-direction: column !important; /* Passe les barres en dessous */
-        gap: 20px !important; 
-      }
-      .etude-bars { 
-        width: 100% !important; /* Les barres prennent toute la largeur de l'écran */
-      }
+      .etude-flex { flex-direction: column !important; gap: 20px !important; }
+      .etude-bars { width: 100% !important; }
     }
   </style>
 </head>
 <body>
 
 <div id="screen-home" class="screen active">
-
   <header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
-      <div class="header-logo-icon">
-        <img src="curie.jpg" alt="Logo Curie" />
-      </div>
+      <div class="header-logo-icon"><img src="curie.jpg" alt="Logo" /></div>
       Atlas des facteurs pronostics en cancer du sein
     </a>
-    <nav>
-      <button class="btn btn-primary" id="btn-start" onclick="demarrer()" disabled>
-        Chargement…
-      </button>
-    </nav>
   </header>
 
   <section class="hero">
     <div class="hero-text">
       <h1>Comprendre votre pronostic et vos options de traitement</h1>
-      <p>
-        Outil d'aide à la décision médicale basé sur les recommandations
-        cliniques issues du Senorif pour accompagner les équipes soignantes en oncologie du sein.
-      </p>
+      <p>Outil d'aide à la décision médicale basé sur les recommandations cliniques du référentiel SENORIF.</p>
+      
+      <select id="protocol-select" class="select-protocol">
+        <option value="" disabled selected>── Choisir un protocole clinique ──</option>
+        <option value="diagnostic_biopsie.json">1. Diagnostic et Biopsie</option>
+        <option value="situ_infiltrant.json">2. Carcinomes In Situ et Infiltrants</option>
+        <option value="traitement_neoadjuvant.json">3. Traitement Néoadjuvant</option>
+        <option value="chirurgie_axillaire.json">4. Chirurgie Axillaire</option>
+        <option value="radiotherapie_avance.json">5. Radiothérapie et Cancer Avancé</option>
+      </select>
+
       <button class="btn btn-white" id="btn-start-hero" onclick="demarrer()" disabled>
-        Commencer l'évaluation →
+        Chargement de la base…
       </button>
     </div>
   </section>
 
-  <footer>
-    ⚠️ Outil d'aide à la décision — Ne remplace pas l'avis d'un professionnel de santé.
-  </footer>
-
+  <footer>⚠️ Outil d'aide à la décision — Ne remplace pas l'avis d'un professionnel de santé.</footer>
 </div>
 
 <div id="screen-quiz" class="screen">
-
   <header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
-      <div class="header-logo-icon">
-        <img src="curie.jpg" alt="Logo Curie" />
-      </div>
+      <div class="header-logo-icon"><img src="curie.jpg" alt="Logo" /></div>
       Atlas des facteurs pronostics en cancer du sein
     </a>
   </header>
 
   <div class="quiz-progress">
     <span class="progress-label" id="quiz-step-label">Étape 1</span>
-    <div class="progress-track">
-      <div class="progress-bar" id="quiz-progress-bar"></div>
-    </div>
+    <div class="progress-track"><div class="progress-bar" id="quiz-progress-bar"></div></div>
     <span class="progress-pct" id="quiz-pct-label">0 %</span>
   </div>
 
@@ -476,26 +246,19 @@
       <h2 id="quiz-question">…</h2>
       <div id="quiz-choices"></div>
       <div class="quiz-footer">
-        <button class="btn btn-ghost" id="btn-back" onclick="reculer()" style="display:none;">
-          ← Étape précédente
-        </button>
+        <button class="btn btn-ghost" id="btn-back" onclick="reculer()" style="display:none;">← Étape précédente</button>
       </div>
     </div>
   </div>
-
 </div>
 
 <div id="screen-results" class="screen">
-
-<header class="header">
+  <header class="header">
     <a href="#" class="header-logo" onclick="accueil(); return false;">
-      <div class="header-logo-icon">
-        <img src="curie.jpg" alt="Logo Curie" />
-      </div>
+      <div class="header-logo-icon"><img src="curie.jpg" alt="Logo" /></div>
       Atlas des facteurs pronostics en cancer du sein
     </a>
     <div style="display: flex; gap: 12px;">
-      <!-- Nouveau bouton d'impression -->
       <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimer le rapport</button>
       <button class="btn btn-primary" onclick="recommencer()" style="color: white;">↺ Nouvelle évaluation</button>
     </div>
@@ -503,23 +266,16 @@
   
   <div class="results-body">
     <h2>Recommandations Thérapeutiques</h2>
-
     <div class="path-banner">
       <h3>Parcours clinique</h3>
       <div class="path-steps" id="results-path"></div>
     </div>
-
     <div class="results-grid" id="results-grid"></div>
-
     <div class="warning-box">
-      <strong>⚠️ Important :</strong> Ces recommandations sont établies sur la base des arbres de décision du <strong>SENORIF</strong>. Elles reflètent les protocoles validés par les experts du réseau et sont fournies à titre d'aide à la décision clinique.
+      <strong>⚠️ Important :</strong> Ces recommandations sont établies sur la base des arbres de décision du <strong>SENORIF</strong>.
     </div>
-
-    <!-- Les cartes d'études sont injectées ici par app.js -->
     <div id="etudes-section"></div>
-
   </div>
-
 </div>
 
 <script src="app.js"></script>
