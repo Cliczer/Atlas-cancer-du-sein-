@@ -31,7 +31,6 @@ body{margin:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;
 header{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow)}
 .headerTop{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border)}
 .brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:-.01em}
-.brand .icon{font-size:20px}
 .toolbar{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;padding:10px 20px 14px}
 
 button{appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);
@@ -118,6 +117,10 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 #editEmpty{color:var(--text-muted);font-size:13px;padding:26px 12px;text-align:center;
  border:1.5px dashed var(--border);border-radius:12px}
 
+.valRow{display:flex;gap:6px;align-items:center;margin:6px 0}
+.valRow input{flex:1}
+.valRow button{padding:6px 9px;font-size:12px;flex-shrink:0}
+
 .listRow{padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12.5px;margin:4px 0;line-height:1.4;
  border-left:4px solid var(--primary);background:var(--surface-alt);transition:background .12s ease,transform .12s ease}
 .listRow:hover{background:#eef2ff;transform:translateX(2px)}
@@ -139,7 +142,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <body>
 <header>
 <div class="headerTop">
- <span class="brand"><span class="icon">🌳</span> Éditeur arbre JSON SENORIF</span>
+ <span class="brand">Éditeur arbre JSON SENORIF</span>
  <button class="ghost" onclick="toggleHelp()">❓ Aide</button>
 </div>
 
@@ -157,7 +160,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
  <span class="grpLabel">✏️ Éditeur</span>
  <span class="grpBtns">
   <button onclick="addQuestion()">+ Question</button>
-  <button onclick="addResult()">+ Décision</button>
+  <button onclick="addResult()">+ Recommandation</button>
   <button onclick="toggleConnect()">Relier deux nœuds</button>
  </span>
 </div>
@@ -204,11 +207,12 @@ details.listGroup[open]>summary::before{content:"▾ "}
   <b>Mode d'emploi :</b><br>
   1. Cliquez sur un nœud (ou une question de la liste à gauche, ou une réponse de son menu déplié) pour le modifier dans le panneau de droite.<br>
   2. Une fois vos modifications faites dans le panneau de droite, cliquez sur « Valider » pour les appliquer à l'arbre.<br>
-  3. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez une question, une décision ou une branche.<br>
-  4. Pour relier deux nœuds : bouton « Relier deux nœuds », puis cliquez le parent puis l'enfant.<br>
+  3. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez une question, une recommandation ou une branche.<br>
+  4. Si un nœud est sélectionné (en surbrillance), cliquer sur « + Question » ou « + Recommandation » crée directement le lien avec ce nœud. Sinon, utilisez « Relier deux nœuds » : cliquez le parent puis l'enfant.<br>
   5. Pour vous déplacer : cliquez-glissez sur le fond, utilisez les barres de défilement, ou la molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
   6. Utilisez la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.<br>
-  7. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
+  7. Une branche peut avoir plusieurs réponses possibles menant au même nœud suivant : ajoutez chaque valeur séparément avec « + Ajouter une valeur » dans l'édition de la branche.<br>
+  8. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
   </p>
   <div class="notice"><b>Mise à jour GitHub :</b><br>1. Cliquez sur « Vers GitHub ».<br>2. Allez dans le dépôt GitHub de l'Atlas.<br>3. Supprimez l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoutez le fichier téléchargé.<br>5. Vérifiez qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Cliquez sur « Commit changes ».</div>
   <hr class="divider">
@@ -227,7 +231,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
 
 <div class="legend">
  <span><i class="dot" style="background:#2563eb"></i> Question</span>
- <span><i class="dot" style="background:#16a34a"></i> Décision</span>
+ <span><i class="dot" style="background:#16a34a"></i> Recommandation</span>
 </div>
 
 <h3>Questions <span class="hint">(cliquez pour voir les réponses)</span></h3>
@@ -246,13 +250,13 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <label>Type</label>
 <select id="editType">
 <option value="question">question</option>
-<option value="resultat">décision</option>
+<option value="resultat">recommandation</option>
 </select>
 
-<label>Question ou nom de la décision</label>
+<label>Question ou nom de la recommandation</label>
 <textarea id="editTitle" style="min-height:60px"></textarea>
 
-<label>Données décision JSON</label>
+<label>Données recommandation JSON</label>
 <textarea id="editData" class="json" style="min-height:140px"></textarea>
 
 <label>Source SENORIF</label>
@@ -265,8 +269,9 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </div>
 
 <div id="edgeEdit" style="display:none">
-<label>Réponse / branche</label>
-<input id="editEdgeLabel">
+<label>Réponse(s) / branche <span class="hint" style="text-transform:none;font-weight:500">(plusieurs valeurs possibles pour la même branche)</span></label>
+<div id="editEdgeValues"></div>
+<button class="ghost" style="width:100%;margin-top:6px" onclick="addEdgeValueField()">+ Ajouter une valeur</button>
 <button class="primary" style="width:100%;margin-top:16px" onclick="applyEdgeEdits()">✓ Valider la réponse</button>
 
 <hr class="divider">
@@ -307,9 +312,19 @@ function uid(p){return p+Math.random().toString(36).slice(2,9)}
 function node(id){return nodes.find(n=>n.id===id)}
 function edge(id){return edges.find(e=>e.id===id)}
 
+// Une branche peut porter plusieurs valeurs de réponse (ex: "bleu, vert") qui menent
+// toutes les deux au même nœud suivant : stocké comme une liste séparée par virgule.
+function edgeValues(e){
+ let vals=String((e&&e.label)||"").split(",").map(s=>s.trim()).filter(Boolean);
+ return vals.length ? vals : ["Réponse"];
+}
+function edgeLabelDisplay(e){
+ return edgeValues(e).join(" / ");
+}
+
 function resultTitleFromData(t){
  let keys=Object.keys(t.donnees||{});
- return keys.length ? keys.map(k=>k.replace(/^OUT_/i,"")).join(", ") : "Décision";
+ return keys.length ? keys.map(k=>k.replace(/^OUT_/i,"")).join(", ") : "Recommandation";
 }
 
 function treeToGraph(tree){
@@ -402,7 +417,9 @@ function graphToTree(){
   let choix={};
   edges.filter(e=>e.source===n.id).forEach(e=>{
    let child=node(e.target);
-   if(child) choix[e.label||"Réponse"]=build(child);
+   if(!child) return;
+   let subtree=build(child);
+   edgeValues(e).forEach(v=>choix[v]=subtree);
   });
   return {
     type:n.type||"question",
@@ -451,7 +468,7 @@ function renderNode(n){
  let el=document.createElement("div");
  el.className="node "+(n.type==="resultat"?"result ":"")+(n.type==="decision"?"decision ":"")+(selectedNode===n.id?"selected":"");
  el.style.left=n.x+"px"; el.style.top=n.y+"px";
- let typeLabel = n.type==="resultat" ? "décision" : n.type;
+ let typeLabel = n.type==="resultat" ? "recommandation" : n.type;
  let titleLabel = n.titre || (n.type==="resultat" ? summary(n) : "Question sans titre");
  let smallLabel = n.type==="resultat" ? "" : summary(n);
  el.title = titleLabel + (smallLabel ? " — "+smallLabel : "");
@@ -523,14 +540,14 @@ function renderEdge(e){
  line.className="edge"+(sel?" selected":""); line.style.left=x1+"px"; line.style.top=y1+"px"; line.style.width=len+"px"; line.style.transform="rotate("+ang+"deg)";
  w.appendChild(line);
  let lab=document.createElement("div");
- lab.className="label"+(sel?" selected":""); lab.style.left=((x1+x2)/2-40)+"px"; lab.style.top=((y1+y2)/2-10)+"px"; lab.textContent=e.label||"Réponse";
+ lab.className="label"+(sel?" selected":""); lab.style.left=((x1+x2)/2-40)+"px"; lab.style.top=((y1+y2)/2-10)+"px"; lab.textContent=edgeLabelDisplay(e);
  lab.onclick=function(){selectedEdge=e.id;selectedNode=null;render()};
  w.appendChild(lab);
 }
 
 function summary(n){
  if(n.type==="resultat"){let k=Object.keys(n.donnees||{});return k.length?k.slice(0,3).join(", "):"(vide)"}
- let out=edges.filter(e=>e.source===n.id);return out.length?out.map(e=>e.label).join(" / "):"(aucune réponse)"
+ let out=edges.filter(e=>e.source===n.id);return out.length?out.map(edgeLabelDisplay).join("  •  "):"(aucune réponse)"
 }
 
 function nodeColor(type){
@@ -540,7 +557,7 @@ function nodeColor(type){
 }
 
 // Liste à plat de TOUTES les questions (quel que soit leur niveau dans l'arbre) :
-// chaque question est repliable et révèle ses réponses, avec le nœud (question ou décision)
+// chaque question est repliable et révèle ses réponses, avec le nœud (question ou recommandation)
 // vers lequel chacune mène.
 function buildQuestionRow(n){
  let childEdges=edges.filter(e=>e.source===n.id);
@@ -565,7 +582,7 @@ function buildQuestionRow(n){
   let row=document.createElement("div");
   row.className="listRow"+(selectedEdge===e.id?" sel":"");
   row.style.marginLeft="14px"; row.style.borderLeftColor="#f59e0b";
-  row.textContent="↳ « "+(e.label||"Réponse")+" » → "+(child?(child.titre||"(sans titre)"):"?");
+  row.textContent="↳ « "+edgeLabelDisplay(e)+" » → "+(child?(child.titre||"(sans titre)"):"?");
   row.onclick=function(ev){
    ev.stopPropagation();
    selectedEdge=e.id; selectedNode=null;
@@ -593,7 +610,26 @@ function renderEditor(){
   document.getElementById("editData").value=JSON.stringify(n.donnees||{},null,2);
   document.getElementById("editSource").value=n.source_senorif||"";
  }
- if(e) document.getElementById("editEdgeLabel").value=e.label||"";
+ if(e) renderEdgeValueFields(edgeValues(e));
+}
+
+function renderEdgeValueFields(values){
+ let box=document.getElementById("editEdgeValues");
+ box.innerHTML="";
+ (values.length?values:[""]).forEach(v=>addEdgeValueField(v));
+}
+function addEdgeValueField(value){
+ let box=document.getElementById("editEdgeValues");
+ let row=document.createElement("div");
+ row.className="valRow";
+ let input=document.createElement("input");
+ input.value=value||"";
+ input.placeholder="Valeur de réponse";
+ let rm=document.createElement("button");
+ rm.className="danger"; rm.textContent="✕"; rm.title="Retirer cette valeur";
+ rm.onclick=function(){row.remove()};
+ row.appendChild(input); row.appendChild(rm);
+ box.appendChild(row);
 }
 
 function snapshotState(){
@@ -655,12 +691,23 @@ function applyNodeEdits(){
 function applyEdgeEdits(){
  let e=edge(selectedEdge); if(!e) return;
  pushHistory();
- e.label=document.getElementById("editEdgeLabel").value;
+ let inputs=document.getElementById("editEdgeValues").querySelectorAll("input");
+ let vals=Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
+ e.label=vals.join(", ");
  render();
 }
 
-function addQuestion(){pushHistory();nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
-function addResult(){pushHistory();nodes.push({id:uid("n"),type:"resultat",titre:"Nouvelle décision",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
+// Si un nœud est déjà sélectionné au moment du clic, le nouveau nœud est automatiquement
+// relié à la suite (le bouton "Relier deux nœuds" ne devient alors nécessaire que pour les cas particuliers).
+function addNodeLinkedToSelection(newNode){
+ let parentId=selectedNode;
+ nodes.push(newNode);
+ if(parentId && node(parentId)) edges.push({id:uid("e"),source:parentId,target:newNode.id,label:"Réponse"});
+ selectedNode=newNode.id; selectedEdge=null;
+ autoLayout(); render();
+}
+function addQuestion(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0})}
+function addResult(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"resultat",titre:"Nouvelle recommandation",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0})}
 function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
 function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
 function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Cliquez le parent puis l'enfant":"Mode liaison désactivé")}
