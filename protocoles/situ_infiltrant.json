@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "titre": "Carcinomes In Situ et Infiltrants",
+    "date_maj": "2026-06-29"
+  },
+  "tree": {
+    "type": "question",
+    "titre": "Prise en charge des Carcinomes",
+    "choix": {
+      "Carcinome Canalaire In Situ": {
+        "type": "etape",
+        "titre": "CARCINOME CANALAIRE IN SITU STRICT - Chirurgie mammaire conservatrice",
+        "suite": {
+          "type": "etape",
+          "titre": "Analyse histologique et mammographie post-opératoire",
+          "suite": {
+            "type": "question",
+            "titre": "Marges ≥ 2 mm et absence de microcalcifications résiduelles ?",
+            "choix": {
+              "OUI": { "type": "resultat", "titre": "Radiothérapie du sein" },
+              "NON": {
+                "type": "question",
+                "titre": "Reprise chirurgicale conservatrice avec marges ≥ 2 mm possible ?",
+                "choix": {
+                  "OUI": { "type": "etape", "titre": "Reprise chirurgicale avec marges ≥ 2 mm", "suite": { "type": "resultat", "titre": "Radiothérapie du sein" } },
+                  "NON": {
+                    "type": "question",
+                    "titre": "Nature de l'atteinte",
+                    "choix": {
+                      "Atteinte unifocale": {
+                        "type": "question",
+                        "titre": "Âge et Taille de la tumeur",
+                        "choix": {
+                          "Âge ≤ 40 ans ou pT2": { "type": "resultat", "titre": "Mastectomie" },
+                          "Âge > 40 ans et pT1": { "type": "question", "titre": "Décision", "choix": { "Mastectomie": { "type": "resultat", "titre": "Mastectomie" }, "Radiothérapie": { "type": "resultat", "titre": "Radiothérapie du sein avec boost" } } }
+                        }
+                      },
+                      "Atteinte étendue ou multifocale": { "type": "resultat", "titre": "Mastectomie totale simple avec proposition de Reconstruction Mammaire Immédiate" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Carcinome Infiltrant (Mastectomie)": {
+        "type": "etape",
+        "titre": "CARCINOME INFILTRANT - Mastectomie totale",
+        "suite": {
+          "type": "question",
+          "titre": "Statut ganglionnaire pathologique",
+          "choix": {
+            "pN0 (i-), pN0 (i+), pN1mi": { "type": "resultat", "titre": "Radiothérapie de la paroi si facteurs de risque (pT3-T4, Age<40, Grade III, etc.)" },
+            "≥ pN1": { "type": "resultat", "titre": "Radiothérapie pariétale et ganglionnaire" }
+          }
+        }
+      },
+      "Carcinome Infiltrant (Conservateur)": {
+        "type": "etape",
+        "titre": "CARCINOME INFILTRANT - Chirurgie mammaire conservatrice",
+        "suite": {
+          "type": "question",
+          "titre": "Marges saines ?",
+          "choix": {
+            "OUI": { "type": "resultat", "titre": "Radiothérapie du sein" },
+            "NON": {
+              "type": "question",
+              "titre": "Reprise chirurgicale conservatrice avec marges saines possible ?",
+              "choix": {
+                "OUI": { "type": "etape", "titre": "Reprise chirurgicale conservatrice", "suite": { "type": "resultat", "titre": "Radiothérapie du sein" } },
+                "NON": {
+                  "type": "question",
+                  "titre": "Type d'atteinte",
+                  "choix": {
+                    "Atteinte unifocale": {
+                      "type": "question",
+                      "titre": "Âge et Taille de la tumeur",
+                      "choix": {
+                        "Âge ≤ 40 ans ou pT2": { "type": "resultat", "titre": "Mastectomie" },
+                        "Âge > 40 ans et pT1": { "type": "question", "titre": "Décision", "choix": { "Mastectomie": { "type": "resultat", "titre": "Mastectomie" }, "Radiothérapie": { "type": "resultat", "titre": "Radiothérapie du sein avec boost" } } }
+                      }
+                    },
+                    "Atteinte étendue ou multifocale": { "type": "resultat", "titre": "Mastectomie totale simple avec proposition de Reconstruction Mammaire Immédiate" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
