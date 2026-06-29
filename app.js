@@ -1,6 +1,6 @@
 /*
  * Atlas Pronostics — app.js
- * Vanilla JS pur, aucune dépendance.
+ * Version Bibliothèque Multi-arbres
  */
 
 (function () {
@@ -11,13 +11,10 @@
   var keyMapping = {};
   var current    = null;
   var history    = [];
-  var maxDepth  = 1;
+  var maxDepth   = 1;
 
   function $(id) { return document.getElementById(id); }
 
-  /* ════════════════════════════════════════════════════════════
-     TABLE DE CORRESPONDANCE DES VALEURS
-  ════════════════════════════════════════════════════════════ */
   var MAPPING = {
     'HER2+':       ['Positif','HER2+','positif','1'],
     'HER2-':       ['Négatif','HER2-','négatif','0','Negatif'],
@@ -46,10 +43,6 @@
     'Trastuzumab':     ['Trastuzumab','Herceptin','anti-HER2'],
     'RCP':             ['RCP','rcp'],
   };
-
-  /* ════════════════════════════════════════════════════════════
-     HELPERS
-  ════════════════════════════════════════════════════════════ */
 
   function normaliser(v) {
     if (v === null || v === undefined) return '';
@@ -106,10 +99,6 @@
     return 0;
   }
 
-  /* ════════════════════════════════════════════════════════════
-     PROFIL PATIENT
-  ════════════════════════════════════════════════════════════ */
-
   function construireProfil() {
     var profil = {};
     history.forEach(function(h) {
@@ -131,13 +120,8 @@
     return t;
   }
 
-  /* ════════════════════════════════════════════════════════════
-     CALCULER SCORE ÉTUDE
-  ════════════════════════════════════════════════════════════ */
-
   function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
     var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
-    
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
@@ -146,39 +130,22 @@
     Object.keys(criteres).forEach(function(nom) {
         var vE = criteres[nom];
         if (estJoker(vE)) { pts++; evalues++; colonnesGagnantes.push(nom); return; }
-
         var vP = valeurPatient(profilPatient, nom);
-        
-        if (vP === undefined || String(vP).trim() === '') {
-            return; 
-        }
+        if (vP === undefined || String(vP).trim() === '') return; 
 
         evalues++;
         var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
         pts += s;
-        
-        if (s > 0) {
-            colonnesGagnantes.push(nom);
-        } else {
-            colonnesBloquantes.push(nom); 
-        }
+        if (s > 0) colonnesGagnantes.push(nom); else colonnesBloquantes.push(nom); 
     });
 
     var final = evalues === 0 ? 50 : Math.round((pts/evalues)*100);
-
-    return { 
-        valeur: final, 
-        colonnes: colonnesGagnantes, 
-        mismatches: colonnesBloquantes 
-    };
+    return { valeur: final, colonnes: colonnesGagnantes, mismatches: colonnesBloquantes };
   }
-
-  /* ════════════════════════════════════════════════════════════
-     CHARGEMENT JSON
-  ════════════════════════════════════════════════════════════ */
 
   function depth(node, d) {
     if (!node || node.type === 'resultat' || !node.choix) return d;
+    if (node.type === 'etape' && node.suite) return depth(node.suite, d+1);
     var keys = Object.keys(node.choix), max = d;
     for (var i = 0; i < keys.length; i++) {
       var sub = depth(node.choix[keys[i]], d+1);
@@ -187,66 +154,69 @@
     return max;
   }
 
+  // 1. Chargement de base_etudes au démarrage
   function load() {
     var v = '?_v=' + Date.now();
-
-    Promise.all([
-      fetch('arbre_dynamique.json' + v).then(function(r) {
-        if (!r.ok) throw new Error('arbre_dynamique.json HTTP ' + r.status);
-        return r.json();
-      }),
-      fetch('base_etudes.json' + v).then(function(r) {
-        if (!r.ok) throw new Error('base_etudes.json HTTP ' + r.status);
-        return r.json();
-      }).catch(function(err) {
-        console.warn('[Atlas] base_etudes.json non disponible :', err.message);
-        return null;
-      })
-    ]).then(function(results) {
-      tree     = results[0];
-      maxDepth = depth(tree, 0) || 1;
-
-      var base = results[1];
+    fetch('base_etudes.json' + v).then(function(r) {
+      if (!r.ok) throw new Error('base_etudes.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(base) {
       if (Array.isArray(base)) {
         etudes     = base;
         keyMapping = {};
       } else if (base && base.etudes) {
         etudes     = base.etudes  || [];
         keyMapping = base.mapping || {};
-      } else {
-        etudes     = [];
-        keyMapping = {};
       }
-
-      console.log('[Atlas] ✅ Arbre chargé, profondeur :', maxDepth);
-      console.log('[Atlas] ✅ Études :', etudes.length, '| KeyMapping :', Object.keys(keyMapping).length, 'clés');
-
-      var bs = $('btn-start'), bh = $('btn-start-hero');
-      if (bs) { bs.disabled = false; bs.textContent = 'Commencer →'; }
+      console.log('[Atlas] ✅ Littérature chargée. Études disponibles :', etudes.length);
+      var bh = $('btn-start-hero');
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
     }).catch(function(err) {
-      console.error('[Atlas] ❌ Chargement :', err);
-      alert('Impossible de charger les données.\nDétail : ' + err.message);
+      console.warn('[Atlas] Littérature non disponible ou erreur :', err.message);
+      var bh = $('btn-start-hero');
+      if (bh) { bh.disabled = false; bh.textContent = 'Commencer (Arbre seul) →'; }
     });
   }
 
-  /* ════════════════════════════════════════════════════════════
-     NAVIGATION
-  ════════════════════════════════════════════════════════════ */
+  // 2. Chargement asynchrone du protocole sélectionné au clic
+  function demarrer() {
+    var selector = $('protocol-select');
+    var file = selector ? selector.value : '';
+    if (!file) {
+      alert('Veuillez sélectionner un protocole clinique avant de commencer.');
+      return;
+    }
+
+    var bh = $('btn-start-hero');
+    if (bh) bh.textContent = 'Chargement de l\'arbre…';
+
+    var v = '?_v=' + Date.now();
+    fetch(file + v).then(function(r) {
+      if (!r.ok) throw new Error(file + ' HTTP ' + r.status);
+      return r.json();
+    }).then(function(data) {
+      // Extrait le sous-arbre "tree" du nouveau format de fichier
+      tree = data.tree || data;
+      maxDepth = depth(tree, 1) || 1;
+      
+      if (bh) bh.textContent = 'Commencer l\'évaluation →';
+      
+      history = []; 
+      current = tree;
+      show('screen-quiz');
+      render(current);
+    }).catch(function(err) {
+      console.error('[Atlas] Erreur de chargement du protocole :', err);
+      alert('Impossible de charger le fichier de protocole : ' + file + '\nDétail : ' + err.message);
+      if (bh) bh.textContent = 'Commencer l\'évaluation →';
+    });
+  }
 
   function show(id) {
     ['screen-home','screen-quiz','screen-results'].forEach(function(sid) {
-      var el = $(sid);
-      if (el) el.classList.toggle('active', sid === id);
+      var el = $(sid); if (el) el.classList.toggle('active', sid === id);
     });
     window.scrollTo(0,0);
-  }
-
-  function demarrer() {
-    if (!tree) { alert('Données en cours de chargement. Réessayez.'); return; }
-    history = []; current = tree;
-    show('screen-quiz');
-    render(current);
   }
 
   function reculer() {
@@ -265,50 +235,54 @@
     show('screen-home');
   }
 
-  /* ════════════════════════════════════════════════════════════
-     AFFICHER UN NŒUD
-  ════════════════════════════════════════════════════════════ */
-
   function render(node) {
+    if (!node) return;
     if (node.type === 'resultat') { renderResults(node); return; }
 
-    $('quiz-question').textContent = node.titre || '(Question sans titre)';
+    // Traitement automatique des "étapes" (flux continus sans choix utilisateur)
+    if (node.type === 'etape' && node.suite) {
+      history.push({node: node, label: node.titre || 'Étape intermédiaire'});
+      current = node.suite;
+      render(current);
+      return;
+    }
+
+    $('quiz-question').textContent = node.titre || 'Question';
 
     var step = history.length + 1, total = maxDepth || step;
     var pct  = Math.round(Math.max(0, (step-1)/total) * 100);
 
-    $('quiz-step-label').textContent   = 'Étape ' + step + ' / ' + total;
+    $('quiz-step-label').textContent   = 'Étape ' + step;
     $('quiz-pct-label').textContent    = pct + ' %';
     $('quiz-progress-bar').style.width = pct + '%';
     $('btn-back').style.display        = history.length > 0 ? 'inline-flex' : 'none';
 
     var container = $('quiz-choices');
     container.innerHTML = '';
-    var keys = Object.keys(node.choix || {});
+    
+    var choices = node.choix || {};
+    var keys = Object.keys(choices);
     if (!keys.length) {
-      container.innerHTML = '<p style="color:#636e72;font-style:italic;">Aucune option disponible.</p>';
+      container.innerHTML = '<p style="color:#636e72;font-style:italic;">Aucun choix disponible.</p>';
       return;
     }
 
     keys.forEach(function(label) {
-      var next = node.choix[label];
+      var next = choices[label];
       var btn  = document.createElement('button');
       btn.className = 'choice-btn';
       var txt = document.createElement('span'); txt.textContent = label;
-      var arr = document.createElement('span');
-      arr.className = 'arrow'; arr.textContent = '→';
-      arr.setAttribute('aria-hidden','true');
+      var arr = document.createElement('span'); arr.className = 'arrow'; arr.textContent = '→';
       btn.appendChild(txt); btn.appendChild(arr);
-      btn.addEventListener('click', (function(l,n) {
-        return function() { history.push({node:current,label:l}); current=n; render(current); };
-      }(label, next)));
+      
+      btn.addEventListener('click', function() {
+        history.push({node: current, label: label});
+        current = next;
+        render(current);
+      });
       container.appendChild(btn);
     });
   }
-
-  /* ════════════════════════════════════════════════════════════
-     RÉSULTATS
-  ════════════════════════════════════════════════════════════ */
 
   function cls(val) {
     var v = String(val||'').trim();
@@ -326,37 +300,33 @@
 
   function renderResults(node) {
     var donnees = node.donnees || {};
-    var sourceSenorif = node.source_senorif || "Référentiel SENORIF (Arbre non précisé)";
+    var sourceSenorif = node.source_senorif || "Référentiel National (Validé SENORIF)";
 
     $('quiz-progress-bar').style.width = '100%';
     $('quiz-pct-label').textContent    = '100 %';
     $('quiz-step-label').textContent   = 'Terminé';
 
-    /* Parcours */
     var pathEl = $('results-path');
     pathEl.innerHTML = '';
     if (!history.length) {
       pathEl.textContent = 'Résultat direct';
     } else {
-      history.forEach(function(h,i) {
+      history.forEach(function(h, i) {
         if (i > 0) {
-          var sep = document.createElement('span');
-          sep.className = 'path-sep'; sep.textContent = '›';
+          var sep = document.createElement('span'); sep.className = 'path-sep'; sep.textContent = '›';
           pathEl.appendChild(sep);
         }
-        var s = document.createElement('span');
-        s.className = 'path-step'; s.textContent = h.label;
+        var s = document.createElement('span'); s.className = 'path-step'; s.textContent = h.label;
         pathEl.appendChild(s);
       });
     }
 
-    /* Grille SENORIF */
     var grid = $('results-grid');
     grid.innerHTML = '';
 
     var sourceDiv = document.createElement('div');
-    sourceDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 16px; font-size: 13px; color: #636e72; display: flex; align-items: center; gap: 8px;';
-    sourceDiv.innerHTML = '<strong>📄 Source :</strong> ' + sourceSenorif;
+    sourceDiv.style.cssText = 'grid-column: 1 / -1; margin-bottom: 16px; font-size: 13.5px; color: #636e72;';
+    sourceDiv.innerHTML = '<strong>📄 Conclusion :</strong> ' + (node.titre || 'Orientation thérapeutique validée');
     grid.appendChild(sourceDiv);
 
     var entries = Object.keys(donnees).map(function(k) {
@@ -364,17 +334,12 @@
     });
     entries.sort(function(a,b) { return ({rec:0,nrec:1,ns:2}[a.cls]) - ({rec:0,nrec:1,ns:2}[b.cls]); });
 
-    if (!entries.length) {
-      grid.innerHTML += '<p style="color:#636e72;">Aucune donnée disponible.</p>';
-    } else {
+    if (entries.length > 0) {
       entries.forEach(function(e) {
-        var card = document.createElement('div');
-        card.className = 'result-card ' + e.cls;
+        var card = document.createElement('div'); card.className = 'result-card ' + e.cls;
         var h4 = document.createElement('h4'); h4.textContent = e.name;
-        var b  = document.createElement('span');
-        b.className = 'badge ' + e.cls; b.textContent = badge(e.val);
-        card.appendChild(h4); card.appendChild(b);
-        grid.appendChild(card);
+        var b  = document.createElement('span'); b.className = 'badge ' + e.cls; b.textContent = badge(e.val);
+        card.appendChild(h4); card.appendChild(b); grid.appendChild(card);
       });
     }
 
@@ -385,43 +350,29 @@
       var traitements = extraireTraitementsRecommandes(donnees);
       renderEtudes(profil, traitements);
     } catch(err) {
-      console.error('[Atlas] ❌ Erreur renderEtudes :', err);
+      console.error('[Atlas] Erreur analyse littérature :', err);
     }
   }
 
-  /* ════════════════════════════════════════════════════════════
-     ÉTUDES
-  ════════════════════════════════════════════════════════════ */
-
-  var SEUIL_SCORE = 40;
-
   function renderEtudes(profil, traitementsRecommandes) {
-    var section = $('etudes-section');
-    if (!section) return;
+    var section = $('etudes-section'); if (!section) return;
     section.innerHTML = '';
-
-    if (!etudes || !etudes.length) {
-      section.innerHTML = '<p style="color:#636e72;font-size:13px;margin-top:24px;">Aucune étude disponible.</p>';
-      return;
-    }
+    if (!etudes || !etudes.length) return;
 
     var scored = etudes.map(function(e) {
-      var resultat = calculerScoreEtude(e, profil, traitementsRecommandes);
-      return { 
-          etude: e, 
-          score: resultat.valeur,
-          colonnes: resultat.colonnes,
-          mismatches: resultat.mismatches
-      };
+      var res = calculerScoreEtude(e, profil, traitementsRecommandes);
+      return { etude: e, score: res.valeur, colonnes: res.colonnes, mismatches: res.mismatches };
     });
 
     var retenues = scored
-      .filter(function(e) { return e.score >= SEUIL_SCORE; })
+      .filter(function(e) { return e.score >= 40; })
       .sort(function(a,b) { return b.score - a.score; });
 
+    if (retenues.length === 0) return;
+
     var h3 = document.createElement('h3');
-    h3.textContent = 'Données issues de la littérature';
-    h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 8px;';
+    h3.textContent = 'Données de la littérature scientifique correspondantes';
+    h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 16px;color:var(--text);';
     section.appendChild(h3);
 
     retenues.forEach(function(item) { 
@@ -429,83 +380,48 @@
     });
   }
 
-  /* ════════════════════════════════════════════════════════════
-     HELPERS D'AFFICHAGE ET CARTE ÉTUDE
-  ════════════════════════════════════════════════════════════ */
-  
-  function expliquerScore(colonnes, mismatches) {
-    var totalCriteres = colonnes.length + mismatches.length;
-    if (totalCriteres === 0) return "";
-    
-    return "<strong>Calcul du match :</strong> " + colonnes.length + " critère(s) validé(s) sur un total de " + totalCriteres + " analysés.";
-  }
-
   function creerCarteEtude(etude, score, colonnes, mismatches) {
     var card = document.createElement('div');
-    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;';
-    
+    card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
     var comp = etude.comparaison || { avec: {valeur: 0}, sans: {valeur: 0} };
-    var valAvec = comp.avec.valeur || 0;
-    var valSans = comp.sans.valeur || 0;
-    
-    var wAvec = valAvec;
-    var wSans = valSans;
 
     card.innerHTML =
       '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
-        
-        // Bloc de gauche : Titre + Bouton + Détails cachés
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 12px 0; font-size:16px; color:#1a1a1a;">' + (etude.reference || etude.titre) + '</h4>' +
-          
-          '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin-bottom: 12px;">Voir les détails ↓</button>' +
-          
+          '<h4 style="margin:0 0 12px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + (etude.reference || etude.titre) + '</h4>' +
+          '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin-bottom: 12px;">Voir l\'analyse clinique ↓</button>' +
           '<div class="zone-details" style="display:none; padding-top: 8px;">' +
             '<div style="background: #f8f9fa; padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #636e72; margin-bottom: 16px; display:inline-block;">' +
-                 expliquerScore(colonnes, mismatches) +
+              '<strong>Indice de corrélation patient :</strong> ' + score + '% de correspondance sur les critères cliniques.' +
             '</div>' +
-            (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13.5px; margin-bottom:6px;">✅ Match : ' + colonnes.join(', ') + '</div>' : '') +
-            (mismatches && mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13.5px; margin-bottom:12px;">❌ Non-match : ' + mismatches.join(', ') + '</div>' : '') +
-            (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13.5px; color:#2563eb; text-decoration:none; font-weight:500;">Voir l\'article →</a>' : '') +
+            (colonnes.length > 0 ? '<div style="color:#16a34a; font-size:13px; margin-bottom:6px;">✅ Critères concordants : ' + colonnes.join(', ') + '</div>' : '') +
+            (mismatches.length > 0 ? '<div style="color:#dc2626; font-size:13px; margin-bottom:12px;">❌ Critères divergents : ' + mismatches.join(', ') + '</div>' : '') +
+            (etude.lien ? '<a href="'+etude.lien+'" target="_blank" style="font-size:13px; color:var(--orange); text-decoration:none; font-weight:600;">Ouvrir l\'article PubMed →</a>' : '') +
           '</div>' +
         '</div>' +
-        
-        // Bloc de droite : Barres de traitement (Modifié pour la survie et la radiothérapie)
         '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
-          '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">📊 Taux de survie à 5 ans / 10 ans</div>' +
-          
-          '<div class="barre-header" style="margin-bottom:4px;"><span>Avec Radiothérapie</span><span>' + valAvec + '%</span></div>' +
-          '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill bonne" style="width:' + wAvec + '%;"></div></div>' +
-                    
-          '<div class="barre-header" style="margin-top:18px; margin-bottom:4px;"><span>Sans Radiothérapie</span><span>' + valSans + '%</span></div>' +
-          '<div class="barre-track" style="background-color:#e5e7eb; height:8px;"><div class="barre-fill mauvaise" style="width:' + wSans + '%;"></div></div>' +
+          '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px;">📊 Taux de survie observé</div>' +
+          '<div class="barre-header" style="margin-bottom:4px;"><span>Bras Standard</span><span>' + (comp.avec.valeur || 0) + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + (comp.avec.valeur || 0) + '%;"></div></div>' +
+          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Bras Contrôle</span><span>' + (comp.sans.valeur || 0) + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + (comp.sans.valeur || 0) + '%;"></div></div>' +
         '</div>' +
-        
       '</div>';
 
     var btnToggle = card.querySelector('.btn-toggle');
     var zoneDetails = card.querySelector('.zone-details');
-
     if (btnToggle && zoneDetails) {
       btnToggle.addEventListener('click', function() {
         if (zoneDetails.style.display === 'none') {
-          zoneDetails.style.display = 'block';
-          btnToggle.textContent = 'Cacher les détails ↑';
-          btnToggle.style.background = '#f8f9fa';
+          zoneDetails.style.display = 'block'; btnToggle.textContent = 'Masquer l\'analyse ↑';
         } else {
-          zoneDetails.style.display = 'none';
-          btnToggle.textContent = 'Voir les détails ↓';
-          btnToggle.style.background = 'transparent';
+          zoneDetails.style.display = 'none'; btnToggle.textContent = 'Voir l\'analyse clinique ↓';
         }
       });
     }
-
     return card;
   }
 
-  /* ════════════════════════════════════════════════════════════
-     EXPOSITION GLOBALE
-  ════════════════════════════════════════════════════════════ */
   window.demarrer         = demarrer;
   window.reculer          = reculer;
   window.recommencer      = recommencer;
@@ -513,5 +429,4 @@
   window.calculerScoreEtude = calculerScoreEtude;
 
   load();
-
 }());
