@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "titre": "Protocoles Radiothérapie et Cancer Avancé SENORIF",
+    "date_maj": "2026-06-29"
+  },
+  "tree": {
+    "type": "question",
+    "titre": "Protocoles de Radiothérapie et Stade Avancé",
+    "choix": {
+      "Radiothérapie": {
+        "type": "question",
+        "titre": "Indication de radiothérapie",
+        "choix": {
+          "Post-Chirurgie conservatrice": { "type": "resultat", "titre": "Radiothérapie du sein +/- boost (hypofractionnée modérée recommandée)" },
+          "Post-Mastectomie": {
+            "type": "etape",
+            "titre": "Mastectomie totale",
+            "choix": {
+              "pN0 (i-), pN0 (i+), pN1mi": { "type": "resultat", "titre": "Radiothérapie de la paroi selon facteurs de risque (pT3-T4, âge, grade, emboles)" },
+              "≥ pN1": { "type": "resultat", "titre": "Radiothérapie pariétale et ganglionnaire" }
+            }
+          }
+        }
+      },
+      "Cancer du sein RH+ HER2- avancé": {
+        "type": "etape",
+        "titre": "Actualisation selon AMM et remboursements",
+        "choix": {
+          "Inhibiteur de l'Aromatase (AI) sensible": {
+            "type": "etape",
+            "titre": "Ligne 1 : Inhibiteur de l'aromatase + Anti-CDK +/- agoniste LHRH",
+            "suite": {
+              "type": "question",
+              "titre": "Ligne 2",
+              "choix": {
+                "Fulvestrant + Everolimus": { "type": "resultat", "titre": "Ligne 3 : Chimiothérapie ou Trastuzumab deruxtecan" },
+                "ESR1 muté": { "type": "resultat", "titre": "Elacestrant ou Imlunestrant +/- Abémaciclib" }
+              }
+            }
+          },
+          "Inhibiteur de l'Aromatase (AI) résistant": {
+            "type": "etape",
+            "titre": "Ligne 1 : Fulvestrant + Anti-CDK +/- agoniste LHRH",
+            "suite": { "type": "resultat", "titre": "Ligne 2 : Exémestane ou Tamoxifène + Everolimus" }
+          }
+        }
+      },
+      "Recherche mutation BRCA/PALB2 (Rechute)": {
+        "type": "question",
+        "titre": "Statut BRCA et délai de rechute",
+        "choix": {
+          "Rechute > 6 mois": {
+            "type": "question",
+            "titre": "Statut mutation",
+            "choix": {
+              "BRCA muté": { "type": "resultat", "titre": "Inhibiteur de la PARP" },
+              "BRCA sauvage": { "type": "resultat", "titre": "Chimiothérapie monothérapie ou association" }
+            }
+          },
+          "Rechute < 6 mois": {
+            "type": "resultat",
+            "titre": "Stratégie globale ou Essais cliniques (Option de première intention)"
+          }
+        }
+      }
+    }
+  }
+}
