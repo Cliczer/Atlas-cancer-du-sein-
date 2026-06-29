@@ -5,11 +5,11 @@
   },
   "tree": {
     "type": "question",
-    "titre": "Protocoles de Radiothérapie et Stade Avancé",
+    "titre": "Quelle situation clinique faut-il évaluer ?",
     "choix": {
       "Radiothérapie": {
         "type": "question",
-        "titre": "Indication de radiothérapie",
+        "titre": "Quelle est l'indication de radiothérapie ?",
         "choix": {
           "Post-Chirurgie conservatrice": { "type": "resultat", "titre": "Radiothérapie du sein +/- boost (hypofractionnée modérée recommandée)" },
           "Post-Mastectomie": {
@@ -31,7 +31,7 @@
             "titre": "Ligne 1 : Inhibiteur de l'aromatase + Anti-CDK +/- agoniste LHRH",
             "suite": {
               "type": "question",
-              "titre": "Ligne 2",
+              "titre": "Quelle est la réponse au traitement de ligne 1 ?",
               "choix": {
                 "Fulvestrant + Everolimus": { "type": "resultat", "titre": "Ligne 3 : Chimiothérapie ou Trastuzumab deruxtecan" },
                 "ESR1 muté": { "type": "resultat", "titre": "Elacestrant ou Imlunestrant +/- Abémaciclib" }
@@ -47,11 +47,11 @@
       },
       "Recherche mutation BRCA/PALB2 (Rechute)": {
         "type": "question",
-        "titre": "Statut BRCA et délai de rechute",
+        "titre": "Quel est le statut BRCA et le délai depuis la rechute ?",
         "choix": {
           "Rechute > 6 mois": {
             "type": "question",
-            "titre": "Statut mutation",
+            "titre": "Quel est le statut mutationnel BRCA ?",
             "choix": {
               "BRCA muté": { "type": "resultat", "titre": "Inhibiteur de la PARP" },
               "BRCA sauvage": { "type": "resultat", "titre": "Chimiothérapie monothérapie ou association" }

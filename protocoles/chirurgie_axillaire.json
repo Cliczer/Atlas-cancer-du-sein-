@@ -5,7 +5,7 @@
   },
   "tree": {
     "type": "question",
-    "titre": "Gestion axillaire et statut post-chirurgical",
+    "titre": "Quelle est la situation axillaire à traiter ?",
     "choix": {
       "Chirurgie axillaire en première intention": {
         "type": "question",
@@ -13,7 +13,7 @@
         "choix": {
           "cN0": {
             "type": "question",
-            "titre": "Cas clinique",
+            "titre": "Quel est le profil clinique de la patiente ?",
             "choix": {
               "cT1N0, RH+, Ménopause, Traitement conservateur + Radiothérapie": { "type": "resultat", "titre": "Abstention du Ganglion Sentinelle" },
               "Autres cas de traitement conservateur ou Mastectomie": {
@@ -66,7 +66,7 @@
           "pN0 (i-), pN0 (i+), pN1mi": { "type": "resultat", "titre": "Pas d'irradiation ganglionnaire (sauf critères de risque)" },
           "pN ≥ 1": {
             "type": "question",
-            "titre": "Type de geste",
+            "titre": "Quel geste chirurgical axillaire a été réalisé ?",
             "choix": {
               "Ganglion Sentinelle positif sans curage": { "type": "resultat", "titre": "Irradiation de l'ensemble des aires ganglionnaires" },
               "Curage axillaire": { "type": "resultat", "titre": "Irradiation des aires ganglionnaires selon envahissement (> 50% ou insuffisance de ganglions)" }
