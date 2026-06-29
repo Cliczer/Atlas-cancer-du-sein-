@@ -6,21 +6,26 @@
 <title>Éditeur arbre JSON SENORIF</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#111}
-header{padding:10px;background:white;border-bottom:1px solid #ddd;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header{padding:10px;background:white;border-bottom:1px solid #ddd;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
 button{padding:8px 10px;border:1px solid #ccc;border-radius:8px;background:white;font-weight:700;cursor:pointer}
 button.primary{background:#2563eb;color:white}
 button.success{background:#16a34a;color:white;border-color:#16a34a}
-.main{display:grid;grid-template-columns:300px 1fr 330px;height:calc(100vh - 58px)}
+.grp{display:flex;flex-direction:column;gap:4px;border-right:1px solid #e5e7eb;padding-right:10px}
+.grpLabel{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.03em}
+.grpBtns{display:flex;gap:6px;flex-wrap:wrap}
+.grpBtns button{padding:6px 8px;font-size:12.5px}
+.main{display:grid;grid-template-columns:300px 1fr 330px;height:calc(100vh - 70px)}
 .panel{background:white;padding:12px;border-right:1px solid #ddd;overflow:auto}
 .panel.right{border-left:1px solid #ddd;border-right:0}
 #canvas{position:relative;overflow:scroll;cursor:grab;background-image:linear-gradient(#e5e7eb 1px,transparent 1px),linear-gradient(90deg,#e5e7eb 1px,transparent 1px);background-size:24px 24px}
 #world{position:relative;width:6000px;height:4000px;transform-origin:0 0}
-.node{position:absolute;width:240px;min-height:76px;border:2px solid #2563eb;background:#eff6ff;border-radius:12px;padding:10px;box-shadow:0 3px 10px #0002;cursor:pointer;user-select:none}
+.node{position:absolute;width:260px;height:112px;border:2px solid #2563eb;background:#eff6ff;border-radius:12px;padding:10px;box-shadow:0 3px 10px #0002;cursor:pointer;user-select:none;overflow:hidden;box-sizing:border-box}
 .node.result{border-color:#16a34a;background:#ecfdf5}
+.node.decision{border-color:#9333ea;background:#f5f3ff}
 .node.selected{outline:4px solid #fbbf24}
-.type{font-size:11px;font-weight:bold;color:#555;margin-bottom:5px}
-.title{font-weight:bold;font-size:13px;white-space:pre-wrap}
-.small{font-size:12px;color:#555;margin-top:5px}
+.type{font-size:10px;font-weight:bold;color:#555;margin-bottom:4px;text-transform:uppercase}
+.title{font-weight:bold;font-size:13px;white-space:pre-wrap;overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.small{font-size:11px;color:#555;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .edge{position:absolute;height:2px;background:#777;transform-origin:left center}
 .label{position:absolute;background:white;border:1px solid #ccc;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:bold;cursor:pointer;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 textarea,input,select{width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:8px;padding:8px;font-family:inherit}
@@ -32,20 +37,52 @@ label{font-size:13px;font-weight:bold;margin-top:10px;display:block}
 #zoomValue{font-size:13px;font-weight:700;min-width:48px;text-align:center}
 .notice{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;line-height:1.4;color:#78350f}
 .ok{background:#dcfce7;border:1px solid #16a34a;color:#14532d}
+.searchBox{display:flex;gap:6px;align-items:center}
+.searchBox input{width:180px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#444;margin:8px 0}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.listRow{padding:5px 7px;border-radius:6px;cursor:pointer;font-size:12.5px;margin:3px 0;border-left:4px solid #2563eb;background:#f9fafb}
+.listRow:hover{background:#eef2ff}
+.listRow.sel{background:#fef3c7}
+details.listGroup{margin-left:10px}
+details.listGroup>summary{list-style:none}
+details.listGroup>summary::-webkit-details-marker{display:none}
+.overlay{display:none;position:fixed;inset:0;background:#0007;z-index:50;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modalBox{background:white;max-width:560px;width:90%;max-height:82vh;overflow:auto;padding:20px;border-radius:14px}
 </style>
 </head>
 <body>
 <header>
 <strong>Éditeur arbre JSON SENORIF</strong>
-<button onclick="addQuestion()">+ Question</button>
-<button onclick="addResult()">+ Résultat</button>
-<button onclick="toggleConnect()">Relier deux nœuds</button>
-<button class="primary" onclick="exportJSON()">Exporter JSON</button>
-<button class="success" onclick="saveForGithub()">Enregistrer pour GitHub</button>
-<button onclick="reloadRealTree()">Recharger arbre GitHub</button>
-<button onclick="loadExample()">Charger arbre SENORIF</button>
-<button onclick="saveLocal()">Sauver local</button>
-<button onclick="loadLocal()">Recharger local</button>
+
+<div class="grp">
+ <span class="grpLabel">Charger arbre à modifier</span>
+ <span class="grpBtns">
+  <button onclick="document.getElementById('fileInput').click()">Depuis mon ordinateur</button>
+  <button onclick="reloadRealTree()">Depuis GitHub</button>
+  <button onclick="loadExample()">Exemple SENORIF</button>
+ </span>
+</div>
+
+<div class="grp">
+ <span class="grpLabel">Éditeur</span>
+ <span class="grpBtns">
+  <button onclick="addQuestion()">+ Question</button>
+  <button onclick="addResult()">+ Résultat</button>
+  <button onclick="toggleConnect()">Relier deux nœuds</button>
+ </span>
+</div>
+
+<div class="grp">
+ <span class="grpLabel">Enregistrer les modifications</span>
+ <span class="grpBtns">
+  <button class="primary" onclick="exportJSON()">Télécharger JSON</button>
+  <button class="success" onclick="saveForGithub()">Vers GitHub</button>
+ </span>
+</div>
+
 <span class="zoomBox">
   <button onclick="zoomOut()">−</button>
   <input id="zoomSlider" type="range" min="3" max="200" value="100" oninput="setZoom(this.value/100)" style="width:130px">
@@ -53,30 +90,55 @@ label{font-size:13px;font-weight:bold;margin-top:10px;display:block}
   <span id="zoomValue">100%</span>
   <button onclick="fitView()">Tout voir</button>
 </span>
+
+<span class="searchBox">
+  <input id="searchBox" placeholder="Rechercher un mot-clé…" onkeydown="if(event.key==='Enter')searchNode()">
+  <button onclick="searchNode()">Chercher</button>
+</span>
+
+<button onclick="toggleHelp()" style="margin-left:auto">Aide</button>
 </header>
+
+<input type="file" id="fileInput" accept=".json" style="display:none">
+
+<div id="helpOverlay" class="overlay" onclick="if(event.target===this)toggleHelp()">
+ <div class="modalBox">
+  <h2 style="margin-top:0">Aide</h2>
+  <p class="help">
+  <b>Mode d'emploi :</b><br>
+  1. Clique sur un nœud (ou une ligne de la liste à gauche) pour le modifier dans le panneau de droite.<br>
+  2. La forme de l'arbre est calculée automatiquement : tu ne peux pas déplacer un nœud à la main, elle se réorganise toute seule dès que tu ajoutes/supprimes une question, un résultat ou une branche.<br>
+  3. Pour relier deux nœuds : bouton « Relier deux nœuds », puis clique le parent puis l'enfant.<br>
+  4. Pour te déplacer : clique-glisse sur le fond, barres de défilement, ou molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
+  5. Utilise la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.
+  </p>
+  <div class="notice"><b>Mise à jour GitHub :</b><br>1. Clique sur « Vers GitHub ».<br>2. Va dans le dépôt GitHub de l'Atlas.<br>3. Supprime l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoute le fichier téléchargé.<br>5. Vérifie qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Clique sur « Commit changes ».</div>
+  <div style="margin-top:12px">
+   <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b><br>
+   <button onclick="saveLocal()">Sauver brouillon</button>
+   <button onclick="loadLocal()">Recharger brouillon</button>
+  </div>
+  <button class="primary" style="margin-top:16px" onclick="toggleHelp()">Fermer</button>
+ </div>
+</div>
 
 <div class="main">
 <div class="panel">
-<p class="help">
-<b>Mode d'emploi :</b><br>
-1. Clique sur un nœud pour le modifier.<br>
-2. Glisse un nœud pour le déplacer.<br>
-3. Pour relier : bouton “Relier”, puis clique parent puis enfant.<br>
-4. Utilise les barres de défilement, le zoom, ou clique-glisse sur le fond pour te déplacer dans les gros arbres.
-</p>
-
 <div id="loadStatus" class="notice">Chargement de arbre_dynamique.json…</div>
 
-<label>Importer fichier JSON</label>
-<input type="file" id="fileInput" accept=".json">
+<div class="legend">
+ <span><i class="dot" style="background:#2563eb"></i> Question</span>
+ <span><i class="dot" style="background:#16a34a"></i> Résultat</span>
+ <span><i class="dot" style="background:#9333ea"></i> Décision (legacy)</span>
+</div>
 
-<label>Ou coller JSON</label>
-<textarea id="pasteBox" class="json"></textarea>
-<button onclick="importPasted()">Importer JSON collé</button>
+<details>
+ <summary style="cursor:pointer;font-weight:bold;font-size:13px">Coller du JSON</summary>
+ <textarea id="pasteBox" class="json"></textarea>
+ <button onclick="importPasted()">Importer JSON collé</button>
+</details>
 
-<div class="notice"><b>Mise à jour GitHub :</b><br>1. Clique sur “Enregistrer pour GitHub”.<br>2. Va dans le dépôt GitHub de l’Atlas.<br>3. Supprime l’ancien <code>arbre_dynamique.json</code>.<br>4. Ajoute le fichier téléchargé.<br>5. Vérifie qu’il s’appelle exactement <code>arbre_dynamique.json</code>.<br>6. Clique sur “Commit changes”.</div>
-
-<h3>Nœuds</h3>
+<h3>Nœuds <span style="font-size:11px;color:#777;font-weight:normal">(clique pour déplier les réponses)</span></h3>
 <div id="list"></div>
 </div>
 
@@ -97,7 +159,7 @@ label{font-size:13px;font-weight:bold;margin-top:10px;display:block}
 </select>
 
 <label>Question ou nom du résultat</label>
-<textarea id="editTitle" oninput="updateNode()"></textarea>
+<textarea id="editTitle" oninput="updateNode()" onblur="capitalizeTitle()"></textarea>
 
 <label>Données résultat JSON</label>
 <textarea id="editData" class="json" onchange="updateNodeData()"></textarea>
@@ -123,9 +185,9 @@ label{font-size:13px;font-weight:bold;margin-top:10px;display:block}
 let nodes=[], edges=[];
 let selectedNode=null, selectedEdge=null;
 let connectMode=false, connectSource=null;
-let drag=null;
 let pan=null;
 let zoom=1;
+let lastSearchIndex=-1, lastSearchTerm="";
 
 const NODE_W=240;
 const NODE_H=96;
@@ -1448,33 +1510,13 @@ function resultTitleFromData(t){
  return keys.length ? keys.map(k=>k.replace(/^OUT_/i,"")).join(", ") : "Résultat";
 }
 
-function countLeaves(t){
- if(!t || t.type==="resultat" || !t.choix || !Object.keys(t.choix).length) return 1;
- return Object.values(t.choix).reduce((sum,child)=>sum+countLeaves(child),0);
-}
-
 function treeToGraph(tree){
  nodes=[]; edges=[];
  let count=1;
- let cursorX=300;
 
- function walk(t, depth, parent, label){
-  let myLeaves=countLeaves(t);
+ function walk(t, parent, label){
   let children=t && t.type!=="resultat" && t.choix ? Object.entries(t.choix) : [];
   let id="n"+count++;
-  let x, y=80+depth*Y_GAP;
-
-  if(children.length===0){
-    x=cursorX;
-    cursorX += NODE_W + X_GAP;
-  } else {
-    let childIds=[];
-    children.forEach(([lab,child])=>{
-      childIds.push(walk(child, depth+1, id, lab));
-    });
-    let childNodes=childIds.map(id=>node(id));
-    x=(Math.min(...childNodes.map(n=>n.x))+Math.max(...childNodes.map(n=>n.x)))/2;
-  }
 
   nodes.push({
     id:id,
@@ -1483,25 +1525,63 @@ function treeToGraph(tree){
     donnees:t.donnees||{},
     infos_science:t.infos_science||{},
     source_senorif:t.source_senorif || (t.infos_science && t.infos_science.source) || "",
-    x:x,
-    y:y
+    x:0,
+    y:0
   });
 
   if(parent) edges.push({id:uid("e"),source:parent,target:id,label:label||"Réponse"});
+  children.forEach(([lab,child])=>walk(child, id, lab));
   return id;
  }
 
- walk(tree,0,null,"");
-
- // Comme les enfants sont créés avant le parent, on recentre verticalement proprement et on remet la racine au-dessus.
- nodes.sort((a,b)=>{
-   let na=parseInt(a.id.slice(1),10), nb=parseInt(b.id.slice(1),10);
-   return na-nb;
- });
-
- resizeWorld();
+ walk(tree,null,"");
+ autoLayout();
  render();
  setTimeout(fitView, 50);
+}
+
+// Calcule automatiquement la position de chaque nœud d'après les branches (edges).
+// C'est la SEULE façon dont les nœuds sont positionnés : on ne peut pas les déplacer à la main,
+// pour garantir que l'arbre reste toujours bien rangé.
+function autoLayout(){
+ if(!nodes.length) return;
+ let incoming=new Set(edges.map(e=>e.target));
+ let roots=nodes.filter(n=>!incoming.has(n.id));
+ if(!roots.length) roots=[nodes[0]];
+ let cursorX=300;
+ let visited=new Set();
+
+ function place(id, depth){
+  if(visited.has(id)) return node(id);
+  visited.add(id);
+  let n=node(id); if(!n) return null;
+  let y=80+depth*Y_GAP;
+  let childEdges=edges.filter(e=>e.source===id);
+  if(!childEdges.length){
+    n.x=cursorX; n.y=y;
+    cursorX += NODE_W + X_GAP;
+  } else {
+    let childXs=[];
+    childEdges.forEach(e=>{
+      let c=place(e.target, depth+1);
+      if(c) childXs.push(c.x);
+    });
+    n.x = childXs.length ? (Math.min(...childXs)+Math.max(...childXs))/2 : cursorX;
+    if(!childXs.length) cursorX += NODE_W + X_GAP;
+    n.y=y;
+  }
+  return n;
+ }
+
+ roots.forEach(r=>place(r.id,0));
+ nodes.forEach(n=>{
+   if(!visited.has(n.id)){
+     n.x=cursorX; n.y=80;
+     cursorX += NODE_W + X_GAP;
+     visited.add(n.id);
+   }
+ });
+ resizeWorld();
 }
 
 function graphToTree(){
@@ -1552,38 +1632,36 @@ function render(){
  document.getElementById("preview").value=JSON.stringify(graphToTree(),null,2);
 }
 
+function fitFontSize(text){
+ let len=(text||"").length;
+ return len>140 ? "10px" : len>90 ? "11px" : len>55 ? "12px" : "13px";
+}
+
 function renderNode(n){
  let w=document.getElementById("world");
  let el=document.createElement("div");
- el.className="node "+(n.type==="resultat"?"result ":"")+(selectedNode===n.id?"selected":"");
+ el.className="node "+(n.type==="resultat"?"result ":"")+(n.type==="decision"?"decision ":"")+(selectedNode===n.id?"selected":"");
  el.style.left=n.x+"px"; el.style.top=n.y+"px";
  let typeLabel = n.type==="resultat" ? "résultat" : n.type;
  let titleLabel = n.titre || (n.type==="resultat" ? summary(n) : "Question sans titre");
  let smallLabel = n.type==="resultat" ? "" : summary(n);
+ el.title = titleLabel + (smallLabel ? " — "+smallLabel : "");
 
  el.innerHTML =
    "<div class='type'>"+esc(typeLabel)+"</div>" +
-   "<div class='title'>"+esc(titleLabel)+"</div>" +
+   "<div class='title' style='font-size:"+fitFontSize(titleLabel)+"'>"+esc(titleLabel)+"</div>" +
    (smallLabel ? "<div class='small'>"+esc(smallLabel)+"</div>" : "");
  el.onpointerdown=function(ev){
   ev.preventDefault();
+  ev.stopPropagation();
   if(connectMode){connectClick(n.id);return}
   selectedNode=n.id; selectedEdge=null;
-  drag={id:n.id,sx:ev.clientX,sy:ev.clientY,ox:n.x,oy:n.y};
   render();
  };
  w.appendChild(el);
 }
 
-document.addEventListener("pointermove",function(ev){
- if(!drag)return;
- let n=node(drag.id);
- n.x=drag.ox+(ev.clientX-drag.sx)/zoom;
- n.y=drag.oy+(ev.clientY-drag.sy)/zoom;
- render();
-});
 document.addEventListener("pointerup",()=>{
- drag=null;
  pan=null;
  document.getElementById("canvas").style.cursor="grab";
 });
@@ -1611,6 +1689,20 @@ document.getElementById("canvas").addEventListener("pointerleave",function(){
  this.style.cursor="grab";
 });
 
+// Zoom à la molette quand la souris est au-dessus de l'arbre, centré sur le curseur.
+document.getElementById("canvas").addEventListener("wheel",function(ev){
+ ev.preventDefault();
+ let canvas=this;
+ let rect=canvas.getBoundingClientRect();
+ let cx=ev.clientX-rect.left, cy=ev.clientY-rect.top;
+ let worldX=(canvas.scrollLeft+cx)/zoom;
+ let worldY=(canvas.scrollTop+cy)/zoom;
+ let factor = ev.deltaY<0 ? 1.12 : 1/1.12;
+ setZoom(zoom*factor);
+ canvas.scrollLeft = worldX*zoom - cx;
+ canvas.scrollTop = worldY*zoom - cy;
+}, {passive:false});
+
 function renderEdge(e){
  let s=node(e.source), t=node(e.target);
  if(!s||!t)return;
@@ -1631,14 +1723,54 @@ function summary(n){
  let out=edges.filter(e=>e.source===n.id);return out.length?out.map(e=>e.label).join(" / "):"(aucune réponse)"
 }
 
+function nodeColor(type){
+ if(type==="resultat") return "#16a34a";
+ if(type==="decision") return "#9333ea";
+ return "#2563eb";
+}
+
+function buildListNode(n, seenSet, edgeLabel){
+ seenSet.add(n.id);
+ let childEdges=edges.filter(e=>e.source===n.id);
+ let label=(edgeLabel?("↳ "+edgeLabel+" — "):"")+(n.titre||"(sans titre)");
+
+ if(!childEdges.length){
+  let row=document.createElement("div");
+  row.className="listRow"+(selectedNode===n.id?" sel":"");
+  row.style.borderLeftColor=nodeColor(n.type);
+  row.textContent=label;
+  row.onclick=()=>{selectedNode=n.id;selectedEdge=null;centerOnNode(n.id);render()};
+  return row;
+ }
+
+ let det=document.createElement("details");
+ det.className="listGroup";
+ det.open=false;
+ let sum=document.createElement("summary");
+ sum.className="listRow"+(selectedNode===n.id?" sel":"");
+ sum.style.borderLeftColor=nodeColor(n.type);
+ sum.textContent=label;
+ sum.onclick=function(ev){
+  // Permet de sélectionner le nœud sans empêcher le repli/dépli du menu déroulant.
+  selectedNode=n.id; selectedEdge=null; centerOnNode(n.id); render();
+ };
+ det.appendChild(sum);
+ childEdges.forEach(e=>{
+  let child=node(e.target);
+  if(!child || seenSet.has(child.id)) return;
+  det.appendChild(buildListNode(child, seenSet, e.label));
+ });
+ return det;
+}
+
 function renderList(){
  let list=document.getElementById("list"); list.innerHTML="";
- nodes.forEach(n=>{
-  let d=document.createElement("div");
-  d.style.padding="6px"; d.style.borderBottom="1px solid #eee"; d.textContent=n.type+" — "+(n.type==="resultat"?(n.titre||summary(n)):n.titre);
-  d.onclick=()=>{selectedNode=n.id;selectedEdge=null;centerOnNode(n.id);render()};
-  list.appendChild(d);
- });
+ let incoming=new Set(edges.map(e=>e.target));
+ let roots=nodes.filter(n=>!incoming.has(n.id));
+ if(!roots.length && nodes.length) roots=[nodes[0]];
+ let seenSet=new Set();
+ roots.forEach(r=>list.appendChild(buildListNode(r,seenSet,null)));
+ nodes.forEach(n=>{ if(!seenSet.has(n.id)) list.appendChild(buildListNode(n,seenSet,null)); });
 }
 
 function renderEditor(){
@@ -1655,6 +1787,17 @@ function renderEditor(){
  if(e) document.getElementById("editEdgeLabel").value=e.label||"";
 }
 
+function capFirst(s){
+ s=String(s||"");
+ if(!s) return s;
+ return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function capitalizeTitle(){
+ let n=node(selectedNode); if(!n) return;
+ n.titre=capFirst(n.titre);
+ render();
+}
+
 function updateNode(){
  let n=node(selectedNode);if(!n)return;
  n.type=document.getElementById("editType").value;
@@ -1665,12 +1808,33 @@ function updateNode(){
 function updateNodeData(){let n=node(selectedNode);if(!n)return;try{n.donnees=JSON.parse(document.getElementById("editData").value||"{}");if(n.type==="resultat"&&!n.titre)n.titre=resultTitleFromData(n);render()}catch(err){alert("JSON données invalide: "+err.message)}}
 function updateEdge(){let e=edge(selectedEdge);if(!e)return;e.label=document.getElementById("editEdgeLabel").value;render()}
 
-function addQuestion(){nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:120,y:120});render()}
-function addResult(){nodes.push({id:uid("n"),type:"resultat",titre:"Nouveau résultat",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:160,y:300});render()}
-function deleteNode(){if(!selectedNode)return;nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;render()}
-function deleteEdge(){if(!selectedEdge)return;edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;render()}
+function addQuestion(){nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
+function addResult(){nodes.push({id:uid("n"),type:"resultat",titre:"Nouveau résultat",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
+function deleteNode(){if(!selectedNode)return;nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
+function deleteEdge(){if(!selectedEdge)return;edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
 function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Clique le parent puis l'enfant":"Mode liaison désactivé")}
-function connectClick(id){if(!connectSource){connectSource=id;return}else{edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;render()}}
+function connectClick(id){if(!connectSource){connectSource=id;return}else{edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;autoLayout();render()}}
+
+function searchNode(){
+ let term=(document.getElementById("searchBox").value||"").trim().toLowerCase();
+ if(!term) return;
+ let matches=nodes.filter(n=>{
+  let hay=(n.titre+" "+JSON.stringify(n.donnees||{})+" "+(n.source_senorif||"")).toLowerCase();
+  return hay.includes(term);
+ });
+ if(!matches.length){ alert("Aucun nœud trouvé pour : "+term); return; }
+ if(term!==lastSearchTerm){ lastSearchIndex=-1; lastSearchTerm=term; }
+ lastSearchIndex=(lastSearchIndex+1)%matches.length;
+ let m=matches[lastSearchIndex];
+ selectedNode=m.id; selectedEdge=null;
+ if(zoom<0.4) setZoom(0.6);
+ centerOnNode(m.id);
+ render();
+}
+
+function toggleHelp(){
+ document.getElementById("helpOverlay").classList.toggle("show");
+}
 
 function importPasted(){try{treeToGraph(JSON.parse(document.getElementById("pasteBox").value));setStatus("JSON collé importé.", true)}catch(e){alert("JSON invalide: "+e.message)}}
 document.getElementById("fileInput").addEventListener("change",function(ev){
