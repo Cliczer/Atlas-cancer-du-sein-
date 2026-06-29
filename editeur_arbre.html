@@ -72,6 +72,8 @@ details.listGroup>summary::-webkit-details-marker{display:none}
   <button onclick="addQuestion()">+ Question</button>
   <button onclick="addResult()">+ Résultat</button>
   <button onclick="toggleConnect()">Relier deux nœuds</button>
+  <button onclick="undo()" title="Ctrl+Z">↶ Annuler</button>
+  <button onclick="redo()" title="Ctrl+Maj+Z">↷ Rétablir</button>
  </span>
 </div>
 
@@ -152,27 +154,27 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 
 <div id="nodeEdit" style="display:none">
 <label>Type</label>
-<select id="editType" onchange="updateNode()">
+<select id="editType" onfocus="pushHistory()" onchange="updateNode()">
 <option value="question">question</option>
 <option value="resultat">resultat</option>
 <option value="decision">decision (legacy)</option>
 </select>
 
 <label>Question ou nom du résultat</label>
-<textarea id="editTitle" oninput="updateNode()" onblur="capitalizeTitle()"></textarea>
+<textarea id="editTitle" onfocus="pushHistory()" oninput="updateNode()" onblur="capitalizeTitle()"></textarea>
 
 <label>Données résultat JSON</label>
-<textarea id="editData" class="json" onchange="updateNodeData()"></textarea>
+<textarea id="editData" class="json" onfocus="pushHistory()" onchange="updateNodeData()"></textarea>
 
 <label>Source SENORIF</label>
-<input id="editSource" oninput="updateNode()">
+<input id="editSource" onfocus="pushHistory()" oninput="updateNode()">
 
 <button onclick="deleteNode()" style="margin-top:8px;color:#b91c1c">Supprimer ce nœud</button>
 </div>
 
 <div id="edgeEdit" style="display:none">
 <label>Réponse / branche</label>
-<input id="editEdgeLabel" oninput="updateEdge()">
+<input id="editEdgeLabel" onfocus="pushHistory()" oninput="updateEdge()">
 <button onclick="deleteEdge()" style="margin-top:8px;color:#b91c1c">Supprimer branche</button>
 </div>
 
@@ -188,6 +190,8 @@ let connectMode=false, connectSource=null;
 let pan=null;
 let zoom=1;
 let lastSearchIndex=-1, lastSearchTerm="";
+let undoStack=[], redoStack=[];
+const HISTORY_LIMIT=100;
 
 const NODE_W=240;
 const NODE_H=96;
@@ -1511,6 +1515,7 @@ function resultTitleFromData(t){
 }
 
 function treeToGraph(tree){
+ if(nodes.length) pushHistory();
  nodes=[]; edges=[];
  let count=1;
 
@@ -1787,6 +1792,40 @@ function renderEditor(){
  if(e) document.getElementById("editEdgeLabel").value=e.label||"";
 }
 
+function snapshotState(){
+ return JSON.stringify({nodes:nodes, edges:edges});
+}
+function restoreState(snap){
+ let o=JSON.parse(snap);
+ nodes=o.nodes; edges=o.edges;
+ selectedNode=null; selectedEdge=null;
+ render();
+}
+// À appeler juste AVANT toute modification structurelle, pour pouvoir y revenir avec Ctrl+Z.
+function pushHistory(){
+ undoStack.push(snapshotState());
+ if(undoStack.length>HISTORY_LIMIT) undoStack.shift();
+ redoStack=[];
+}
+function undo(){
+ if(!undoStack.length) return;
+ redoStack.push(snapshotState());
+ restoreState(undoStack.pop());
+}
+function redo(){
+ if(!redoStack.length) return;
+ undoStack.push(snapshotState());
+ restoreState(redoStack.pop());
+}
+document.addEventListener("keydown",function(ev){
+ let tag=ev.target && ev.target.tagName;
+ if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT") return;
+ if(!(ev.ctrlKey||ev.metaKey)) return;
+ let key=ev.key.toLowerCase();
+ if(key==="z" && !ev.shiftKey){ ev.preventDefault(); undo(); }
+ else if(key==="y" || (key==="z" && ev.shiftKey)){ ev.preventDefault(); redo(); }
+});
+
 function capFirst(s){
  s=String(s||"");
  if(!s) return s;
@@ -1808,12 +1847,12 @@ function updateNode(){
 function updateNodeData(){let n=node(selectedNode);if(!n)return;try{n.donnees=JSON.parse(document.getElementById("editData").value||"{}");if(n.type==="resultat"&&!n.titre)n.titre=resultTitleFromData(n);render()}catch(err){alert("JSON données invalide: "+err.message)}}
 function updateEdge(){let e=edge(selectedEdge);if(!e)return;e.label=document.getElementById("editEdgeLabel").value;render()}
 
-function addQuestion(){nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
-function addResult(){nodes.push({id:uid("n"),type:"resultat",titre:"Nouveau résultat",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
-function deleteNode(){if(!selectedNode)return;nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
-function deleteEdge(){if(!selectedEdge)return;edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
+function addQuestion(){pushHistory();nodes.push({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
+function addResult(){pushHistory();nodes.push({id:uid("n"),type:"resultat",titre:"Nouveau résultat",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
+function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
+function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
 function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Clique le parent puis l'enfant":"Mode liaison désactivé")}
-function connectClick(id){if(!connectSource){connectSource=id;return}else{edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;autoLayout();render()}}
+function connectClick(id){if(!connectSource){connectSource=id;return}else{pushHistory();edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;autoLayout();render()}}
 
 function searchNode(){
  let term=(document.getElementById("searchBox").value||"").trim().toLowerCase();
