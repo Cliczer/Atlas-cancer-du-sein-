@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "titre": "Protocoles de Chirurgie Axillaire et Statut Post-Chirurgical SENORIF",
+    "date_maj": "2026-06-29"
+  },
+  "tree": {
+    "type": "question",
+    "titre": "Gestion axillaire et statut post-chirurgical",
+    "choix": {
+      "Chirurgie axillaire en première intention": {
+        "type": "question",
+        "titre": "Stade clinique ganglionnaire (cN)",
+        "choix": {
+          "cN0": {
+            "type": "question",
+            "titre": "Cas clinique",
+            "choix": {
+              "cT1N0, RH+, Ménopause, Traitement conservateur + Radiothérapie": { "type": "resultat", "titre": "Abstention du Ganglion Sentinelle" },
+              "Autres cas de traitement conservateur ou Mastectomie": {
+                "type": "etape",
+                "titre": "Ganglion Sentinelle",
+                "choix": {
+                  "Négatif, Cellules isolées ou Micro-métastatique": { "type": "resultat", "titre": "Stop (pas de curage)" },
+                  "Positif ou Macro-métastatique": { "type": "resultat", "titre": "Curage axillaire" }
+                }
+              }
+            }
+          },
+          "cN1": {
+            "type": "question",
+            "titre": "Tous les critères (non pT4d, ≤ 2 Ganglions Sentinelles, Traitement adjuvant prévu) ?",
+            "choix": {
+              "Oui": { "type": "resultat", "titre": "Curage axillaire ou Radiothérapie loco-régionale" },
+              "Non": { "type": "resultat", "titre": "Curage axillaire" }
+            }
+          }
+        }
+      },
+      "Chirurgie axillaire après Chimiothérapie Néoadjuvante": {
+        "type": "question",
+        "titre": "Statut initial et après traitement",
+        "choix": {
+          "Tout T cN0 ycN0": {
+            "type": "etape",
+            "titre": "Ganglion Sentinelle",
+            "choix": {
+              "Négatif": { "type": "resultat", "titre": "Radiothérapie loco-régionale" }
+            }
+          },
+          "cT1-3 cN1 ycN0": {
+            "type": "etape",
+            "titre": "Traitement Axillaire Direct (Exérèse ganglions clippés + Ganglion Sentinelle)",
+            "choix": {
+              "Ganglion stérilisé (+/- Cellules isolées)": { "type": "resultat", "titre": "Radiothérapie loco-régionale" },
+              "Négatif": { "type": "resultat", "titre": "Radiothérapie loco-régionale" },
+              "Positif (Macro/Micro-métastatique)": { "type": "resultat", "titre": "Curage axillaire" }
+            }
+          },
+          "cN1 / ycN1 / ypN1 ou T4d N+": { "type": "resultat", "titre": "Curage axillaire et Radiothérapie loco-régionale" }
+        }
+      },
+      "Statut ganglionnaire post-chirurgical (GS +/- Curage)": {
+        "type": "question",
+        "titre": "Résultat anatomopathologique (pN)",
+        "choix": {
+          "pN0 (i-), pN0 (i+), pN1mi": { "type": "resultat", "titre": "Pas d'irradiation ganglionnaire (sauf critères de risque)" },
+          "pN ≥ 1": {
+            "type": "question",
+            "titre": "Type de geste",
+            "choix": {
+              "Ganglion Sentinelle positif sans curage": { "type": "resultat", "titre": "Irradiation de l'ensemble des aires ganglionnaires" },
+              "Curage axillaire": { "type": "resultat", "titre": "Irradiation des aires ganglionnaires selon envahissement (> 50% ou insuffisance de ganglions)" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
