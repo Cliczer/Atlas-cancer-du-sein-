@@ -10,6 +10,7 @@ header{padding:10px;background:white;border-bottom:1px solid #ddd;display:flex;g
 button{padding:8px 10px;border:1px solid #ccc;border-radius:8px;background:white;font-weight:700;cursor:pointer}
 button.primary{background:#2563eb;color:white}
 button.success{background:#16a34a;color:white;border-color:#16a34a}
+button:disabled{opacity:.4;cursor:not-allowed}
 .grp{display:flex;flex-direction:column;gap:4px;border-right:1px solid #e5e7eb;padding-right:10px}
 .grpLabel{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.03em}
 .grpBtns{display:flex;gap:6px;flex-wrap:wrap}
@@ -72,8 +73,14 @@ details.listGroup>summary::-webkit-details-marker{display:none}
   <button onclick="addQuestion()">+ Question</button>
   <button onclick="addResult()">+ Résultat</button>
   <button onclick="toggleConnect()">Relier deux nœuds</button>
-  <button onclick="undo()" title="Ctrl+Z">↶ Annuler</button>
-  <button onclick="redo()" title="Ctrl+Maj+Z">↷ Rétablir</button>
+ </span>
+</div>
+
+<div class="grp">
+ <span class="grpLabel">Historique</span>
+ <span class="grpBtns">
+  <button id="undoBtn" onclick="undo()" title="Ctrl+Z">Annuler</button>
+  <button id="redoBtn" onclick="redo()" title="Ctrl+Maj+Z">Rétablir</button>
  </span>
 </div>
 
@@ -94,8 +101,9 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 </span>
 
 <span class="searchBox">
-  <input id="searchBox" placeholder="Rechercher un mot-clé…" onkeydown="if(event.key==='Enter')searchNode()">
+  <input id="searchBox" placeholder="Rechercher un mot-clé…" oninput="liveSearch()" onkeydown="if(event.key==='Enter')searchNode()">
   <button onclick="searchNode()">Chercher</button>
+  <span id="searchStatus" style="font-size:11px;color:#777;min-width:90px"></span>
 </span>
 
 <button onclick="toggleHelp()" style="margin-left:auto">Aide</button>
@@ -108,13 +116,14 @@ details.listGroup>summary::-webkit-details-marker{display:none}
   <h2 style="margin-top:0">Aide</h2>
   <p class="help">
   <b>Mode d'emploi :</b><br>
-  1. Clique sur un nœud (ou une ligne de la liste à gauche) pour le modifier dans le panneau de droite.<br>
-  2. La forme de l'arbre est calculée automatiquement : tu ne peux pas déplacer un nœud à la main, elle se réorganise toute seule dès que tu ajoutes/supprimes une question, un résultat ou une branche.<br>
-  3. Pour relier deux nœuds : bouton « Relier deux nœuds », puis clique le parent puis l'enfant.<br>
-  4. Pour te déplacer : clique-glisse sur le fond, barres de défilement, ou molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
-  5. Utilise la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.
+  1. Cliquez sur un nœud (ou une ligne de la liste à gauche) pour le modifier dans le panneau de droite.<br>
+  2. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez une question, un résultat ou une branche.<br>
+  3. Pour relier deux nœuds : bouton « Relier deux nœuds », puis cliquez le parent puis l'enfant.<br>
+  4. Pour vous déplacer : cliquez-glissez sur le fond, utilisez les barres de défilement, ou la molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
+  5. Utilisez la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.<br>
+  6. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
   </p>
-  <div class="notice"><b>Mise à jour GitHub :</b><br>1. Clique sur « Vers GitHub ».<br>2. Va dans le dépôt GitHub de l'Atlas.<br>3. Supprime l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoute le fichier téléchargé.<br>5. Vérifie qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Clique sur « Commit changes ».</div>
+  <div class="notice"><b>Mise à jour GitHub :</b><br>1. Cliquez sur « Vers GitHub ».<br>2. Allez dans le dépôt GitHub de l'Atlas.<br>3. Supprimez l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoutez le fichier téléchargé.<br>5. Vérifiez qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Cliquez sur « Commit changes ».</div>
   <div style="margin-top:12px">
    <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b><br>
    <button onclick="saveLocal()">Sauver brouillon</button>
@@ -140,7 +149,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
  <button onclick="importPasted()">Importer JSON collé</button>
 </details>
 
-<h3>Nœuds <span style="font-size:11px;color:#777;font-weight:normal">(clique pour déplier les réponses)</span></h3>
+<h3>Nœuds <span style="font-size:11px;color:#777;font-weight:normal">(cliquez pour déplier les réponses)</span></h3>
 <div id="list"></div>
 </div>
 
@@ -150,7 +159,7 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 
 <div class="panel right">
 <h3>Édition</h3>
-<div id="editEmpty">Clique sur un nœud ou une branche.</div>
+<div id="editEmpty">Cliquez sur un nœud ou une branche.</div>
 
 <div id="nodeEdit" style="display:none">
 <label>Type</label>
@@ -178,8 +187,11 @@ details.listGroup>summary::-webkit-details-marker{display:none}
 <button onclick="deleteEdge()" style="margin-top:8px;color:#b91c1c">Supprimer branche</button>
 </div>
 
+<button onclick="togglePreview()" style="margin-top:10px">Afficher / masquer l'aperçu JSON</button>
+<div id="previewBox" style="display:none">
 <h3>Aperçu JSON</h3>
 <textarea id="preview" class="json" readonly></textarea>
+</div>
 </div>
 </div>
 
@@ -1626,7 +1638,13 @@ function resizeWorld(){
  w.style.height=Math.max(1800,maxY)+"px";
 }
 
+function refreshUndoButtons(){
+ document.getElementById("undoBtn").disabled = !undoStack.length;
+ document.getElementById("redoBtn").disabled = !redoStack.length;
+}
+
 function render(){
+ refreshUndoButtons();
  resizeWorld();
  let w=document.getElementById("world");
  w.innerHTML="";
@@ -1851,28 +1869,67 @@ function addQuestion(){pushHistory();nodes.push({id:uid("n"),type:"question",tit
 function addResult(){pushHistory();nodes.push({id:uid("n"),type:"resultat",titre:"Nouveau résultat",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0});autoLayout();render()}
 function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
 function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
-function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Clique le parent puis l'enfant":"Mode liaison désactivé")}
+function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Cliquez le parent puis l'enfant":"Mode liaison désactivé")}
 function connectClick(id){if(!connectSource){connectSource=id;return}else{pushHistory();edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;autoLayout();render()}}
 
-function searchNode(){
- let term=(document.getElementById("searchBox").value||"").trim().toLowerCase();
- if(!term) return;
- let matches=nodes.filter(n=>{
-  let hay=(n.titre+" "+JSON.stringify(n.donnees||{})+" "+(n.source_senorif||"")).toLowerCase();
-  return hay.includes(term);
+function fold(s){
+ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+}
+
+function findMatches(term){
+ let f=fold(term);
+ if(!f) return [];
+ return nodes.filter(n=>{
+  let hay=fold(n.titre+" "+JSON.stringify(n.donnees||{})+" "+(n.source_senorif||""));
+  return hay.includes(f);
  });
- if(!matches.length){ alert("Aucun nœud trouvé pour : "+term); return; }
- if(term!==lastSearchTerm){ lastSearchIndex=-1; lastSearchTerm=term; }
- lastSearchIndex=(lastSearchIndex+1)%matches.length;
- let m=matches[lastSearchIndex];
+}
+
+function jumpToMatch(m){
  selectedNode=m.id; selectedEdge=null;
  if(zoom<0.4) setZoom(0.6);
  centerOnNode(m.id);
  render();
 }
 
+function setSearchStatus(text){
+ document.getElementById("searchStatus").textContent=text;
+}
+
+// Recherche en direct, sans bloquer l'interface : pas besoin de taper le mot entier
+// ni d'appuyer sur Entrée, une recherche partielle (même sans les premières lettres) suffit.
+let liveSearchTimer=null;
+function liveSearch(){
+ clearTimeout(liveSearchTimer);
+ liveSearchTimer=setTimeout(()=>{
+  let term=(document.getElementById("searchBox").value||"").trim();
+  if(!term){ setSearchStatus(""); return; }
+  let matches=findMatches(term);
+  lastSearchTerm=term; lastSearchIndex=0;
+  if(!matches.length){ setSearchStatus("Aucun résultat"); return; }
+  setSearchStatus(matches.length+" résultat"+(matches.length>1?"s":""));
+  jumpToMatch(matches[0]);
+ }, 250);
+}
+
+function searchNode(){
+ let term=(document.getElementById("searchBox").value||"").trim();
+ if(!term){ setSearchStatus(""); return; }
+ let matches=findMatches(term);
+ if(!matches.length){ setSearchStatus("Aucun résultat"); return; }
+ if(term!==lastSearchTerm){ lastSearchIndex=-1; lastSearchTerm=term; }
+ lastSearchIndex=(lastSearchIndex+1)%matches.length;
+ setSearchStatus((lastSearchIndex+1)+"/"+matches.length+" résultats");
+ jumpToMatch(matches[lastSearchIndex]);
+}
+
 function toggleHelp(){
  document.getElementById("helpOverlay").classList.toggle("show");
+}
+
+function togglePreview(){
+ let box=document.getElementById("previewBox");
+ box.style.display = box.style.display==="none" ? "block" : "none";
 }
 
 function importPasted(){try{treeToGraph(JSON.parse(document.getElementById("pasteBox").value));setStatus("JSON collé importé.", true)}catch(e){alert("JSON invalide: "+e.message)}}
@@ -1895,7 +1952,7 @@ function downloadTree(filename){
 function exportJSON(){downloadTree("arbre_dynamique.json")}
 function saveForGithub(){
  downloadTree("arbre_dynamique.json");
- alert("Le fichier arbre_dynamique.json a été téléchargé. Remplace maintenant l'ancien fichier dans GitHub, puis commit les changements.");
+ alert("Le fichier arbre_dynamique.json a été téléchargé. Remplacez maintenant l'ancien fichier dans GitHub, puis commitez les changements.");
 }
 function saveLocal(){localStorage.setItem("arbre_senorif_editor",JSON.stringify({nodes,edges}));alert("Sauvegardé")}
 function loadLocal(){let s=localStorage.getItem("arbre_senorif_editor");if(!s)return alert("Pas de sauvegarde");let o=JSON.parse(s);nodes=o.nodes;edges=o.edges;render();setTimeout(fitView,50)}
