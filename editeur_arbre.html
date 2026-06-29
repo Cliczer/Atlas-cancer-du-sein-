@@ -670,19 +670,28 @@ function fold(s){
  return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 }
 
+// Recherche à la fois dans les nœuds (titre, données, source) et dans les réponses
+// portées par les traits (branches) qui relient les nœuds.
 function findMatches(term){
  let f=fold(term);
  if(!f) return [];
- return nodes.filter(n=>{
+ let nodeMatches=nodes.filter(n=>{
   let hay=fold(n.titre+" "+JSON.stringify(n.donnees||{})+" "+(n.source_senorif||""));
   return hay.includes(f);
- });
+ }).map(n=>({kind:"node", id:n.id}));
+ let edgeMatches=edges.filter(e=>fold(e.label||"").includes(f)).map(e=>({kind:"edge", id:e.id}));
+ return nodeMatches.concat(edgeMatches);
 }
 
 function jumpToMatch(m){
- selectedNode=m.id; selectedEdge=null;
  if(zoom<0.4) setZoom(0.6);
- centerOnNode(m.id);
+ if(m.kind==="edge"){
+  selectedEdge=m.id; selectedNode=null;
+  centerOnEdge(m.id);
+ } else {
+  selectedNode=m.id; selectedEdge=null;
+  centerOnNode(m.id);
+ }
  render();
 }
 
@@ -778,6 +787,15 @@ function centerOnNode(id){
  let canvas=document.getElementById("canvas");
  canvas.scrollLeft=Math.max(0,(n.x-300)*zoom);
  canvas.scrollTop=Math.max(0,(n.y-200)*zoom);
+}
+
+function centerOnEdge(id){
+ let e=edge(id); if(!e)return;
+ let s=node(e.source), t=node(e.target); if(!s||!t)return;
+ let canvas=document.getElementById("canvas");
+ let mx=(s.x+t.x)/2, my=(s.y+t.y)/2;
+ canvas.scrollLeft=Math.max(0,(mx-300)*zoom);
+ canvas.scrollTop=Math.max(0,(my-200)*zoom);
 }
 
 function reloadRealTree(){
