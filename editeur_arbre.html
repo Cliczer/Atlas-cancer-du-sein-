@@ -78,6 +78,8 @@ h3 .hint{font-size:11px;color:var(--text-muted);font-weight:500}
 .node.result{border-color:var(--success);background:linear-gradient(180deg,#ecfdf5,#d9f5e3);
  box-shadow:0 4px 14px rgba(22,163,74,.16)}
 .node.result:hover{box-shadow:0 8px 20px rgba(22,163,74,.24)}
+.node.etape{border-color:#0891b2;background:linear-gradient(180deg,#ecfeff,#cffafe);box-shadow:0 4px 14px rgba(8,145,178,.16)}
+.node.etape:hover{box-shadow:0 8px 20px rgba(8,145,178,.24)}
 .node.decision{border-color:#9333ea;background:linear-gradient(180deg,#f5f3ff,#ebe5fb)}
 .node.selected{outline:3px solid var(--warning);outline-offset:2px}
 .type{font-size:9.5px;font-weight:800;color:rgba(15,23,42,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em}
@@ -116,10 +118,6 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 
 #editEmpty{color:var(--text-muted);font-size:13px;padding:26px 12px;text-align:center;
  border:1.5px dashed var(--border);border-radius:12px}
-
-.valRow{display:flex;gap:6px;align-items:center;margin:6px 0}
-.valRow input{flex:1}
-.valRow button{padding:6px 9px;font-size:12px;flex-shrink:0}
 
 .listRow{padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12.5px;margin:4px 0;line-height:1.4;
  border-left:4px solid var(--primary);background:var(--surface-alt);transition:background .12s ease,transform .12s ease}
@@ -160,6 +158,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
  <span class="grpLabel">✏️ Éditeur</span>
  <span class="grpBtns">
   <button onclick="addQuestion()">+ Question</button>
+  <button onclick="addEtape()">+ Étape</button>
   <button onclick="addResult()">+ Recommandation</button>
   <button onclick="toggleConnect()">Relier deux nœuds</button>
  </span>
@@ -187,6 +186,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
   <button onclick="zoomIn()">+</button>
   <span id="zoomValue">100%</span>
   <button onclick="fitView()">Tout voir</button>
+  <button id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Plein écran arbre</button>
 </span>
 
 <span class="searchBox">
@@ -208,11 +208,13 @@ details.listGroup[open]>summary::before{content:"▾ "}
   1. Cliquez sur un nœud (ou une question de la liste à gauche, ou une réponse de son menu déplié) pour le modifier dans le panneau de droite.<br>
   2. Une fois vos modifications faites dans le panneau de droite, cliquez sur « Valider » pour les appliquer à l'arbre.<br>
   3. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez une question, une recommandation ou une branche.<br>
-  4. Si un nœud est sélectionné (en surbrillance), cliquer sur « + Question » ou « + Recommandation » crée directement le lien avec ce nœud. Sinon, utilisez « Relier deux nœuds » : cliquez le parent puis l'enfant.<br>
+  4. Si un nœud est sélectionné (en surbrillance), cliquer sur « + Question », « + Étape » ou « + Recommandation » crée directement le lien avec ce nœud. Sinon, utilisez « Relier deux nœuds » : cliquez le parent puis l'enfant.<br>
+  4bis. <b>Question vs Étape :</b> une <i>Question</i> a toujours des réponses nommées. Une <i>Étape</i> sert pour un passage intermédiaire qui ne pose pas vraiment de question : laissez le nom de la branche vide si elle n'a qu'une seule suite, elle s'exportera comme un simple enchaînement (sans « Branche 1 », « Branche 2 » inventés dans le JSON).<br>
   5. Pour vous déplacer : cliquez-glissez sur le fond, utilisez les barres de défilement, ou la molette de la souris au-dessus de l'arbre pour zoomer/dézoomer.<br>
   6. Utilisez la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.<br>
-  7. Une branche peut avoir plusieurs réponses possibles menant au même nœud suivant : ajoutez chaque valeur séparément avec « + Ajouter une valeur » dans l'édition de la branche.<br>
-  8. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
+  7. Une même réponse peut mener à plusieurs décisions/questions à la fois : sélectionnez la réponse (la branche) puis cliquez sur « + Question » ou « + Recommandation » pour en ajouter une autre dessus.<br>
+  8. Le bouton « ⛶ Plein écran arbre » masque la liste des questions à gauche pour agrandir la vue de l'arbre. Le ✕ en haut du panneau de droite permet de le fermer ; il se rouvre automatiquement à la prochaine sélection.<br>
+  9. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
   </p>
   <div class="notice"><b>Mise à jour GitHub :</b><br>1. Cliquez sur « Vers GitHub ».<br>2. Allez dans le dépôt GitHub de l'Atlas.<br>3. Supprimez l'ancien <code>arbre_dynamique.json</code>.<br>4. Ajoutez le fichier téléchargé.<br>5. Vérifiez qu'il s'appelle exactement <code>arbre_dynamique.json</code>.<br>6. Cliquez sur « Commit changes ».</div>
   <hr class="divider">
@@ -225,12 +227,13 @@ details.listGroup[open]>summary::before{content:"▾ "}
  </div>
 </div>
 
-<div class="main">
-<div class="panel">
+<div class="main" id="mainGrid">
+<div class="panel" id="leftPanel">
 <div id="loadStatus" class="notice">Chargement de arbre_dynamique.json…</div>
 
 <div class="legend">
  <span><i class="dot" style="background:#2563eb"></i> Question</span>
+ <span><i class="dot" style="background:#0891b2"></i> Étape</span>
  <span><i class="dot" style="background:#16a34a"></i> Recommandation</span>
 </div>
 
@@ -242,18 +245,19 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div id="world"></div>
 </div>
 
-<div class="panel right">
-<h3>Édition</h3>
+<div class="panel right" id="rightPanel">
+<h3 style="display:flex;align-items:center;justify-content:space-between">Édition <button class="ghost" style="padding:2px 8px" onclick="closeRightPanel()" title="Fermer le panneau">✕</button></h3>
 <div id="editEmpty">Cliquez sur un nœud ou une branche.</div>
 
 <div id="nodeEdit" style="display:none">
 <label>Type</label>
 <select id="editType">
 <option value="question">question</option>
+<option value="etape">étape</option>
 <option value="resultat">recommandation</option>
 </select>
 
-<label>Question ou nom de la recommandation</label>
+<label>Question, étape ou nom de la recommandation</label>
 <textarea id="editTitle" style="min-height:60px"></textarea>
 
 <label>Données recommandation JSON</label>
@@ -269,9 +273,10 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </div>
 
 <div id="edgeEdit" style="display:none">
-<label>Réponse(s) / branche <span class="hint" style="text-transform:none;font-weight:500">(plusieurs valeurs possibles pour la même branche)</span></label>
-<div id="editEdgeValues"></div>
-<button class="ghost" style="width:100%;margin-top:6px" onclick="addEdgeValueField()">+ Ajouter une valeur</button>
+<label>Réponse / branche</label>
+<input id="editEdgeLabel" placeholder="Laissez vide pour une suite directe, sans nom de branche">
+<div id="edgeEtapeNotice" class="notice" style="display:none;margin-top:6px">Cette branche part d'une étape. Si elle reste sans nom et que c'est la seule sortie de cette étape, elle sera exportée comme une suite directe (pas de « Branche 1 » dans le JSON).</div>
+<div class="help" style="margin-top:6px">Pour ajouter une autre décision/question sur cette même réponse : sélectionnez-la puis cliquez sur « + Question », « + Étape » ou « + Recommandation » dans la barre d'outils.</div>
 <button class="primary" style="width:100%;margin-top:16px" onclick="applyEdgeEdits()">✓ Valider la réponse</button>
 
 <hr class="divider">
@@ -288,6 +293,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <script>
 let nodes=[], edges=[];
 let selectedNode=null, selectedEdge=null;
+let rightPanelOpen=true, fullscreenTree=false;
 let connectMode=false, connectSource=null;
 let pan=null;
 let zoom=1;
@@ -310,14 +316,10 @@ function uid(p){return p+Math.random().toString(36).slice(2,9)}
 function node(id){return nodes.find(n=>n.id===id)}
 function edge(id){return edges.find(e=>e.id===id)}
 
-// Une branche peut porter plusieurs valeurs de réponse (ex: "bleu, vert") qui menent
-// toutes les deux au même nœud suivant : stocké comme une liste séparée par virgule.
-function edgeValues(e){
- let vals=String((e&&e.label)||"").split(",").map(s=>s.trim()).filter(Boolean);
- return vals.length ? vals : ["Réponse"];
-}
 function edgeLabelDisplay(e){
- return edgeValues(e).join(" / ");
+ if(e && e.label) return e.label;
+ let s = node(e && e.source);
+ return (s && s.type==="etape") ? "Suite" : "Réponse";
 }
 
 function resultTitleFromData(t){
@@ -331,7 +333,6 @@ function treeToGraph(tree){
  let count=1;
 
  function walk(t, parent, label){
-  let children=t && t.type!=="resultat" && t.choix ? Object.entries(t.choix) : [];
   let id="n"+count++;
 
   nodes.push({
@@ -345,8 +346,20 @@ function treeToGraph(tree){
     y:0
   });
 
-  if(parent) edges.push({id:uid("e"),source:parent,target:id,label:label||"Réponse"});
-  children.forEach(([lab,child])=>walk(child, id, lab));
+  // Une étape sans nom de branche garde l'absence de label : ça affiche "Suite" et
+  // ça se réexporte comme un simple enchaînement plutôt qu'une "Branche 1" inventée.
+  if(parent) edges.push({id:uid("e"),source:parent,target:id,label:label||""});
+
+  if(t.type==="etape" && t.suite && !t.choix){
+   walk(t.suite, id, "");
+  } else if(t.type!=="resultat" && t.choix){
+   // Une réponse peut mener à plusieurs décisions/questions à la fois : dans ce cas,
+   // le JSON stocke un tableau de sous-arbres sous la même clé de réponse.
+   Object.entries(t.choix).forEach(([lab,child])=>{
+    if(Array.isArray(child)) child.forEach(c=>walk(c, id, lab));
+    else walk(child, id, lab);
+   });
+  }
   return id;
  }
 
@@ -412,16 +425,40 @@ function graphToTree(){
     infos_science:n.infos_science||{},
     source_senorif:n.source_senorif||""
   };
+  let bySource=edges.filter(e=>e.source===n.id);
+
+  // Une étape avec une seule sortie sans nom de branche s'exporte comme un simple
+  // enchaînement ("suite"), pour éviter d'inventer une "Branche 1" dans le JSON.
+  if(n.type==="etape" && bySource.length===1 && !bySource[0].label){
+   return {
+     type:"etape",
+     titre:n.titre||"Étape sans titre",
+     suite:build(node(bySource[0].target)),
+     infos_science:n.infos_science||{},
+     source_senorif:n.source_senorif||""
+   };
+  }
+
+  // Si plusieurs branches partagent la même réponse (plusieurs décisions/questions
+  // pour une seule réponse), elles sont regroupées sous la même clé sous forme de tableau.
+  // Pour une question, une branche sans nom retombe sur "Réponse" (ce qui permet justement
+  // ce regroupement). Pour une étape, chaque branche sans nom garde un nom distinct
+  // ("Branche 1", "Branche 2"...) car elle représente un chemin différent, pas la même réponse.
+  let byLabel=new Map();
+  bySource.forEach((e,idx)=>{
+   let lab = e.label || (n.type==="etape" ? "Branche "+(idx+1) : "Réponse");
+   if(!byLabel.has(lab)) byLabel.set(lab,[]);
+   byLabel.get(lab).push(e);
+  });
   let choix={};
-  edges.filter(e=>e.source===n.id).forEach(e=>{
-   let child=node(e.target);
-   if(!child) return;
-   let subtree=build(child);
-   edgeValues(e).forEach(v=>choix[v]=subtree);
+  byLabel.forEach((es,lab)=>{
+   let subtrees=es.map(e=>node(e.target)).filter(Boolean).map(build);
+   if(!subtrees.length) return;
+   choix[lab]= subtrees.length===1 ? subtrees[0] : subtrees;
   });
   return {
     type:n.type||"question",
-    titre:n.titre||"Question sans titre",
+    titre:n.titre|| (n.type==="etape" ? "Étape sans titre" : "Question sans titre"),
     choix:choix,
     infos_science:n.infos_science||{},
     source_senorif:n.source_senorif||""
@@ -453,7 +490,28 @@ function render(){
  nodes.forEach(renderNode);
  renderList();
  renderEditor();
+ applyPanelLayout();
  document.getElementById("preview").value=JSON.stringify(graphToTree(),null,2);
+}
+
+// Le panneau de droite se referme avec ✕ (closeRightPanel) mais se rouvre automatiquement
+// dès qu'on sélectionne à nouveau un nœud ou une branche, pour ne pas rester bloqué fermé.
+function applyPanelLayout(){
+ if((selectedNode||selectedEdge) && !rightPanelOpen) rightPanelOpen=true;
+ document.getElementById("leftPanel").style.display = fullscreenTree ? "none" : "block";
+ document.getElementById("rightPanel").style.display = rightPanelOpen ? "block" : "none";
+ let cols = (fullscreenTree?"":"300px ") + "1fr" + (rightPanelOpen?" 330px":"");
+ document.getElementById("mainGrid").style.gridTemplateColumns = cols;
+ document.getElementById("fullscreenBtn").textContent = fullscreenTree ? "⛶ Quitter plein écran" : "⛶ Plein écran arbre";
+}
+function toggleFullscreen(){
+ fullscreenTree=!fullscreenTree;
+ render();
+}
+function closeRightPanel(){
+ selectedNode=null; selectedEdge=null;
+ rightPanelOpen=false;
+ render();
 }
 
 function fitFontSize(text){
@@ -464,10 +522,10 @@ function fitFontSize(text){
 function renderNode(n){
  let w=document.getElementById("world");
  let el=document.createElement("div");
- el.className="node "+(n.type==="resultat"?"result ":"")+(n.type==="decision"?"decision ":"")+(selectedNode===n.id?"selected":"");
+ el.className="node "+(n.type==="resultat"?"result ":"")+(n.type==="etape"?"etape ":"")+(n.type==="decision"?"decision ":"")+(selectedNode===n.id?"selected":"");
  el.style.left=n.x+"px"; el.style.top=n.y+"px";
- let typeLabel = n.type==="resultat" ? "recommandation" : n.type;
- let titleLabel = n.titre || (n.type==="resultat" ? summary(n) : "Question sans titre");
+ let typeLabel = n.type==="resultat" ? "recommandation" : n.type==="etape" ? "étape" : n.type;
+ let titleLabel = n.titre || (n.type==="resultat" ? summary(n) : n.type==="etape" ? "Étape sans titre" : "Question sans titre");
  let smallLabel = n.type==="resultat" ? "" : summary(n);
  el.title = titleLabel + (smallLabel ? " — "+smallLabel : "");
 
@@ -552,11 +610,14 @@ function renderEdge(e){
 
 function summary(n){
  if(n.type==="resultat"){let k=Object.keys(n.donnees||{});return k.length?k.slice(0,3).join(", "):"(vide)"}
- let out=edges.filter(e=>e.source===n.id);return out.length?out.map(edgeLabelDisplay).join("  •  "):"(aucune réponse)"
+ let out=edges.filter(e=>e.source===n.id);
+ if(!out.length) return n.type==="etape" ? "(aucune suite)" : "(aucune réponse)";
+ return [...new Set(out.map(edgeLabelDisplay))].join("  •  ");
 }
 
 function nodeColor(type){
  if(type==="resultat") return "#16a34a";
+ if(type==="etape") return "#0891b2";
  if(type==="decision") return "#9333ea";
  return "#2563eb";
 }
@@ -615,26 +676,11 @@ function renderEditor(){
   document.getElementById("editData").value=JSON.stringify(n.donnees||{},null,2);
   document.getElementById("editSource").value=n.source_senorif||"";
  }
- if(e) renderEdgeValueFields(edgeValues(e));
-}
-
-function renderEdgeValueFields(values){
- let box=document.getElementById("editEdgeValues");
- box.innerHTML="";
- (values.length?values:[""]).forEach(v=>addEdgeValueField(v));
-}
-function addEdgeValueField(value){
- let box=document.getElementById("editEdgeValues");
- let row=document.createElement("div");
- row.className="valRow";
- let input=document.createElement("input");
- input.value=value||"";
- input.placeholder="Valeur de réponse";
- let rm=document.createElement("button");
- rm.className="danger"; rm.textContent="✕"; rm.title="Retirer cette valeur";
- rm.onclick=function(){row.remove()};
- row.appendChild(input); row.appendChild(rm);
- box.appendChild(row);
+ if(e){
+  document.getElementById("editEdgeLabel").value=e.label||"";
+  let s=node(e.source);
+  document.getElementById("edgeEtapeNotice").style.display = (s && s.type==="etape") ? "block" : "none";
+ }
 }
 
 function snapshotState(){
@@ -696,27 +742,36 @@ function applyNodeEdits(){
 function applyEdgeEdits(){
  let e=edge(selectedEdge); if(!e) return;
  pushHistory();
- let inputs=document.getElementById("editEdgeValues").querySelectorAll("input");
- let vals=Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
- e.label=vals.join(", ");
+ e.label=document.getElementById("editEdgeLabel").value;
  render();
 }
 
 // Si un nœud est déjà sélectionné au moment du clic, le nouveau nœud est automatiquement
 // relié à la suite (le bouton "Relier deux nœuds" ne devient alors nécessaire que pour les cas particuliers).
+// Si une réponse (branche) est sélectionnée, le nouveau nœud est ajouté comme une décision/question
+// EN PLUS sur cette même réponse (même source, même libellé) : une réponse peut ainsi mener à
+// plusieurs décisions. Si c'est un nœud qui est sélectionné, le nouveau nœud devient la première
+// branche de ce nœud (libellé "Réponse" par défaut sauf depuis une étape, où il reste vide
+// pour représenter une simple suite, à renommer ensuite si besoin).
 function addNodeLinkedToSelection(newNode){
- let parentId=selectedNode;
  nodes.push(newNode);
- if(parentId && node(parentId)) edges.push({id:uid("e"),source:parentId,target:newNode.id,label:"Réponse"});
+ if(selectedEdge && edge(selectedEdge)){
+  let se=edge(selectedEdge);
+  edges.push({id:uid("e"),source:se.source,target:newNode.id,label:se.label||""});
+ } else if(selectedNode && node(selectedNode)){
+  let p=node(selectedNode);
+  edges.push({id:uid("e"),source:selectedNode,target:newNode.id,label:p.type==="etape"?"":"Réponse"});
+ }
  selectedNode=newNode.id; selectedEdge=null;
  autoLayout(); render();
 }
 function addQuestion(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0})}
+function addEtape(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"etape",titre:"Nouvelle étape",donnees:{},infos_science:{},source_senorif:"",x:0,y:0})}
 function addResult(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"resultat",titre:"Nouvelle recommandation",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0})}
 function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
 function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
 function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Cliquez le parent puis l'enfant":"Mode liaison désactivé")}
-function connectClick(id){if(!connectSource){connectSource=id;return}else{pushHistory();edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});connectSource=null;connectMode=false;autoLayout();render()}}
+function connectClick(id){if(!connectSource){connectSource=id;return}else{pushHistory();let p=node(connectSource);edges.push({id:uid("e"),source:connectSource,target:id,label:p&&p.type==="etape"?"":"Réponse"});connectSource=null;connectMode=false;autoLayout();render()}}
 
 function fold(s){
  return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
