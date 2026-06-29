@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Éditeur arbre JSON SENORIF</title>
 <style>
 :root{
@@ -23,7 +23,7 @@
  --shadow-md:0 6px 18px rgba(15,23,42,.10);
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;touch-action:none}
 body{margin:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;
  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
  background:var(--bg);color:var(--text)}
@@ -278,8 +278,6 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <button class="danger" style="width:100%" onclick="deleteEdge()">🗑 Supprimer branche</button>
 </div>
 
-<hr class="divider">
-<button onclick="togglePreview()" style="width:100%">Afficher / masquer l'aperçu JSON</button>
 <div id="previewBox" style="display:none">
 <h3>Aperçu JSON</h3>
 <textarea id="preview" class="json" readonly></textarea>
@@ -529,6 +527,13 @@ document.getElementById("canvas").addEventListener("wheel",function(ev){
  canvas.scrollTop = worldY*zoom - cy;
 }, {passive:false});
 
+// Sur iPad (trackpad ou pincement tactile), Safari déclenche un pincement de zoom natif sur
+// toute la page via ces événements "gesture*" (en plus ou à la place de "wheel"). On les bloque
+// partout pour que seul le zoom de l'arbre (slider, boutons, molette/pincement au-dessus du canvas) fonctionne.
+["gesturestart","gesturechange","gestureend"].forEach(function(evtName){
+ document.addEventListener(evtName, function(ev){ ev.preventDefault(); }, {passive:false});
+});
+
 function renderEdge(e){
  let s=node(e.source), t=node(e.target);
  if(!s||!t)return;
@@ -777,11 +782,6 @@ function toggleHelp(){
  document.getElementById("helpOverlay").classList.toggle("show");
 }
 
-function togglePreview(){
- let box=document.getElementById("previewBox");
- box.style.display = box.style.display==="none" ? "block" : "none";
-}
-
 document.getElementById("fileInput").addEventListener("change",function(ev){
  let f=ev.target.files[0]; if(!f)return;
  let r=new FileReader();
@@ -858,7 +858,14 @@ function reloadRealTree(){
    })
    .catch(err=>{
      console.warn("Impossible de charger arbre_dynamique.json :", err);
-     setStatus("Impossible de charger arbre_dynamique.json.", false);
+     // Ce chargement est automatique à l'ouverture de la page (vous n'avez rien cliqué) :
+     // l'éditeur essaie de récupérer l'arbre actuellement en ligne. Le cas le plus fréquent
+     // d'échec est l'ouverture du fichier .html directement depuis l'ordinateur (file://),
+     // que le navigateur bloque par sécurité — la page doit être ouverte via son adresse en ligne.
+     let msg = location.protocol==="file:"
+       ? "Chargement auto impossible : ce fichier est ouvert directement depuis l'ordinateur (file://), le navigateur bloque cet accès par sécurité. Ouvrez la page en ligne (GitHub Pages), ou utilisez « Depuis mon ordinateur » pour charger le JSON à la main."
+       : "Chargement auto impossible ("+err.message+"). Utilisez « Depuis mon ordinateur » pour charger le JSON à la main.";
+     setStatus(msg, false);
    });
 }
 
