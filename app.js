@@ -426,8 +426,8 @@
     });
 
     var retenues = scored
-      .filter(function(e) { return e.total > 0 && e.score >= 40; })
-      .sort(function(a,b) { return b.score - a.score; });
+      .filter(function(e) { return e.colonnes.length > 0; })
+      .sort(function(a,b) { return b.colonnes.length - a.colonnes.length; });
 
     if (retenues.length === 0) return;
 
@@ -500,7 +500,6 @@
           '<div class="zone-details" style="display:none; padding-top: 10px;">' +
             (colonnes.length > 0 ? '<div style="margin-bottom:8px;">' + chips(colonnes, 'chip-ok') + '</div>' : '') +
             (mismatches.length > 0 ? '<div style="margin-bottom:8px;">' + chips(mismatches, 'chip-ko') + '</div>' : '') +
-            '<div style="font-size:12px;color:#9aa1a8;margin-bottom:10px;">Indice de correspondance global : ' + score + '%</div>' +
             (etude.lien ? '<a href="'+esc(etude.lien)+'" target="_blank" style="font-size:13px; color:var(--orange); text-decoration:none; font-weight:600;">Ouvrir l\'article PubMed →</a>' : '') +
           '</div>' +
         '</div>' +
