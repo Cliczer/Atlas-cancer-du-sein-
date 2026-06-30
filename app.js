@@ -498,15 +498,21 @@
     });
 
     var retenues = scored
-      .filter(function(e) { return e.total > 0 && e.score >= 40; })
-      .sort(function(a,b) { return b.score - a.score; });
-
-    if (retenues.length === 0) return;
+      .filter(function(e) { return e.colonnes.length > 0; })
+      .sort(function(a,b) { return b.colonnes.length - a.colonnes.length; });
 
     var h3 = document.createElement('h3');
     h3.textContent = 'Données de la littérature scientifique correspondantes';
     h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 16px;color:var(--text);';
     section.appendChild(h3);
+
+    if (retenues.length === 0) {
+      var vide = document.createElement('div');
+      vide.style.cssText = 'font-size:14px;color:var(--muted);padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);';
+      vide.textContent = 'Aucune étude de la littérature ne correspond à ce parcours.';
+      section.appendChild(vide);
+      return;
+    }
 
     retenues.forEach(function(item) {
         section.appendChild(creerCarteEtude(item.etude, item.score, item.total, item.colonnes, item.mismatches));
@@ -572,7 +578,6 @@
           '<div class="zone-details" style="display:none; padding-top: 10px;">' +
             (colonnes.length > 0 ? '<div style="margin-bottom:8px;">' + chips(colonnes, 'chip-ok') + '</div>' : '') +
             (mismatches.length > 0 ? '<div style="margin-bottom:8px;">' + chips(mismatches, 'chip-ko') + '</div>' : '') +
-            '<div style="font-size:12px;color:#9aa1a8;margin-bottom:10px;">Indice de correspondance global : ' + score + '%</div>' +
             (etude.lien ? '<a href="'+esc(etude.lien)+'" target="_blank" style="font-size:13px; color:var(--orange); text-decoration:none; font-weight:600;">Ouvrir l\'article PubMed →</a>' : '') +
           '</div>' +
         '</div>' +
