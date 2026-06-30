@@ -429,12 +429,18 @@
       .filter(function(e) { return e.colonnes.length > 0; })
       .sort(function(a,b) { return b.colonnes.length - a.colonnes.length; });
 
-    if (retenues.length === 0) return;
-
     var h3 = document.createElement('h3');
     h3.textContent = 'Données de la littérature scientifique correspondantes';
     h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 16px;color:var(--text);';
     section.appendChild(h3);
+
+    if (retenues.length === 0) {
+      var vide = document.createElement('div');
+      vide.style.cssText = 'font-size:14px;color:var(--muted);padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);';
+      vide.textContent = 'Aucune étude de la littérature ne correspond à ce parcours.';
+      section.appendChild(vide);
+      return;
+    }
 
     retenues.forEach(function(item) {
         section.appendChild(creerCarteEtude(item.etude, item.score, item.total, item.colonnes, item.mismatches));
