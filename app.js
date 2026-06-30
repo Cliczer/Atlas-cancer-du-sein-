@@ -12,6 +12,9 @@
   var current    = null;
   var history    = [];
   var maxDepth   = 1;
+  var criteresSchema = {};        // registre canonique {id: {label, type, valeurs}} (schema_criteres.json)
+  var avertissementsSchema = [];  // problèmes de chargement du contrat (persistants)
+  var avertissements = [];        // problèmes détectés sur le parcours courant (recalculés à chaque résultat)
 
   function $(id) { return document.getElementById(id); }
 
@@ -137,15 +140,52 @@
     return 0;
   }
 
+  // Valide un tag canonique (critère + valeur) posé dans l'éditeur d'arbres contre le schéma.
+  // Tout vocabulaire inconnu est enregistré pour affichage : jamais ignoré en silence.
+  function validerTag(critere, valeur) {
+    var def = criteresSchema[critere];
+    if (!def) {
+      avertissements.push('Question reliée à un critère inconnu du schéma : « ' + critere +
+        ' ». Corrigez le critère dans l\'éditeur d\'arbres, ou ajoutez-le à schema_criteres.json.');
+      return;
+    }
+    if (def.type === 'numerique') return; // valeur numérique libre (nombre brut)
+    if (Array.isArray(def.valeurs) && def.valeurs.length &&
+        def.valeurs.map(normaliser).indexOf(normaliser(valeur)) === -1) {
+      avertissements.push('Réponse « ' + valeur + ' » non prévue pour le critère « ' + critere +
+        ' » (valeurs attendues : ' + def.valeurs.join(', ') + ').');
+    }
+  }
+
   function construireProfil() {
     var profil = {};
+    avertissements = []; // recalculé pour ce parcours
     history.forEach(function(h) {
-      var q = (h.node && h.node.titre) ? h.node.titre : '';
-      var r = h.label || '';
-      if (q && r) profil[q] = r;
+      var node  = h.node || {};
+      var label = h.label || '';
+      // Lien canonique (tags posés dans l'éditeur d'arbres) : prioritaire et robuste,
+      // indépendant du libellé exact de la question.
+      if (node.critere) {
+        var valeur = (node.reponses && node.reponses[label] !== undefined) ? node.reponses[label] : label;
+        profil[node.critere] = valeur;
+        validerTag(node.critere, valeur);
+      }
+      // Lien hérité (titre de question → label) : conservé pour les arbres pas encore tagués.
+      if (node.titre && label) profil[node.titre] = label;
     });
     console.log('[Atlas] 👤 Profil :', JSON.stringify(profil));
     return profil;
+  }
+
+  // Affiche (ou masque) la bannière de validation : contrat non chargé + vocabulaire inconnu.
+  function renderAvertissements() {
+    var box = $('validation-banner');
+    if (!box) return;
+    var tous = avertissementsSchema.concat(avertissements);
+    if (!tous.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.cssText = 'display:block;background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:24px;color:#78350f;font-size:13px;line-height:1.5;';
+    box.innerHTML = '<strong>⚠️ Avertissements de cohérence des données</strong><ul style="margin:8px 0 0;padding-left:20px;">' +
+      tous.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
   }
 
   function extraireTraitementsRecommandes(donnees) {
@@ -255,9 +295,15 @@
       if (schema && Array.isArray(schema.criteres_numeriques)) {
         NUMERIQUES = schema.criteres_numeriques;
       }
-      console.log('[Atlas] ✅ Schéma de critères chargé (synonymes : ' +
+      if (schema && schema.criteres && typeof schema.criteres === 'object') {
+        criteresSchema = schema.criteres;
+      }
+      console.log('[Atlas] ✅ Schéma de critères chargé (critères canoniques : ' +
+        Object.keys(criteresSchema).length + ', synonymes : ' +
         Object.keys(MAPPING).length + ', critères numériques : ' + NUMERIQUES.length + ').');
     }).catch(function(err) {
+      avertissementsSchema.push('Le contrat de données (schema_criteres.json) n\'a pas pu être chargé (' +
+        err.message + '). Le moteur de correspondance utilise sa configuration de secours intégrée.');
       console.warn('[Atlas] schema_criteres.json indisponible — configuration de secours intégrée utilisée :', err.message);
     });
   }
@@ -441,6 +487,7 @@
       var profil = construireProfil();
       var traitements = extraireTraitementsRecommandes(donnees);
       renderEtudes(profil, traitements);
+      renderAvertissements();
     } catch(err) {
       console.error('[Atlas] Erreur analyse littérature :', err);
     }
