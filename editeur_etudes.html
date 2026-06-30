@@ -95,6 +95,12 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 .checkGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 .checkRow{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:4px 0}
 .checkRow input{width:auto}
+.treatRow{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:4px 0}
+.treatRow input[type=checkbox]{width:auto;flex-shrink:0}
+.treatRow .treatLabel{width:140px;flex-shrink:0}
+.treatRow input[type=text]{flex:1}
+.metaField{margin-bottom:10px}
+.metaField label{margin-top:0;margin-bottom:4px}
 
 .critGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
 .critField label{margin-top:0}
@@ -171,13 +177,15 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
   1. Cliquez sur une étude dans la liste à gauche pour l'éditer à droite.<br>
   2. Une fois vos modifications faites, cliquez sur « ✓ Valider les modifications » pour les appliquer.<br>
   3. « + Étude » crée une étude vide. « ⧉ Dupliquer » copie l'étude actuellement sélectionnée (pratique pour des études très proches).<br>
-  4. Les <b>critères cliniques</b> (T, N, RE, RP, HER2, Grade, Ki67, Marges, Age, Emboles, Triple N, MCC) suivent la syntaxe du moteur de correspondance de l'Atlas : une valeur exacte (ex. <code>1</code>), une plage <code>10-50</code>, ou une comparaison <code>&lt;2</code>, <code>&lt;=2</code>, <code>&gt;2</code>, <code>&gt;=2</code>. Laissez <code>-1</code> (valeur par défaut) si le critère n'est pas évalué par l'étude.<br>
-  5. Les <b>résultats chiffrés</b> (« outcomes ») sont entièrement libres : ajoutez autant de lignes nom/valeur que nécessaire avec « + Ajouter un résultat ».<br>
-  6. La recherche filtre la liste en direct sur tous les champs (référence, objectif, niveau de preuve, traitements, critères, résultats).<br>
-  7. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
+  4. Les <b>critères cliniques</b> matchables (T, N, RE, RP, HER2, Grade, Ki67 (%), Marges (mm), Age, Emboles, Triple N, MCC, RH) suivent la syntaxe du moteur de correspondance de l'Atlas : une valeur exacte (ex. <code>1</code>), une plage <code>10-50</code>, ou une comparaison <code>&lt;2</code>, <code>&lt;=2</code>, <code>&gt;2</code>, <code>&gt;=2</code>. Laissez <code>-1</code> (valeur par défaut) si le critère n'est pas évalué par l'étude. Les champs AJCC, M, Mutation, Ménopause %, Marges et autres paramètres, Type histologique sont informatifs (texte libre, pas utilisés par le moteur de matching).<br>
+  5. Les <b>traitements évalués</b> : cochez la case du traitement testé par l'étude, et précisez éventuellement un détail libre (molécule, dose, schéma) dans le champ associé.<br>
+  6. Les <b>détails de l'étude</b> (méthode, type d'étude, population, inclusion/exclusion, échantillon, durée de suivi, données manquantes, limites, notes, autres interventions) sont du texte libre informatif, non utilisé par le moteur de matching.<br>
+  7. Les <b>résultats chiffrés</b> (« outcomes ») sont entièrement libres : ajoutez autant de lignes nom/valeur que nécessaire avec « + Ajouter un résultat ».<br>
+  8. La recherche filtre la liste en direct sur tous les champs (référence, citation, objectif, niveau de preuve, traitements, critères, détails, résultats).<br>
+  9. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
   </p>
   <div class="notice"><b>Mise à jour GitHub :</b><br>1. Cliquez sur « Vers GitHub ».<br>2. Allez dans le dépôt GitHub de l'Atlas.<br>3. Supprimez l'ancien <code>base_etudes.json</code>.<br>4. Ajoutez le fichier téléchargé.<br>5. Vérifiez qu'il s'appelle exactement <code>base_etudes.json</code>.<br>6. Cliquez sur « Commit changes ».</div>
-  <div class="notice ok"><b>Excel :</b> « Télécharger Excel » génère un fichier <code>base_etudes.xlsx</code> avec une colonne par champ (référence, objectif, niveau de preuve, traitements, critères, puis tous les résultats rencontrés). Vous pouvez modifier ce fichier dans Excel puis le réimporter avec « Depuis mon ordinateur » : il remplacera entièrement la base actuellement chargée dans l'éditeur. Pensez ensuite à « Télécharger JSON » et « Vers GitHub » pour publier le résultat — l'application utilise le JSON, pas l'Excel.</div>
+  <div class="notice ok"><b>Excel :</b> « Télécharger Excel » génère un fichier <code>base_etudes.xlsx</code> avec une colonne par champ (référence, citation, objectif, niveau de preuve, détails de l'étude, traitements évalués + leurs détails, critères, puis tous les résultats rencontrés). Vous pouvez modifier ce fichier dans Excel puis le réimporter avec « Depuis mon ordinateur » : il remplacera entièrement la base actuellement chargée dans l'éditeur. Pensez ensuite à « Télécharger JSON » et « Vers GitHub » pour publier le résultat — l'application utilise le JSON, pas l'Excel.</div>
   <hr class="divider">
   <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b>
   <div style="margin-top:8px;display:flex;gap:8px">
@@ -200,8 +208,11 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 <div id="editEmpty">Cliquez sur une étude dans la liste, ou créez-en une avec « + Étude ».</div>
 
 <div id="etudeEdit" style="display:none">
-<label>Référence (lien ou citation de l'étude)</label>
-<textarea id="editReference" style="min-height:50px"></textarea>
+<label>Référence (lien cliquable, ex. DOI/URL)</label>
+<input id="editReference" placeholder="https://doi.org/…">
+
+<label>Citation complète</label>
+<textarea id="editCitation" style="min-height:50px" placeholder="Auteurs, titre, revue, année…"></textarea>
 
 <label>Objectif de l'étude</label>
 <input id="editObjectif">
@@ -209,11 +220,14 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 <label>Niveau de preuve</label>
 <input id="editNiveau" placeholder="Ex. : 1, IIa, ou une phrase libre">
 
-<label>Traitements évalués</label>
-<div class="checkGrid" id="traitementsGrid"></div>
+<label>Traitements évalués <span class="hint">(case = traitement testé par l'étude ; champ = détail libre, ex. molécules, dose)</span></label>
+<div id="traitementsGrid"></div>
 
-<label>Critères cliniques <span class="hint">(-1 = non évalué ; syntaxe : valeur exacte, plage 10-50, ou &lt;2 / &lt;=2 / &gt;2 / &gt;=2)</span></label>
+<label>Critères cliniques <span class="hint">(-1 = non évalué. Pour T, N, RE, RP, HER2, Grade, Ki67 (%), Marges (mm), Age, Emboles, Triple N, MCC, RH : syntaxe du moteur de correspondance — valeur exacte, plage 10-50, ou &lt;2 / &lt;=2 / &gt;2 / &gt;=2. Les autres champs (AJCC, M, Mutation, Ménopause %, Marges et autres paramètres, Type histologique) sont informatifs, en texte libre.)</span></label>
 <div class="critGrid" id="criteresGrid"></div>
+
+<label style="margin-top:18px">Détails de l'étude (méthodologie, texte libre)</label>
+<div id="metaGrid"></div>
 
 <label style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">
  Résultats chiffrés (outcomes)
@@ -237,9 +251,24 @@ let editOutcomes = [];
 let undoStack=[], redoStack=[];
 const HISTORY_LIMIT=100;
 
-const CRITERES_FIELDS = ["T","N","RE","RP","HER2","Grade","Ki67 (%)","Marges (mm)","Age","Emboles","Triple N","MCC"];
+const CRITERES_FIELDS = ["AJCC","T","N","M","RE","RP","HER2","Grade","Ki67 (%)","Marges (mm)","Marges et autres paramètres","Age","Ménopause %","Mutation","Emboles","Triple N","MCC","RH","Type histologique"];
 const TRAITEMENTS_FIELDS = ["Chirurgie mammaire","Chirurgie axillaire","RT","CNA","CT rattrapage","CTadj","Immunothérapie","Hormonothérapie"];
-const DEFAULT_MAPPING = {"T":"T","N":"N","RE":"RE","RP":"RP","HER2":"HER2","Grade":"Grade","Ki67":"Ki67 (%)","Marges":"Marges (mm)","Age":"Age","Emboles":"Emboles","TripleN":"Triple N","MCC":"MCC"};
+// Champs texte libre, issus des données réelles de thèse (méthodologie de l'étude),
+// purement informatifs : app.js ne les lit jamais, donc pas de convention -1.
+const META_FIELDS = ["methode","type_etude","population","inclusion","exclusion","echantillon","duree_suivi","donnees_manquantes","limites","notes","autres_interventions"];
+const META_LABELS = {
+ methode:"Méthode", type_etude:"Type d'étude", population:"Population",
+ inclusion:"Critères d'inclusion", exclusion:"Critères d'exclusion", echantillon:"Échantillon",
+ duree_suivi:"Durée de suivi", donnees_manquantes:"Données manquantes", limites:"Limites",
+ notes:"Notes", autres_interventions:"Autres interventions",
+};
+// Mapping = {titre exact du nœud de l'arbre de décision : champ critères correspondant}.
+// app.js fait une recherche directe mapping[titreQuestion] pour retrouver la colonne à comparer.
+const DEFAULT_MAPPING = {
+ "T":"T", "Triple N":"Triple N", "HER2":"HER2", "RE-":"RE", "Ménopause":"Ménopause %",
+ "RH":"RH", "Ki67 (%)":"Ki67 (%)", "Grade":"Grade", "Emboles":"Emboles",
+ "Marges (mm)":"Marges (mm)", "MCC":"MCC", "Carcinome":"Type histologique",
+};
 
 function uid(p){return p+Math.random().toString(36).slice(2,9)}
 function etude(id){return etudes.find(e=>e._id===id)}
@@ -260,15 +289,21 @@ function dashIfBlank(s){ s=String(s==null?"":s).trim(); return s===""? "-1" : s;
 
 function loadData(obj){
  mapping = (obj && obj.mapping) ? obj.mapping : DEFAULT_MAPPING;
- etudes = ((obj && obj.etudes) || []).map(e=>({
-  _id: uid("e"),
-  reference: blankToDash(e.reference!==undefined ? String(e.reference) : ""),
-  objectif: blankToDash(e.objectif!==undefined ? String(e.objectif) : ""),
-  niveau_preuve: blankToDash(e.niveau_preuve!==undefined ? String(e.niveau_preuve) : ""),
-  traitements_evalues: Array.isArray(e.traitements_evalues) ? e.traitements_evalues.slice() : [],
-  criteres: Object.assign(defaultCriteres(), e.criteres||{}),
-  outcomes: Object.assign({}, e.outcomes||{}),
- }));
+ etudes = ((obj && obj.etudes) || []).map(e=>{
+  let o = {
+   _id: uid("e"),
+   reference: blankToDash(e.reference!==undefined ? String(e.reference) : ""),
+   citation: e.citation!==undefined ? String(e.citation) : "",
+   objectif: blankToDash(e.objectif!==undefined ? String(e.objectif) : ""),
+   niveau_preuve: blankToDash(e.niveau_preuve!==undefined ? String(e.niveau_preuve) : ""),
+   traitements_evalues: Array.isArray(e.traitements_evalues) ? e.traitements_evalues.slice() : [],
+   traitements_details: Object.assign({}, e.traitements_details||{}),
+   criteres: Object.assign(defaultCriteres(), e.criteres||{}),
+   outcomes: Object.assign({}, e.outcomes||{}),
+  };
+  META_FIELDS.forEach(f=>{ o[f] = e[f]!==undefined ? String(e[f]) : ""; });
+  return o;
+ });
  selectedId = null;
  undoStack=[]; redoStack=[];
  render();
@@ -277,14 +312,20 @@ function loadData(obj){
 function exportData(){
  return {
   mapping,
-  etudes: etudes.map(e=>({
-   reference: dashIfBlank(e.reference),
-   objectif: dashIfBlank(e.objectif),
-   niveau_preuve: dashIfBlank(e.niveau_preuve),
-   traitements_evalues: e.traitements_evalues.slice(),
-   criteres: Object.assign({}, e.criteres),
-   outcomes: Object.assign({}, e.outcomes),
-  })),
+  etudes: etudes.map(e=>{
+   let o = {
+    reference: dashIfBlank(e.reference),
+    citation: e.citation,
+    objectif: dashIfBlank(e.objectif),
+    niveau_preuve: dashIfBlank(e.niveau_preuve),
+    traitements_evalues: e.traitements_evalues.slice(),
+    traitements_details: Object.assign({}, e.traitements_details),
+    criteres: Object.assign({}, e.criteres),
+    outcomes: Object.assign({}, e.outcomes),
+   };
+   META_FIELDS.forEach(f=>{ o[f] = e[f]; });
+   return o;
+  }),
  };
 }
 
@@ -324,8 +365,10 @@ function fold(s){
 }
 function searchableText(e){
  return [
-  e.reference, e.objectif, e.niveau_preuve,
+  e.reference, e.citation, e.objectif, e.niveau_preuve,
   e.traitements_evalues.join(" "),
+  Object.values(e.traitements_details||{}).join(" "),
+  META_FIELDS.map(f=>e[f]).join(" "),
   Object.entries(e.criteres).map(([k,v])=>k+" "+v).join(" "),
   Object.entries(e.outcomes).map(([k,v])=>k+" "+v).join(" "),
  ].join(" ");
@@ -353,13 +396,16 @@ function buildEtudeRow(e){
  row.onclick=()=>selectEtude(e._id);
  let refLine=document.createElement("span");
  refLine.className="ref";
- refLine.textContent = e.reference && e.reference!=="-1" ? e.reference : "(sans référence)";
+ let titre = e.citation ? e.citation : (e.objectif && e.objectif!=="-1" ? e.objectif : "");
+ if(titre.length>90) titre = titre.slice(0,90)+"…";
+ refLine.textContent = titre || "(sans citation)";
  row.appendChild(refLine);
  let meta=document.createElement("div");
  meta.className="meta";
  let bits=[];
- if(e.objectif && e.objectif!=="-1") bits.push(e.objectif);
+ if(e.objectif && e.objectif!=="-1" && e.citation) bits.push(e.objectif);
  if(e.traitements_evalues.length) bits.push(e.traitements_evalues.join(", "));
+ if(e.reference && e.reference!=="-1") bits.push(e.reference);
  meta.textContent = bits.join(" — ") || "(aucun détail)";
  row.appendChild(meta);
  return row;
@@ -376,21 +422,25 @@ function renderForm(){
  document.getElementById("etudeEdit").style.display = e ? "block" : "none";
  if(!e) return;
 
- document.getElementById("editReference").value = e.reference;
+ document.getElementById("editReference").value = e.reference==="-1" ? "" : e.reference;
+ document.getElementById("editCitation").value = e.citation;
  document.getElementById("editObjectif").value = e.objectif;
  document.getElementById("editNiveau").value = e.niveau_preuve;
 
  let tGrid=document.getElementById("traitementsGrid");
  tGrid.innerHTML="";
  TRAITEMENTS_FIELDS.forEach((t,i)=>{
-  let rowEl=document.createElement("label");
-  rowEl.className="checkRow";
-  rowEl.style.margin="0"; rowEl.style.textTransform="none"; rowEl.style.fontWeight="500"; rowEl.style.fontSize="12.5px"; rowEl.style.color="var(--text)";
+  let rowEl=document.createElement("div");
+  rowEl.className="treatRow";
   let cb=document.createElement("input");
   cb.type="checkbox"; cb.id="trait"+i;
   cb.checked = e.traitements_evalues.includes(t);
-  rowEl.appendChild(cb);
-  rowEl.appendChild(document.createTextNode(t));
+  let lab=document.createElement("span");
+  lab.className="treatLabel"; lab.textContent=t;
+  let detail=document.createElement("input");
+  detail.type="text"; detail.id="traitDetail"+i; detail.placeholder="Détail (molécules, dose…)";
+  detail.value = (e.traitements_details && e.traitements_details[t]) || "";
+  rowEl.appendChild(cb); rowEl.appendChild(lab); rowEl.appendChild(detail);
   tGrid.appendChild(rowEl);
  });
 
@@ -406,6 +456,20 @@ function renderForm(){
   inp.value = e.criteres[c]!==undefined ? e.criteres[c] : "-1";
   wrap.appendChild(lab); wrap.appendChild(inp);
   cGrid.appendChild(wrap);
+ });
+
+ let mGrid=document.getElementById("metaGrid");
+ mGrid.innerHTML="";
+ META_FIELDS.forEach((f,i)=>{
+  let wrap=document.createElement("div");
+  wrap.className="metaField";
+  let lab=document.createElement("label");
+  lab.textContent=META_LABELS[f]||f;
+  let inp=document.createElement("textarea");
+  inp.id="meta"+i; inp.style.minHeight="44px";
+  inp.value = e[f]||"";
+  wrap.appendChild(lab); wrap.appendChild(inp);
+  mGrid.appendChild(wrap);
  });
 
  editOutcomes = Object.entries(e.outcomes).map(([key,value])=>({key,value}));
@@ -450,15 +514,23 @@ function applyEtudeEdits(){
  let e=etude(selectedId); if(!e) return;
  pushHistory();
  e.reference = document.getElementById("editReference").value;
+ e.citation = document.getElementById("editCitation").value;
  e.objectif = document.getElementById("editObjectif").value;
  e.niveau_preuve = document.getElementById("editNiveau").value;
  e.traitements_evalues = TRAITEMENTS_FIELDS.filter((t,i)=>document.getElementById("trait"+i).checked);
+ let traitDetails={};
+ TRAITEMENTS_FIELDS.forEach((t,i)=>{
+  let v=document.getElementById("traitDetail"+i).value.trim();
+  if(v) traitDetails[t]=v;
+ });
+ e.traitements_details=traitDetails;
  let criteres={};
  CRITERES_FIELDS.forEach((c,i)=>{
   let v=document.getElementById("crit"+i).value.trim();
   criteres[c]= v===""? "-1" : v;
  });
  e.criteres=criteres;
+ META_FIELDS.forEach((f,i)=>{ e[f] = document.getElementById("meta"+i).value; });
  syncOutcomesDraftFromDOM();
  let outcomes={};
  editOutcomes.forEach(row=>{
@@ -471,7 +543,8 @@ function applyEtudeEdits(){
 
 function addEtude(){
  pushHistory();
- let e={_id:uid("e"), reference:"", objectif:"", niveau_preuve:"", traitements_evalues:[], criteres:defaultCriteres(), outcomes:{}};
+ let e={_id:uid("e"), reference:"", citation:"", objectif:"", niveau_preuve:"", traitements_evalues:[], traitements_details:{}, criteres:defaultCriteres(), outcomes:{}};
+ META_FIELDS.forEach(f=>{ e[f]=""; });
  etudes.push(e);
  selectedId=e._id;
  render();
@@ -505,14 +578,20 @@ function collectOutcomeCols(){
  return cols;
 }
 function etudeToExcelRow(e, outcomeCols){
- let row=[e.reference==="-1"?"":e.reference, e.objectif==="-1"?"":e.objectif, e.niveau_preuve==="-1"?"":e.niveau_preuve];
+ let row=[e.reference==="-1"?"":e.reference, e.citation||"", e.objectif==="-1"?"":e.objectif, e.niveau_preuve==="-1"?"":e.niveau_preuve];
+ META_FIELDS.forEach(f=>row.push(e[f]||""));
  TRAITEMENTS_FIELDS.forEach(t=>row.push(e.traitements_evalues.includes(t) ? "1" : "-1"));
+ TRAITEMENTS_FIELDS.forEach(t=>row.push((e.traitements_details||{})[t]||""));
  CRITERES_FIELDS.forEach(c=>row.push(e.criteres[c]!==undefined && e.criteres[c]!=="" ? e.criteres[c] : "-1"));
  outcomeCols.forEach(k=>row.push(e.outcomes[k]!==undefined ? e.outcomes[k] : ""));
  return row;
 }
 function excelHeader(outcomeCols){
- return ["Référence","Objectif","Niveau de preuve"].concat(TRAITEMENTS_FIELDS, CRITERES_FIELDS, outcomeCols);
+ return ["Référence","Citation","Objectif","Niveau de preuve"]
+  .concat(META_FIELDS.map(f=>META_LABELS[f]||f))
+  .concat(TRAITEMENTS_FIELDS)
+  .concat(TRAITEMENTS_FIELDS.map(t=>t+" (détail)"))
+  .concat(CRITERES_FIELDS, outcomeCols);
 }
 function buildExcelWorkbook(){
  let outcomeCols=collectOutcomeCols();
@@ -538,23 +617,36 @@ function importExcelRows(aoa){
  if(!aoa.length) return [];
  let header=aoa[0].map(h=>String(h==null?"":h).trim());
  let idx=name=>header.indexOf(name);
- let refIdx=idx("Référence"), objIdx=idx("Objectif"), nivIdx=idx("Niveau de preuve");
+ let refIdx=idx("Référence"), citIdx=idx("Citation"), objIdx=idx("Objectif"), nivIdx=idx("Niveau de preuve");
+ let metaIdx=META_FIELDS.map(f=>idx(META_LABELS[f]||f));
  let traitIdx=TRAITEMENTS_FIELDS.map(t=>idx(t));
+ let traitDetailIdx=TRAITEMENTS_FIELDS.map(t=>idx(t+" (détail)"));
  let critIdx=CRITERES_FIELDS.map(c=>idx(c));
- let known=new Set([refIdx,objIdx,nivIdx].concat(traitIdx,critIdx).filter(i=>i>=0));
+ let known=new Set([refIdx,citIdx,objIdx,nivIdx].concat(metaIdx,traitIdx,traitDetailIdx,critIdx).filter(i=>i>=0));
  let outcomeIdx=header.map((h,i)=>i).filter(i=>!known.has(i) && header[i]);
 
  return aoa.slice(1)
   .filter(r=>r.some(c=>c!==undefined && String(c).trim()!==""))
   .map(r=>{
-   let e={_id:uid("e"), reference:"", objectif:"", niveau_preuve:"", traitements_evalues:[], criteres:defaultCriteres(), outcomes:{}};
+   let e={_id:uid("e"), reference:"", citation:"", objectif:"", niveau_preuve:"",
+    traitements_evalues:[], traitements_details:{}, criteres:defaultCriteres(), outcomes:{}};
    if(refIdx>=0) e.reference=String(r[refIdx]==null?"":r[refIdx]).trim();
+   if(citIdx>=0) e.citation=String(r[citIdx]==null?"":r[citIdx]).trim();
    if(objIdx>=0) e.objectif=String(r[objIdx]==null?"":r[objIdx]).trim();
    if(nivIdx>=0) e.niveau_preuve=String(r[nivIdx]==null?"":r[nivIdx]).trim();
+   META_FIELDS.forEach((f,i)=>{
+    let ci=metaIdx[i]; if(ci<0) return;
+    e[f]=String(r[ci]==null?"":r[ci]).trim();
+   });
    TRAITEMENTS_FIELDS.forEach((t,i)=>{
     let ci=traitIdx[i]; if(ci<0) return;
     let v=String(r[ci]==null?"":r[ci]).trim().toLowerCase();
     if(v==="1"||v==="1.0"||v==="oui"||v==="x") e.traitements_evalues.push(t);
+   });
+   TRAITEMENTS_FIELDS.forEach((t,i)=>{
+    let ci=traitDetailIdx[i]; if(ci<0) return;
+    let v=String(r[ci]==null?"":r[ci]).trim();
+    if(v) e.traitements_details[t]=v;
    });
    CRITERES_FIELDS.forEach((c,i)=>{
     let ci=critIdx[i]; if(ci<0) return;
