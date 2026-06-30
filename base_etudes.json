@@ -3,7 +3,13 @@
     "Mutation": [
       "Mutation constitutionnelle BRCA 1 ou 2 ?",
       "Quel est le statut mutationnel BRCA ?"
-    ]
+    ],
+    "T":   ["Stade tumoral (T)"],
+    "N":   ["Statut ganglionnaire (N)"],
+    "M":   ["Statut métastatique (M)"],
+    "RE":  ["Statut RE (récepteurs des œstrogènes)"],
+    "RP":  ["Statut RP (récepteurs de la progestérone)"],
+    "Age": ["Âge de la patiente (années)"]
   },
   "etudes": [
     {
@@ -121,8 +127,8 @@
       "niveau_preuve": "1",
       "criteres": {
         "M": "M0",
-        "Age": "(54",
-        "Ménopause %": "NC, valeur stratifiée",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "Chirurgie_mammaire": "MT, MP",
         "Chirurgie_axillaire": "CA"
       },
@@ -151,8 +157,8 @@
         "T": "T2, T1",
         "N": "pN0",
         "M": "M0",
-        "Age": "stratification <50 ans et >50 ans, pas de ≠*",
-        "Ménopause %": "valeur stratifiée",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "Chirurgie_mammaire": "MP",
         "Chirurgie_axillaire": "CA"
       },
@@ -178,7 +184,7 @@
       "objectif": "Efficacité MP ±RT mammaire post opératoire vs MT pour les cancers invasifs",
       "niveau_preuve": "1",
       "criteres": {
-        "Age": "60% ≥50",
+        "Age": "-1",
         "Chirurgie_mammaire": "MT",
         "Chirurgie_axillaire": "CA"
       },
@@ -454,8 +460,8 @@
         "M": "M0",
         "RE": "Positif, Négatif",
         "RP": "Positif, Négatif",
-        "Age": "47±9 ans - 27% ≤40 ans",
-        "Ménopause %": "0.4",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "Chirurgie_mammaire": "TSSM, reconstruction immédiate",
         "Chirurgie_axillaire": "CA",
         "RT": "non, oui",
@@ -499,8 +505,8 @@
       "criteres": {
         "T": "T2, T3",
         "N": "N0, N1",
-        "Age": "53.0",
-        "Ménopause %": "0.54",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, \"EVM = epirubicin, vincristine, and methotrexate\", \"ETV = mitomycin, thiothepa, and vindesine\"",
         "CTadj": "Non"
       },
@@ -526,7 +532,7 @@
       "objectif": "",
       "niveau_preuve": null,
       "criteres": {
-        "Age": "50.0",
+        "Age": "-1",
         "CNA": "Oui, \"TMF = thiotepa, methotrexate, and fluorouracil\"",
         "CTadj": "Oui, \"TMF = thiotepa, methotrexate, and fluorouracil\""
       },
@@ -543,8 +549,8 @@
       "criteres": {
         "T": "T2, T3",
         "N": "N1b",
-        "Age": "(49",
-        "Ménopause %": "0.37",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\"",
         "CTadj": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\""
       },
@@ -561,8 +567,8 @@
       "criteres": {
         "T": "T2, T3",
         "N": "N0, N1b1",
-        "Age": "45.0",
-        "Ménopause %": "0.0",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\"",
         "CTadj": "Non"
       },
@@ -590,8 +596,8 @@
       "criteres": {
         "T": "T0, T1, T4, T2, T3",
         "N": "N0, N1",
-        "Age": "(56",
-        "Ménopause %": "0.61",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\"",
         "CTadj": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\""
       },
@@ -608,8 +614,8 @@
       "criteres": {
         "T": "T1, T2, T3",
         "N": "N0, N1",
-        "Age": "50.0",
-        "Ménopause %": "0.49",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, AC = doxorubicin and cyclophosphamide",
         "CTadj": "Non"
       },
@@ -626,8 +632,8 @@
       "criteres": {
         "T": "T2, T3, T1, T4",
         "N": "N0, N1, N2",
-        "Age": "52.0",
-        "Ménopause %": "0.63",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, Gsr = goserelin, Frm = formestane, \"MM = mitoxantrone, mitomycin, and methotrexate\"",
         "CTadj": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\", Gsr = goserelin, Frm = formestane"
       },
@@ -644,8 +650,8 @@
       "criteres": {
         "T": "T1c, T2, T3, T4a, T4b",
         "N": "N0, N1",
-        "Age": "≤50",
-        "Ménopause %": "0.45",
+        "Age": "<=50",
+        "Ménopause %": "-1",
         "CNA": "Oui, \"FEC = fluorouracil, epirubicin, and cyclophosphamide\"",
         "CTadj": "Non"
       },
@@ -660,8 +666,8 @@
       "objectif": "",
       "niveau_preuve": null,
       "criteres": {
-        "Age": "(49",
-        "Ménopause %": "0.4",
+        "Age": "-1",
+        "Ménopause %": "-1",
         "CNA": "Oui, \"FLAC/G-CSF = fluorouracil, leucovorin, doxorubicin, cyclophosphamide, and granulocyte colony-stimulating factor support\"",
         "CTadj": "Non"
       },
@@ -693,7 +699,7 @@
         "T": "T1a, T1b, T1c, T2",
         "N": "cN0, pN1-2",
         "M": "M0",
-        "Age": "55.0",
+        "Age": "-1",
         "Chirurgie_mammaire": "MP",
         "RT": "mammaire"
       },

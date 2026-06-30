@@ -28,10 +28,16 @@
     'T2':          ['T2','T1, T2','T2, T3','T1, T2, T3','T4a, T3, T4b, T4c, T1, T2'],
     'T3':          ['T3','T2, T3','T1, T2, T3','T2, T3, T4'],
     'T4':          ['T4','T4d','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
+    'T4a':         ['T4','T4a','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
+    'T4b':         ['T4','T4b','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
+    'T4c':         ['T4','T4c','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
     'T4d':         ['T4','T4d','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
     'Tis':         ['Tis','in situ','CCIS'],
-    'N0':          ['N0','pN0','N0, N1','N2, N3, N0, N1'],
-    'N+':          ['N+','pN+','pN1','pN1-3','N1','N2','N0, N1','N2, N3, N0, N1'],
+    // N0/cN0/pN0 et N+/pN+/pN1-x : équivalence clinique/pathologique déjà admise par les
+    // entrées existantes (N0 ⟷ pN0) — complétée ici pour couvrir aussi le préfixe "c" (clinique)
+    // et les sous-catégories pN1-2/pN1-3/pN4+ effectivement présentes dans base_etudes.json.
+    'N0':          ['N0','pN0','cN0','N0, N1','N2, N3, N0, N1'],
+    'N+':          ['N+','pN+','pN1','pN1-2','pN1-3','pN4+','N1','N2','N0, N1','N2, N3, N0, N1'],
     'Infiltrant':  ['Infiltrant','Infilitrant','invasif'],
     'Infilitrant': ['Infiltrant','Infilitrant','invasif'],
     'in situ':     ['in situ','Tis','CCIS'],
@@ -42,10 +48,12 @@
     'Hormonothérapie': ['Hormonothérapie','Tamoxifène','tamoxifene'],
     'Trastuzumab':     ['Trastuzumab','Herceptin','anti-HER2'],
     'RCP':             ['RCP','rcp'],
-    // Mutation BRCA : seul critère d'étude dont le vocabulaire patient (réponses du quiz,
-    // ex. "Mutation", "BRCA muté") peut être relié au vocabulaire des études ("BRCA1, BRCA2").
-    // Les autres critères (T, N, M, RE, RP, HER2, Ki67, Marges, Grade, Emboles...) ne sont
-    // demandés par aucune question du quiz sous une forme comparable : ils restent neutres.
+    // Mutation BRCA : reliée au vocabulaire des études ("BRCA1, BRCA2") via les questions
+    // BRCA déjà présentes dans certains protocoles (néoadjuvant, rechute avancée).
+    // T, N, M, RE, RP, Age sont désormais demandés par le prélude de profil clinique
+    // (construirePrelude) commun à tous les protocoles. HER2, Ki67, Marges, Grade, Emboles...
+    // restent neutres : aucune étude de la base ne les utilise, ou leur vocabulaire est
+    // trop hétérogène pour un rapprochement fiable sans deviner une règle clinique.
     'Mutation':        ['BRCA1','BRCA2'],
     'BRCA muté':       ['BRCA1','BRCA2'],
   };
@@ -178,14 +186,36 @@
   }
 
   function depth(node, d) {
-    if (!node || node.type === 'resultat' || !node.choix) return d;
-    if (node.type === 'etape' && node.suite) return depth(node.suite, d+1);
+    if (!node || node.type === 'resultat') return d;
+    if ((node.type === 'etape' || node.type === 'numerique') && node.suite) return depth(node.suite, d+1);
+    if (!node.choix) return d;
     var keys = Object.keys(node.choix), max = d;
     for (var i = 0; i < keys.length; i++) {
       var sub = depth(node.choix[keys[i]], d+1);
       if (sub > max) max = sub;
     }
     return max;
+  }
+
+  // Profil clinique : prélude de questions de stadification/biomarqueurs (T, N, M, RE, RP, Age)
+  // prépendu devant CHAQUE arbre de protocole, sans toucher à la logique clinique SENORIF elle-même.
+  // Sert uniquement à peupler le profil patient pour le rapprochement bibliographique
+  // (calculerScoreEtude / valeurPatient) avec des critères réellement comparables aux études.
+  function construirePrelude(suite) {
+    var qAge = { type: 'numerique', titre: 'Âge de la patiente (années)', suite: suite };
+    var qRP  = { type: 'question', titre: 'Statut RP (récepteurs de la progestérone)', choix: { 'Positif': qAge, 'Négatif': qAge } };
+    var qRE  = { type: 'question', titre: 'Statut RE (récepteurs des œstrogènes)', choix: { 'Positif': qRP, 'Négatif': qRP } };
+    var qM   = { type: 'question', titre: 'Statut métastatique (M)', choix: { 'M0': qRE, 'M1': qRE } };
+    var qN   = { type: 'question', titre: 'Statut ganglionnaire (N)', choix: { 'N0': qM, 'N+': qM } };
+    var qT   = {
+      type: 'question',
+      titre: 'Stade tumoral (T)',
+      choix: {
+        'Tis':  qN, 'T1a': qN, 'T1b': qN, 'T1c': qN, 'T2': qN,
+        'T3':   qN, 'T4a': qN, 'T4b': qN, 'T4c': qN, 'T4d': qN
+      }
+    };
+    return qT;
   }
 
   // 1a. Chargement de la liste des protocoles (registre unique : protocoles/index.json)
@@ -256,10 +286,12 @@
       if (!r.ok) throw new Error(file + ' HTTP ' + r.status);
       return r.json();
     }).then(function(data) {
-      // Extrait le sous-arbre "tree" du nouveau format de fichier
-      tree = data.tree || data;
+      // Extrait le sous-arbre "tree" du nouveau format de fichier, puis le précède
+      // du prélude de profil clinique (T, N, M, RE, RP, Age) — sans modifier l'arbre lui-même.
+      var arbreProtocole = data.tree || data;
+      tree = construirePrelude(arbreProtocole);
       maxDepth = depth(tree, 1) || 1;
-      
+
       if (bh) bh.textContent = 'Commencer l\'évaluation →';
       
       history = []; 
@@ -320,7 +352,9 @@
 
     var container = $('quiz-choices');
     container.innerHTML = '';
-    
+
+    if (node.type === 'numerique') { renderNumerique(node, container); return; }
+
     var choices = node.choix || {};
     var keys = Object.keys(choices);
     if (!keys.length) {
@@ -343,6 +377,44 @@
       });
       container.appendChild(btn);
     });
+  }
+
+  function renderNumerique(node, container) {
+    var wrap  = document.createElement('div');
+    wrap.className = 'numeric-input-wrap';
+
+    var input = document.createElement('input');
+    input.type = 'number';
+    input.min  = '0';
+    input.max  = '120';
+    input.step = '1';
+    input.placeholder = 'Âge en années';
+    input.className   = 'numeric-input';
+
+    var btn = document.createElement('button');
+    btn.className   = 'choice-btn';
+    btn.textContent = 'Valider →';
+
+    function valider() {
+      var v = parseFloat(String(input.value).trim().replace(',', '.'));
+      if (isNaN(v) || v < 0 || v > 120) {
+        input.style.borderColor = '#e74c3c';
+        input.focus();
+        return;
+      }
+      history.push({node: node, label: String(v)});
+      current = node.suite;
+      render(current);
+    }
+
+    btn.addEventListener('click', valider);
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') valider(); });
+    input.addEventListener('input', function() { input.style.borderColor = ''; });
+
+    wrap.appendChild(input);
+    wrap.appendChild(btn);
+    container.appendChild(wrap);
+    input.focus();
   }
 
   function cls(val) {
