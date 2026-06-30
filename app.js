@@ -15,7 +15,11 @@
 
   function $(id) { return document.getElementById(id); }
 
-  var MAPPING = {
+  // Configuration du moteur de correspondance.
+  // Source de vérité : schema_criteres.json (chargé au démarrage, éditable hors code).
+  // Les valeurs ci-dessous ne servent que de SECOURS si le fichier est introuvable
+  // (ex. ouverture en file://), pour que l'app reste fonctionnelle hors ligne.
+  var MAPPING_DEFAUT = {
     'HER2+':       ['Positif','HER2+','positif','1'],
     'HER2-':       ['Négatif','HER2-','négatif','0','Negatif'],
     'RE+':         ['Positif','RE+','positif','élevés','eleves'],
@@ -49,6 +53,12 @@
     'Mutation':        ['BRCA1','BRCA2'],
     'BRCA muté':       ['BRCA1','BRCA2'],
   };
+
+  var NUMERIQUES_DEFAUT = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
+
+  // Variables actives : initialisées au secours, remplacées par schema_criteres.json au chargement.
+  var MAPPING    = MAPPING_DEFAUT;
+  var NUMERIQUES = NUMERIQUES_DEFAUT;
 
   function normaliser(v) {
     if (v === null || v === undefined) return '';
@@ -153,7 +163,6 @@
   // sinon il dilue les vrais désaccords (ex. 1 vrai mismatch + 10 jokers ≈ 91%, alors que
   // sur les seuls critères réellement évalués, c'est 0%).
   function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
-    var NUMERIQUES = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
@@ -231,9 +240,31 @@
     });
   }
 
-  // 2. Chargement initial : registre des protocoles + littérature, en parallèle
+  // 1c. Chargement du contrat de données partagé (schema_criteres.json) :
+  // synonymes de valeurs (MAPPING) + liste des critères numériques (NUMERIQUES),
+  // sortis du code pour être éditables sans toucher à l'application.
+  function chargerSchema() {
+    var v = '?_v=' + Date.now();
+    return fetch('schema_criteres.json' + v).then(function(r) {
+      if (!r.ok) throw new Error('schema_criteres.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(schema) {
+      if (schema && schema.valeurs_synonymes && typeof schema.valeurs_synonymes === 'object') {
+        MAPPING = schema.valeurs_synonymes;
+      }
+      if (schema && Array.isArray(schema.criteres_numeriques)) {
+        NUMERIQUES = schema.criteres_numeriques;
+      }
+      console.log('[Atlas] ✅ Schéma de critères chargé (synonymes : ' +
+        Object.keys(MAPPING).length + ', critères numériques : ' + NUMERIQUES.length + ').');
+    }).catch(function(err) {
+      console.warn('[Atlas] schema_criteres.json indisponible — configuration de secours intégrée utilisée :', err.message);
+    });
+  }
+
+  // 2. Chargement initial : schéma + registre des protocoles + littérature, en parallèle
   function load() {
-    Promise.all([chargerListeProtocoles(), chargerLitterature()]).then(function() {
+    Promise.all([chargerSchema(), chargerListeProtocoles(), chargerLitterature()]).then(function() {
       var bh = $('btn-start-hero');
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
     });

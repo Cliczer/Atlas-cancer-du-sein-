@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "_description": "Contrat de données partagé de l'écosystème Atlas cancer du sein. Centralise la configuration du moteur de correspondance (matching) entre les réponses du quiz et les critères des études, HORS du code de l'application. Ce fichier est la source de vérité lue par l'Atlas (app.js) ; les éditeurs (arbre / base de données) peuvent le lire et l'alimenter via le raw GitHub du dépôt Atlas. Modifier ce fichier ne demande aucune intervention dans le code source. ATTENTION : la comparaison est sensible aux accents — écrivez les valeurs exactement comme elles apparaissent dans la base d'études.",
+
+  "criteres_numeriques": [
+    "Ki67 (%)",
+    "ki67",
+    "Age",
+    "age",
+    "Marges (mm)",
+    "Marges et autres paramètres"
+  ],
+  "_criteres_numeriques_aide": "Noms de critères dont la valeur est traitée comme un nombre (plage 10-50, comparaison <2 / >=2, valeur exacte) plutôt que comme du texte. Tout critère absent de cette liste est comparé en mode catégoriel via valeurs_synonymes.",
+
+  "valeurs_synonymes": {
+    "HER2+": ["Positif", "HER2+", "positif", "1"],
+    "HER2-": ["Négatif", "HER2-", "négatif", "0", "Negatif"],
+    "RE+": ["Positif", "RE+", "positif", "élevés", "eleves"],
+    "RE-": ["Négatif", "RE-", "négatif", "0"],
+    "élevés": ["Positif", "positif", "élevés", "RE+", "RP+"],
+    "RP-": ["Négatif", "RP-", "négatif", "0"],
+    "T1a": ["T1", "T1a", "T1, T2", "T1, T2, T3", "T1, T2, T3, T4", "T4a, T3, T4b, T4c, T1, T2"],
+    "T1b": ["T1", "T1b", "T1, T2", "T1, T2, T3", "T1, T2, T3, T4", "T4a, T3, T4b, T4c, T1, T2"],
+    "T1c": ["T1", "T1c", "T1, T2", "T1, T2, T3", "T1, T2, T3, T4"],
+    "T2": ["T2", "T1, T2", "T2, T3", "T1, T2, T3", "T4a, T3, T4b, T4c, T1, T2"],
+    "T3": ["T3", "T2, T3", "T1, T2, T3", "T2, T3, T4"],
+    "T4": ["T4", "T4d", "T1, T2, T3, T4", "T4a, T3, T4b, T4c, T1, T2"],
+    "T4d": ["T4", "T4d", "T1, T2, T3, T4", "T4a, T3, T4b, T4c, T1, T2"],
+    "Tis": ["Tis", "in situ", "CCIS"],
+    "N0": ["N0", "pN0", "N0, N1", "N2, N3, N0, N1"],
+    "N+": ["N+", "pN+", "pN1", "pN1-3", "N1", "N2", "N0, N1", "N2, N3, N0, N1"],
+    "Infiltrant": ["Infiltrant", "Infilitrant", "invasif"],
+    "Infilitrant": ["Infiltrant", "Infilitrant", "invasif"],
+    "in situ": ["in situ", "Tis", "CCIS"],
+    "0": ["0", "pré-ménopausée", "non ménopausée", "0.0"],
+    "1": ["1", "ménopausée", "post-ménopausée", "1.0"],
+    "Radiothérapie": ["Radiothérapie", "RT", "radiotherapie"],
+    "Chimiothérapie": ["Chimiothérapie", "CT", "CTadj", "chimiotherapie"],
+    "Hormonothérapie": ["Hormonothérapie", "Tamoxifène", "tamoxifene"],
+    "Trastuzumab": ["Trastuzumab", "Herceptin", "anti-HER2"],
+    "RCP": ["RCP", "rcp"],
+    "Mutation": ["BRCA1", "BRCA2"],
+    "BRCA muté": ["BRCA1", "BRCA2"]
+  },
+  "_valeurs_synonymes_aide": "Dictionnaire de synonymes de VALEURS. Chaque clé est un terme (côté patient OU côté étude) ; la liste donne les écritures considérées comme équivalentes. La comparaison est insensible à la casse mais SENSIBLE aux accents. Ajouter une nouvelle valeur de critère dans la base de données ? Ajoutez ici ses synonymes pour que l'Atlas la reconnaisse au lieu de l'ignorer silencieusement."
+}
