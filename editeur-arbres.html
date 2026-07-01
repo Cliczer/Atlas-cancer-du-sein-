@@ -201,6 +201,14 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </div>
 
 <div class="grp">
+ <span class="grpLabel">🔎 Revue</span>
+ <span class="grpBtns" style="align-items:center">
+  <button onclick="marquerArbreRevu()" title="Enregistre la date de vérification de ce protocole">✓ Marquer vérifié</button>
+  <span id="revueStatus" style="font-size:11px;color:var(--text-muted)"></span>
+ </span>
+</div>
+
+<div class="grp">
  <span class="grpLabel">💾 Enregistrer <span class="hint" style="text-transform:none;font-weight:500">(nom de fichier dans <code>protocoles/</code>)</span></span>
  <span class="grpBtns" style="align-items:center">
   <input id="protocolFilename" placeholder="ex. diagnostic_biopsie.json" style="width:200px">
@@ -384,6 +392,24 @@ function loadProtocolFile(data, filename){
  currentMetadata = (data && data.tree) ? (data.metadata || {}) : {};
  document.getElementById("protocolFilename").value = filename || "";
  treeToGraph((data && data.tree) || data);
+ afficherRevueStatus();
+}
+
+// Revue au niveau du protocole : date de dernière vérification médicale,
+// conservée dans metadata et publiée avec l'arbre.
+function afficherRevueStatus(){
+ let el=document.getElementById("revueStatus"); if(!el) return;
+ if(currentMetadata && currentMetadata.date_revue){
+  el.textContent="Vérifié le "+currentMetadata.date_revue+(currentMetadata.revu_par?" · "+currentMetadata.revu_par:"");
+ } else { el.textContent="Jamais vérifié"; }
+}
+function marquerArbreRevu(){
+ currentMetadata=currentMetadata||{};
+ currentMetadata.date_revue=new Date().toISOString().slice(0,10);
+ let qui=prompt("Vérifié par (initiales / nom) :", currentMetadata.revu_par||"");
+ if(qui!==null) currentMetadata.revu_par=qui.trim();
+ afficherRevueStatus();
+ setStatus("Protocole marqué vérifié le "+currentMetadata.date_revue+". Cliquez « Publier sur le site » pour enregistrer.", true);
 }
 
 function treeToGraph(tree){

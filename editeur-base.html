@@ -161,6 +161,13 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 </div>
 
 <div class="grp">
+ <span class="grpLabel">🔎 Revue</span>
+ <span class="grpBtns">
+  <button id="btnRevue" onclick="toggleRevue()" title="Afficher l'état de vérification de chaque étude">Mode revue</button>
+ </span>
+</div>
+
+<div class="grp">
  <span class="grpLabel">💾 Enregistrer les modifications</span>
  <span class="grpBtns">
   <button class="success" onclick="publierBase()">Publier sur le site</button>
@@ -233,6 +240,13 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 
 <label>Niveau de preuve</label>
 <input id="editNiveau" placeholder="Ex. : 1, IIa, ou une phrase libre">
+
+<label>Revue médicale <span class="hint" style="text-transform:none;font-weight:500">(suivi des vérifications)</span></label>
+<div class="critGrid">
+ <div class="critField"><label>Dernière revue le</label><input id="editDateRevue" type="date"></div>
+ <div class="critField"><label>Revu par</label><input id="editRevuPar" placeholder="Initiales / nom"></div>
+</div>
+<button class="small" style="margin-top:6px" onclick="marquerRevuAujourdhui()">✓ Marquer revu aujourd'hui</button>
 
 <label>Traitements évalués</label>
 <div class="checkGrid" id="traitementsGrid"></div>
@@ -350,6 +364,8 @@ function loadData(obj){
   criteres: Object.assign(defaultCriteres(), e.criteres||{}),
   comparaisons: loadComparaisons(e),
   outcomes: Object.assign({}, e.outcomes||{}),
+  date_revue: e.date_revue || "",
+  revu_par: e.revu_par || "",
  }));
  selectedId = null;
  undoStack=[]; redoStack=[];
@@ -372,6 +388,8 @@ function exportData(){
      .filter(c=>String(c.mesure||"").trim()!=="" || String(c.standard||"").trim()!=="" || String(c.controle||"").trim()!=="")
      .map(c=>({ mesure: (c.mesure||"").trim(), standard: numOrString(c.standard), controle: numOrString(c.controle) })),
    outcomes: Object.assign({}, e.outcomes),
+   date_revue: e.date_revue || "",
+   revu_par: e.revu_par || "",
   })),
  };
 }
@@ -430,6 +448,26 @@ function render(){
  renderForm();
 }
 
+// ─── Mode revue : suivi des vérifications médicales ───
+let modeRevue=false;
+const REVUE_SEUIL_MOIS=12; // au-delà, une étude est signalée « à revoir »
+function moisDepuis(dateStr){
+ let d=new Date(dateStr); if(isNaN(d)) return null;
+ return (Date.now()-d.getTime())/(1000*60*60*24*30.44);
+}
+function statutRevue(e){
+ if(!e.date_revue) return {rang:0, txt:"Jamais revue", bg:"#fee2e2", fg:"#991b1b"};
+ let m=moisDepuis(e.date_revue);
+ if(m===null) return {rang:0, txt:"Date invalide", bg:"#fee2e2", fg:"#991b1b"};
+ if(m>REVUE_SEUIL_MOIS) return {rang:1, txt:"À revoir ("+Math.round(m)+" mois)", bg:"#ffedd5", fg:"#9a3412"};
+ return {rang:2, txt:"À jour ("+e.date_revue+")", bg:"#dcfce7", fg:"#166534"};
+}
+function toggleRevue(){
+ modeRevue=!modeRevue;
+ let b=document.getElementById("btnRevue"); if(b) b.classList.toggle("primary", modeRevue);
+ renderList();
+}
+
 function renderList(){
  let list=document.getElementById("list");
  list.innerHTML="";
@@ -437,6 +475,16 @@ function renderList(){
  let visible = term ? etudes.filter(e=>fold(searchableText(e)).includes(term)) : etudes;
  document.getElementById("listCount").textContent =
   term ? "("+visible.length+"/"+etudes.length+")" : "("+etudes.length+")";
+ if(modeRevue){
+  // Résumé + tri : jamais revues puis à revoir puis à jour.
+  let jamais=etudes.filter(e=>statutRevue(e).rang===0).length;
+  let aRevoir=etudes.filter(e=>statutRevue(e).rang===1).length;
+  let head=document.createElement("div");
+  head.style.cssText="background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;line-height:1.5";
+  head.innerHTML="<b>Mode revue</b> — seuil "+REVUE_SEUIL_MOIS+" mois.<br>❌ "+jamais+" jamais revue(s) · ⚠️ "+aRevoir+" à revoir · sur "+etudes.length+" études.";
+  list.appendChild(head);
+  visible=visible.slice().sort((a,b)=>statutRevue(a).rang-statutRevue(b).rang);
+ }
  visible.forEach(e=>list.appendChild(buildEtudeRow(e)));
 }
 
@@ -457,6 +505,13 @@ function buildEtudeRow(e){
  if(e.traitements_evalues.length) bits.push(e.traitements_evalues.join(", "));
  meta.textContent = bits.join(" — ") || "(aucun détail)";
  row.appendChild(meta);
+ if(modeRevue){
+  let st=statutRevue(e);
+  let badge=document.createElement("span");
+  badge.textContent=st.txt+(e.revu_par?" · "+e.revu_par:"");
+  badge.style.cssText="display:inline-block;margin-top:5px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:"+st.bg+";color:"+st.fg;
+  row.appendChild(badge);
+ }
  return row;
 }
 
@@ -476,6 +531,8 @@ function renderForm(){
  document.getElementById("editReference").value = e.reference;
  document.getElementById("editObjectif").value = e.objectif;
  document.getElementById("editNiveau").value = e.niveau_preuve;
+ document.getElementById("editDateRevue").value = e.date_revue || "";
+ document.getElementById("editRevuPar").value = e.revu_par || "";
  document.getElementById("editLien").value = e.lien || "";
 
  editComparaisons = (e.comparaisons||[]).map(c=>({mesure:c.mesure||"", standard:c.standard!=null?String(c.standard):"", controle:c.controle!=null?String(c.controle):""}));
@@ -610,6 +667,12 @@ function addCritereLibre(){
  selectEtude(e._id);
 }
 
+function marquerRevuAujourdhui(){
+ let e=etude(selectedId); if(!e){ alert("Sélectionnez d'abord une étude."); return; }
+ document.getElementById("editDateRevue").value = new Date().toISOString().slice(0,10);
+ applyEtudeEdits();
+}
+
 function applyEtudeEdits(){
  let e=etude(selectedId); if(!e) return;
  pushHistory();
@@ -618,6 +681,8 @@ function applyEtudeEdits(){
  e.reference = document.getElementById("editReference").value;
  e.objectif = document.getElementById("editObjectif").value;
  e.niveau_preuve = document.getElementById("editNiveau").value;
+ e.date_revue = document.getElementById("editDateRevue").value;
+ e.revu_par = document.getElementById("editRevuPar").value.trim();
  e.lien = document.getElementById("editLien").value.trim();
  syncComparaisonsDraftFromDOM();
  e.comparaisons = editComparaisons
@@ -643,7 +708,7 @@ function applyEtudeEdits(){
 
 function addEtude(){
  pushHistory();
- let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}};
+ let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}, date_revue:"", revu_par:""};
  etudes.push(e);
  selectedId=e._id;
  render();
@@ -727,7 +792,7 @@ function importExcelRows(aoa){
  return aoa.slice(1)
   .filter(r=>r.some(c=>c!==undefined && String(c).trim()!==""))
   .map(r=>{
-   let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}};
+   let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}, date_revue:"", revu_par:""};
    if(titreIdx>=0) e.titre=String(r[titreIdx]==null?"":r[titreIdx]).trim();
    if(autIdx>=0) e.auteurs=String(r[autIdx]==null?"":r[autIdx]).trim();
    if(refIdx>=0) e.reference=String(r[refIdx]==null?"":r[refIdx]).trim();
