@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Éditeur arbre JSON SENORIF</title>
+<script src="contrat.js?v=1"></script>
 <style>
 :root{
  --bg:#eef1f7;
@@ -1039,8 +1040,9 @@ function downloadTree(filename){
  a.click();
  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-function exportJSON(){downloadTree(currentExportFilename())}
+function exportJSON(){ if(!validerAvantExport()) return; downloadTree(currentExportFilename()); }
 function saveForGithub(){
+ if(!validerAvantExport()) return;
  let filename=currentExportFilename();
  downloadTree(filename);
  alert("Le fichier "+filename+" a été téléchargé. Dans le dépôt GitHub de l'Atlas, remplacez le fichier protocoles/"+filename+" par celui-ci (ou ajoutez-le s'il est nouveau, puis ajoutez une ligne dans protocoles/index.json), puis commitez les changements.");
@@ -1072,11 +1074,26 @@ function loadRegistry(){
 // Contrat partagé : vocabulaire canonique des critères, lu depuis le dépôt Atlas.
 // Sert à proposer aux médecins des menus déroulants « Critère » et « Valeur canonique »
 // pour relier une question/réponse au vocabulaire des études, sans toucher au code.
+let schemaComplet={}; // schéma entier (criteres + valeurs_synonymes) pour la validation
 function loadSchemaCriteres(){
  return fetch(ATLAS_REPO_RAW_BASE+"schema_criteres.json?_v="+Date.now())
   .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-  .then(s=>{ criteresSchema=(s && s.criteres)||{}; })
-  .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; });
+  .then(s=>{ schemaComplet=s||{}; criteresSchema=(s && s.criteres)||{}; })
+  .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; schemaComplet={}; });
+}
+
+// Validation avant export : tags de critères inconnus, réponses hors vocabulaire,
+// recommandations sans titre, questions sans réponse… sont signalés visiblement.
+function validerAvantExport(){
+ if(!window.AtlasContrat) return true;
+ let nom=currentExportFilename();
+ let res=window.AtlasContrat.validerProtocole(nom, buildExportPayload(), schemaComplet);
+ if(!res.erreurs.length && !res.avertissements.length) return true;
+ let msg="";
+ if(res.erreurs.length) msg+="❌ "+res.erreurs.length+" ERREUR(S) :\n"+res.erreurs.slice(0,8).map(m=>"• "+m).join("\n")+(res.erreurs.length>8?"\n…":"")+"\n\n";
+ if(res.avertissements.length) msg+="⚠️ "+res.avertissements.length+" avertissement(s) :\n"+res.avertissements.slice(0,6).map(m=>"• "+m).join("\n")+(res.avertissements.length>6?"\n…":"")+"\n\n";
+ msg+= res.erreurs.length ? "Ces erreurs peuvent casser le matching dans l'application. Télécharger quand même ?" : "Télécharger quand même ?";
+ return confirm(msg);
 }
 
 function loadSelectedProtocol(){

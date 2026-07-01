@@ -2,9 +2,10 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Éditeur base d'études SENORIF</title>
 <script src="xlsx.core.min.js"></script>
+<script src="contrat.js?v=1"></script>
 <style>
 :root{
  --bg:#eef1f7;
@@ -720,6 +721,26 @@ document.getElementById("fileInput").addEventListener("change", function(ev){
  }
 });
 
+// Validation avant export : on ne laisse pas partir une base incohérente en silence.
+// Les ERREURS de structure bloquent (sauf confirmation explicite) ; les avertissements
+// (étude sans titre, sans comparaison…) sont signalés mais n'empêchent pas l'export.
+function validerAvantExport(){
+ if(!window.AtlasContrat) return true;
+ let res=window.AtlasContrat.validerBase(exportData(), criteresSchema ? {criteres:criteresSchema} : {});
+ if(!res.erreurs.length && !res.avertissements.length) return true;
+ let msg="";
+ if(res.erreurs.length){
+  msg+="❌ "+res.erreurs.length+" ERREUR(S) de structure :\n"+res.erreurs.slice(0,8).map(m=>"• "+m).join("\n")+(res.erreurs.length>8?"\n…":"")+"\n\n";
+ }
+ if(res.avertissements.length){
+  msg+="⚠️ "+res.avertissements.length+" avertissement(s) (ex. étude sans titre ou sans comparaison).\n\n";
+ }
+ msg+= res.erreurs.length
+  ? "Des erreurs peuvent casser l'affichage dans l'application. Télécharger quand même ?"
+  : "Télécharger quand même ?";
+ return confirm(msg);
+}
+
 function downloadJSON(filename){
  let txt=JSON.stringify(exportData(), null, 4);
  let blob=new Blob([txt],{type:"application/json;charset=utf-8"});
@@ -729,8 +750,9 @@ function downloadJSON(filename){
  a.click();
  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-function exportJSON(){ downloadJSON("base_etudes.json"); }
+function exportJSON(){ if(!validerAvantExport()) return; downloadJSON("base_etudes.json"); }
 function saveForGithub(){
+ if(!validerAvantExport()) return;
  downloadJSON("base_etudes.json");
  alert("Le fichier base_etudes.json a été téléchargé. Remplacez maintenant l'ancien fichier dans GitHub, puis commitez les changements.");
 }
