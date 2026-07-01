@@ -172,6 +172,7 @@
     var profil = {};
     avertissements = []; // recalculé pour ce parcours
     history.forEach(function(h) {
+      if (h.skip) return; // question passée : aucun critère enregistré
       var node  = h.node || {};
       var label = h.label || '';
       var rep   = node.reponses ? node.reponses[label] : undefined;
@@ -501,6 +502,45 @@
       });
       container.appendChild(btn);
     });
+
+    ajouterBoutonPasser(node, container);
+  }
+
+  // Cible d'un "passer" : possible uniquement si la question ne détermine pas le
+  // chemin clinique (toutes les réponses mènent au même nœud suivant — cas des
+  // questions de stadification/profil du prélude). Sinon, null (on ne peut pas
+  // sauter une vraie décision thérapeutique).
+  function cibleSkip(node) {
+    if (node.type === 'numerique') return node.suite || null;
+    var choix = node.choix || {};
+    var cibles = Object.keys(choix).map(function(k){ return choix[k]; });
+    if (!cibles.length) return null;
+    return cibles.every(function(c){ return c === cibles[0]; }) ? cibles[0] : null;
+  }
+
+  function passerQuestion(node) {
+    var next = cibleSkip(node);
+    if (!next) return;
+    history.push({node: node, label: 'Non renseigné', skip: true});
+    current = next;
+    render(current);
+  }
+
+  // Ajoute un bouton "Je ne sais pas — passer" quand la question peut être sautée.
+  function ajouterBoutonPasser(node, container) {
+    if (!cibleSkip(node)) return;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-top:14px;';
+    var b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.style.cssText = 'background:#f1f3f5;border-color:#e5e7eb;color:#636e72;font-weight:600;';
+    b.textContent = 'Je ne sais pas — passer';
+    b.addEventListener('click', function(){ passerQuestion(node); });
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:12px;color:#9aa1a8;margin-top:6px;font-style:italic;';
+    note.textContent = 'Ce critère ne sera pas pris en compte : la correspondance avec les études sera moins précise.';
+    wrap.appendChild(b); wrap.appendChild(note);
+    container.appendChild(wrap);
   }
 
   function renderNumerique(node, container) {
@@ -538,6 +578,7 @@
     wrap.appendChild(input);
     wrap.appendChild(btn);
     container.appendChild(wrap);
+    ajouterBoutonPasser(node, container);
     input.focus();
   }
 
