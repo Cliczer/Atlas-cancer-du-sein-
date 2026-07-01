@@ -17,6 +17,9 @@
   },
   "_criteres_aide": "Vocabulaire canonique partagé par les deux éditeurs et l'Atlas. Chaque clé est l'identifiant d'un critère clinique (utilisé tel quel comme clé dans criteres des études ET comme tag 'critere' sur les questions des arbres). 'type' = categoriel (valeurs listées) ou numerique (nombre, plage, comparaison). 'valeurs' liste les valeurs canoniques proposées dans les menus déroulants des éditeurs ; leurs synonymes d'écriture sont définis dans valeurs_synonymes ci-dessous.",
 
+  "valeurs_neutres": ["nc", "-1", "-1.0", "nan", "", "n/a", "nr"],
+  "_valeurs_neutres_aide": "Valeurs signifiant « l'étude ne s'est pas prononcée sur ce critère » : neutres, exclues du score et du badge de correspondance. Comparaison insensible à la casse.",
+
   "criteres_numeriques": [
     "Ki67 (%)",
     "ki67",

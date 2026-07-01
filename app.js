@@ -67,20 +67,22 @@
   };
 
   var NUMERIQUES_DEFAUT = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
+  var NEUTRES_DEFAUT = ['nc','-1','-1.0','nan','','n/a','nr'];
 
   // Variables actives : initialisées au secours, remplacées par schema_criteres.json au chargement.
   var MAPPING    = MAPPING_DEFAUT;
   var NUMERIQUES = NUMERIQUES_DEFAUT;
+  var NEUTRES    = NEUTRES_DEFAUT;
 
   function normaliser(v) {
     if (v === null || v === undefined) return '';
     return String(v).toLowerCase().trim();
   }
 
+  // Valeurs "neutres" (l'étude ne s'est pas prononcée) : définies dans le schéma
+  // (schema.valeurs_neutres), avec repli sur la liste intégrée.
   function estJoker(v) {
-    var n = normaliser(v);
-    return n === 'nc' || n === '-1' || n === '-1.0' ||
-           n === 'nan' || n === '' || n === 'n/a' || n === 'nr';
+    return NEUTRES.indexOf(normaliser(v)) !== -1;
   }
 
   function valeurPatient(profil, nomCritere) {
@@ -338,6 +340,9 @@
       }
       if (schema && schema.criteres && typeof schema.criteres === 'object') {
         criteresSchema = schema.criteres;
+      }
+      if (schema && Array.isArray(schema.valeurs_neutres)) {
+        NEUTRES = schema.valeurs_neutres.map(normaliser);
       }
       schemaBrut = schema || {};
       if (window.AtlasContrat) {
