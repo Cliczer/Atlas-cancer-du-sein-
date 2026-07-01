@@ -142,18 +142,19 @@
     if (!matchTraitement) return 0;
 
     // 2. Filtre Clinique
+    // mapping = {titre exact du nœud de l'arbre : nom du champ etude.criteres correspondant}
+    var criteres = etude.criteres || {};
     var scorePoints = 0, criteresEvalues = 0;
     for (var questionArbre in profilPatient) {
       var reponsePatient = String(profilPatient[questionArbre]).toLowerCase().trim();
       if (reponsePatient === "-1" || reponsePatient === "non renseigné") continue;
-      var colonneEtude = null;
-      for (var col in mapping) { if (mapping[col].includes(questionArbre)) { colonneEtude = col; break; } }
+      var colonneEtude = mapping[questionArbre];
 
-      if (colonneEtude && etude.hasOwnProperty(colonneEtude)) {
+      if (colonneEtude && criteres.hasOwnProperty(colonneEtude)) {
         criteresEvalues++;
-        var vE = String(etude[colonneEtude]).toLowerCase().trim();
+        var vE = String(criteres[colonneEtude]).toLowerCase().trim();
         if (vE === "-1" || vE === "nan" || vE === "nc" || vE === "") { scorePoints++; }
-        else if (colonneEtude.includes("Âge") || colonneEtude.includes("ki67")) {
+        else if (colonneEtude.toLowerCase().includes("age") || colonneEtude.toLowerCase().includes("ki67")) {
           if (matchNumerique(reponsePatient, vE)) scorePoints++;
         } else {
           var p = reponsePatient.replace('.0', '');
@@ -248,12 +249,18 @@
     etudesPertinentes.forEach(function(etude) {
       var card = document.createElement('div'); card.className = 'etude-card';
       var outcomes = Object.keys(etude.outcomes || {}).map(k => `<div><strong>${k}:</strong> ${etude.outcomes[k]}</div>`).join('');
+      var titre = etude.objectif !== '-1' ? etude.objectif : (etude.citation || 'Étude clinique');
+      var citationLine = (etude.citation && etude.citation !== titre)
+        ? `<div style="font-size:11px; color:#888; margin-bottom:6px;">${etude.citation}</div>` : '';
+      var lien = (etude.reference && etude.reference !== '-1')
+        ? `<a href="${etude.reference}" target="_blank" class="etude-link">Voir l'étude ↗</a>` : '';
       card.innerHTML = `
         <div class="etude-header"><span class="etude-score">${etude.scoreMatch}% Match</span><span class="etude-preuve">Niveau ${etude.niveau_preuve}</span></div>
-        <h4 class="etude-title">${etude.objectif !== '-1' ? etude.objectif : 'Étude clinique'}</h4>
+        <h4 class="etude-title">${titre}</h4>
+        ${citationLine}
         <div style="font-size:12px; margin-bottom:10px;"><strong>Testé:</strong> ${etude.traitements_evalues.join(', ')}</div>
         <div class="etude-stats">${outcomes || 'Pas de données chiffrées.'}</div>
-        <a href="${etude.reference}" target="_blank" class="etude-link">Voir l'étude ↗</a>`;
+        ${lien}`;
       container.appendChild(card);
     });
   }
