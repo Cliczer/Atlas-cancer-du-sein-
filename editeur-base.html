@@ -137,9 +137,10 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 
 <div class="grp">
  <span class="grpLabel">📂 Charger une base à modifier</span>
- <span class="grpBtns">
-  <button onclick="document.getElementById('fileInput').click()">Depuis mon ordinateur (JSON/Excel)</button>
-  <button onclick="reloadRealData()">Depuis GitHub</button>
+ <span class="grpBtns" style="align-items:center">
+  <button class="primary" onclick="reloadRealData()" title="Charge la base actuellement publiée sur le site">↻ Version en ligne du site</button>
+  <span style="font-size:11px;color:var(--text-muted)">ou</span>
+  <button onclick="document.getElementById('fileInput').click()" title="Charge un fichier JSON ou Excel depuis votre ordinateur">Un fichier (JSON/Excel)</button>
  </span>
 </div>
 

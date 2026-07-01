@@ -117,19 +117,22 @@
       if (TYPES_NŒUDS.indexOf(node.type) === -1)
         err.push(nomFichier + ' @' + chemin + ' : type de nœud inconnu "' + node.type + '".');
 
-      // Tag de critère canonique : doit exister dans le schéma.
-      if (node.critere) {
-        var def = schema && schema.criteres && schema.criteres[node.critere];
-        if (!def) err.push(nomFichier + ' @' + chemin + ' : critère "' + node.critere + '" absent du schéma.');
-        else if (estObjet(node.reponses)) {
-          Object.keys(node.reponses).forEach(function (label) {
-            var val = node.reponses[label];
-            if (def.type !== 'numerique' && !valeurConnue(node.critere, val, schema))
-              avert.push(nomFichier + ' @' + chemin + ' : réponse "' + val + '" hors vocabulaire du critère "' + node.critere + '".');
-          });
-        }
-      } else if (estObjet(node.reponses)) {
-        avert.push(nomFichier + ' @' + chemin + ' : "reponses" défini sans "critere" (ignoré au matching).');
+      // Tags de critères : reponses[label] = { critere: valeur, ... } (multi-critères),
+      // ou ancien format critere + reponses[label] = "valeur".
+      function verifierCritereValeur(crit, val) {
+        var def = schema && schema.criteres && schema.criteres[crit];
+        if (!def) { err.push(nomFichier + ' @' + chemin + ' : critère "' + crit + '" absent du schéma.'); return; }
+        if (def.type !== 'numerique' && val != null && String(val).trim() !== '' && !valeurConnue(crit, val, schema))
+          avert.push(nomFichier + ' @' + chemin + ' : réponse "' + val + '" hors vocabulaire du critère "' + crit + '".');
+      }
+      if (estObjet(node.reponses)) {
+        Object.keys(node.reponses).forEach(function (label) {
+          var rep = node.reponses[label];
+          if (estObjet(rep)) Object.keys(rep).forEach(function (crit) { verifierCritereValeur(crit, rep[crit]); });
+          else if (node.critere) verifierCritereValeur(node.critere, rep);
+        });
+      } else if (node.critere && !(schema && schema.criteres && schema.criteres[node.critere])) {
+        err.push(nomFichier + ' @' + chemin + ' : critère "' + node.critere + '" absent du schéma.');
       }
 
       if (node.type === 'resultat') {

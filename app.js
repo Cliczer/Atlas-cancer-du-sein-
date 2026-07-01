@@ -174,10 +174,19 @@
     history.forEach(function(h) {
       var node  = h.node || {};
       var label = h.label || '';
-      // Lien canonique (tags posés dans l'éditeur d'arbres) : prioritaire et robuste,
-      // indépendant du libellé exact de la question.
-      if (node.critere) {
-        var valeur = (node.reponses && node.reponses[label] !== undefined) ? node.reponses[label] : label;
+      var rep   = node.reponses ? node.reponses[label] : undefined;
+      // Lien canonique multi-critères : une réponse peut renseigner plusieurs
+      // critères à la fois — reponses[label] = { critere: valeur, ... }.
+      if (rep && typeof rep === 'object') {
+        Object.keys(rep).forEach(function(crit) {
+          if (String(rep[crit]).trim() !== '') {
+            profil[crit] = rep[crit];
+            validerTag(crit, rep[crit]);
+          }
+        });
+      } else if (node.critere) {
+        // Lien canonique simple (ancien format : un seul critère par question).
+        var valeur = (rep !== undefined) ? rep : label;
         profil[node.critere] = valeur;
         validerTag(node.critere, valeur);
       }
