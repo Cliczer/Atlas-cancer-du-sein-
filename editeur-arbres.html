@@ -152,9 +152,9 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </style>
 <nav class="site-nav">
  <span class="site-nav-brand">Atlas cancer du sein</span>
- <a href="index.html">🩺 Application</a>
- <a href="editeur-arbres.html" class="active">🌳 Éditeur d'arbres</a>
- <a href="editeur-base.html">📚 Éditeur de base</a>
+ <a href="index.html">Application</a>
+ <a href="editeur-arbres.html" class="active">Éditeur d'arbres</a>
+ <a href="editeur-base.html">Éditeur de base</a>
 </nav>
 <header>
 <div class="headerTop">
@@ -342,10 +342,10 @@ let currentMetadata=null; // {titre, date_maj} du protocole chargé, conservé t
 let protocolesRegistry=[]; // [{id, nom, fichier}] chargé depuis protocoles/index.json
 let criteresSchema={};     // {id:{label,type,valeurs}} chargé depuis schema_criteres.json (contrat partagé Atlas)
 
-const NODE_W=240;
-const NODE_H=96;
-const X_GAP=80;
-const Y_GAP=190;
+const NODE_W=260;  // doit correspondre à .node{width} en CSS, sinon les nœuds se chevauchent
+const NODE_H=112;  // doit correspondre à .node{height} en CSS
+const X_GAP=70;
+const Y_GAP=200;
 
 function setStatus(text, ok){
  const el=document.getElementById("loadStatus");
@@ -477,6 +477,19 @@ function autoLayout(){
      n.x=cursorX; n.y=80;
      cursorX += NODE_W + X_GAP;
      visited.add(n.id);
+   }
+ });
+
+ // Passe finale anti-chevauchement : ligne par ligne (même y), on garantit un
+ // espacement minimal entre nœuds voisins. Garantit qu'aucun nœud ne se superpose,
+ // même si le centrage des parents avait rapproché deux sous-arbres.
+ let lignes={};
+ nodes.forEach(n=>{ (lignes[n.y]=lignes[n.y]||[]).push(n); });
+ Object.keys(lignes).forEach(y=>{
+   let row=lignes[y].sort((a,b)=>a.x-b.x);
+   for(let i=1;i<row.length;i++){
+     let min=row[i-1].x + NODE_W + X_GAP;
+     if(row[i].x < min) row[i].x = min;
    }
  });
  resizeWorld();
@@ -877,8 +890,16 @@ function capFirst(s){
 
 function applyNodeEdits(){
  let n=node(selectedNode); if(!n) return;
+ let nouveauType=document.getElementById("editType").value;
+ // Une recommandation est une feuille : refuser de convertir un nœud qui a déjà
+ // des éléments en dessous (sinon ils seraient perdus silencieusement à l'export).
+ if(nouveauType==="resultat" && edges.some(e=>e.source===n.id)){
+   alert("Ce nœud a des éléments en dessous : il ne peut pas devenir une recommandation (fin de chemin).\nSupprimez d'abord ce qui en découle.");
+   document.getElementById("editType").value=n.type;
+   return;
+ }
  pushHistory();
- n.type=document.getElementById("editType").value;
+ n.type=nouveauType;
  n.titre=capFirst(document.getElementById("editTitle").value);
  n.critere=document.getElementById("editCritere").value;
  n.source_senorif=document.getElementById("editSource").value;
@@ -910,6 +931,10 @@ function applyEdgeEdits(){
 
 function addNodeLinkedToSelection(newNode){
  let parentId=selectedNode;
+ if(parentId && node(parentId) && node(parentId).type==="resultat"){
+   alert("Une recommandation est la fin d'un chemin : on ne peut rien ajouter en dessous.\nSélectionnez plutôt une question ou une étape comme point de départ.");
+   return;
+ }
  nodes.push(newNode);
  if(parentId && node(parentId)) {
      if(node(parentId).type === "etape") {
@@ -928,7 +953,13 @@ function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n
 function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
 function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Cliquez le parent puis l'enfant":"Mode liaison désactivé")}
 function connectClick(id){
-    if(!connectSource){connectSource=id;return;}
+    if(!connectSource){
+        if(node(id) && node(id).type==="resultat"){
+            alert("Une recommandation est la fin d'un chemin : elle ne peut pas avoir d'enfant.\nChoisissez une question ou une étape comme parent.");
+            connectMode=false; return;
+        }
+        connectSource=id;return;
+    }
     else{
         pushHistory();
         let s = node(connectSource);
