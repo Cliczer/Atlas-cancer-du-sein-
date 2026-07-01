@@ -90,10 +90,14 @@
       // null est toléré partout (traité comme "absent" par l'app) → simple avertissement.
       if (e.criteres != null && !estObjet(e.criteres))
         err.push('Étude "' + nom + '" : "criteres" doit être un objet.');
+      // Résultats chiffrés : nouveau format "comparaisons" (liste) ou ancien "comparaison" (objet).
+      if (e.comparaisons != null && !Array.isArray(e.comparaisons))
+        err.push('Étude "' + nom + '" : "comparaisons" doit être une liste.');
       if (e.comparaison != null && !estObjet(e.comparaison))
         err.push('Étude "' + nom + '" : "comparaison" doit être un objet.');
-      else if (e.comparaison == null)
-        avert.push('Étude "' + nom + '" : "comparaison" absente — les barres de résultats afficheront 0 %.');
+      var aDesComparaisons = (Array.isArray(e.comparaisons) && e.comparaisons.length) || estObjet(e.comparaison);
+      if (!aDesComparaisons)
+        avert.push('Étude "' + nom + '" : aucun résultat chiffré renseigné.');
       if (e.traitements_evalues != null && !Array.isArray(e.traitements_evalues))
         err.push('Étude "' + nom + '" : "traitements_evalues" doit être une liste.');
     });

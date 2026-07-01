@@ -189,7 +189,7 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
   3. « + Étude » crée une étude vide. « ⧉ Dupliquer » copie l'étude actuellement sélectionnée (pratique pour des études très proches).<br>
   3b. <b>Titre</b> et <b>Auteurs</b> sont affichés séparément par l'Atlas (titre en gras, auteurs en plus petit dessous). Pour les études importées depuis l'ancienne citation unique, ce découpage a été fait automatiquement quand le format le permettait ; sinon les deux champs sont vides et l'Atlas affiche temporairement toute la « Référence brute » à la place — complétez Titre/Auteurs ici dès que vous éditez une de ces études.<br>
   4. Les <b>critères cliniques</b> (T, N, RE, RP, HER2, Grade, Ki67, Marges, Age, Emboles, Triple N, MCC) suivent la syntaxe du moteur de correspondance de l'Atlas : une valeur exacte (ex. <code>1</code>), une plage <code>10-50</code>, ou une comparaison <code>&lt;2</code>, <code>&lt;=2</code>, <code>&gt;2</code>, <code>&gt;=2</code>. Laissez <code>-1</code> (valeur par défaut) si le critère n'est pas évalué par l'étude : il est alors totalement neutre — exclu du score <i>et</i> du badge « X/Y critères concordants » affiché sur l'Atlas, il ne compte ni comme un accord ni comme un désaccord. N'utilisez <code>-1</code> que si l'étude ne dit vraiment rien sur ce critère ; sinon, le badge sous-comptera les critères réellement évalués.<br>
-  5. Le <b>lien de l'article</b> et la <b>comparaison</b> (standard / contrôle) sont les deux champs affichés tels quels par l'Atlas sur la fiche de chaque étude — à remplir pour que la fiche soit complète.<br>
+  5. Les <b>résultats chiffrés</b> affichés par l'Atlas sont une <b>liste de mesures</b> : ajoutez-en autant que l'étude en rapporte (ex. « OS à 5 ans », « OS à 10 ans »), chacune avec sa valeur Standard (%) et Contrôle (%). L'Atlas affiche toutes les mesures renseignées, ou rien si la liste est vide. Le <b>lien de l'article</b> est aussi affiché tel quel.<br>
   6. Les <b>résultats chiffrés</b> (« outcomes ») sont des notes libres de travail, non affichées par l'Atlas : ajoutez autant de lignes nom/valeur que nécessaire avec « + Ajouter un résultat ».<br>
   7. La recherche filtre la liste en direct sur tous les champs (référence, objectif, niveau de preuve, lien, traitements, critères, résultats).<br>
   8. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
@@ -242,17 +242,15 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 <label>Lien de l'article (PubMed, DOI…)</label>
 <input id="editLien" placeholder="https://pubmed.ncbi.nlm.nih.gov/...">
 
-<label>Comparaison — taux de survie/récidive affiché dans l'Atlas <span class="hint">(ex. « 12 » + « % de récidive »)</span></label>
-<div class="critGrid">
- <div class="critField"><label>Standard — valeur</label><input id="editAvecValeur" placeholder="Ex. : 12"></div>
- <div class="critField"><label>Standard — unité</label><input id="editAvecUnite" placeholder="Ex. : % de récidive"></div>
- <div class="critField"><label>Contrôle — valeur</label><input id="editSansValeur" placeholder="Ex. : 28"></div>
- <div class="critField"><label>Contrôle — unité</label><input id="editSansUnite" placeholder="Ex. : % de récidive"></div>
-</div>
+<label style="display:flex;align-items:center;justify-content:space-between">
+ Résultats chiffrés affichés dans l'Atlas <span class="hint" style="text-transform:none;font-weight:500">(autant de mesures que voulu : mesure + Standard % + Contrôle %)</span>
+ <button class="small" onclick="addComparaisonRow()">+ Ajouter une mesure</button>
+</label>
+<div id="comparaisonsList"></div>
 
 <label style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">
- Résultats chiffrés (outcomes) <span class="hint" style="text-transform:none;font-weight:500">(notes libres, non affichées par l'Atlas)</span>
- <button class="small" onclick="addOutcomeRow()">+ Ajouter un résultat</button>
+ Notes de travail (outcomes) <span class="hint" style="text-transform:none;font-weight:500">(libres, NON affichées par l'Atlas)</span>
+ <button class="small" onclick="addOutcomeRow()">+ Ajouter une note</button>
 </label>
 <div id="outcomesList"></div>
 
@@ -269,6 +267,7 @@ let mapping = {};
 let etudes = [];
 let selectedId = null;
 let editOutcomes = [];
+let editComparaisons = []; // brouillon des résultats chiffrés {mesure,standard,controle}
 let undoStack=[], redoStack=[];
 const HISTORY_LIMIT=100;
 
@@ -312,15 +311,25 @@ function setStatus(text, ok){
 function blankToDash(s){ return (s==="-1") ? "" : s; }
 function dashIfBlank(s){ s=String(s==null?"":s).trim(); return s===""? "-1" : s; }
 
-// L'Atlas (app.js) affiche etude.comparaison.{avec,sans}.valeur et etude.lien :
-// ces champs sont obligatoires pour qu'une étude s'affiche correctement.
-function defaultComparaison(){ return {avec:{valeur:"",unite:""}, sans:{valeur:"",unite:""}}; }
-function loadComparaison(c){
- c = c || {};
- return {
-  avec: {valeur: (c.avec && c.avec.valeur!==undefined) ? String(c.avec.valeur) : "", unite: (c.avec && c.avec.unite) || ""},
-  sans: {valeur: (c.sans && c.sans.valeur!==undefined) ? String(c.sans.valeur) : "", unite: (c.sans && c.sans.unite) || ""},
- };
+// Résultats chiffrés : liste modulable de mesures { mesure, standard, controle }.
+// L'Atlas affiche chaque mesure sous forme de deux barres (Standard / Contrôle).
+// Rétro-compatible avec l'ancien format à une seule comparaison { avec, sans }.
+function loadComparaisons(e){
+ if(Array.isArray(e.comparaisons)){
+  return e.comparaisons.map(c=>({
+   mesure: (c.mesure!==undefined ? c.mesure : (c.unite||"")) || "",
+   standard: c.standard!==undefined ? String(c.standard) : (c.avec && c.avec.valeur!==undefined ? String(c.avec.valeur) : ""),
+   controle: c.controle!==undefined ? String(c.controle) : (c.sans && c.sans.valeur!==undefined ? String(c.sans.valeur) : "")
+  }));
+ }
+ let c=e.comparaison;
+ if(c && (c.avec || c.sans)){
+  let mesure=(c.avec && c.avec.unite) || (c.sans && c.sans.unite) || "";
+  let standard=(c.avec && c.avec.valeur!==undefined) ? String(c.avec.valeur) : "";
+  let controle=(c.sans && c.sans.valeur!==undefined) ? String(c.sans.valeur) : "";
+  if(mesure||standard||controle) return [{mesure, standard, controle}];
+ }
+ return [];
 }
 
 function loadData(obj){
@@ -335,7 +344,7 @@ function loadData(obj){
   lien: e.lien || "",
   traitements_evalues: Array.isArray(e.traitements_evalues) ? e.traitements_evalues.slice() : [],
   criteres: Object.assign(defaultCriteres(), e.criteres||{}),
-  comparaison: loadComparaison(e.comparaison),
+  comparaisons: loadComparaisons(e),
   outcomes: Object.assign({}, e.outcomes||{}),
  }));
  selectedId = null;
@@ -355,10 +364,9 @@ function exportData(){
    lien: e.lien || "",
    traitements_evalues: e.traitements_evalues.slice(),
    criteres: Object.assign({}, e.criteres),
-   comparaison: {
-    avec: {valeur: numOrString(e.comparaison.avec.valeur), unite: e.comparaison.avec.unite},
-    sans: {valeur: numOrString(e.comparaison.sans.valeur), unite: e.comparaison.sans.unite},
-   },
+   comparaisons: (e.comparaisons||[])
+     .filter(c=>String(c.mesure||"").trim()!=="" || String(c.standard||"").trim()!=="" || String(c.controle||"").trim()!=="")
+     .map(c=>({ mesure: (c.mesure||"").trim(), standard: numOrString(c.standard), controle: numOrString(c.controle) })),
    outcomes: Object.assign({}, e.outcomes),
   })),
  };
@@ -465,10 +473,9 @@ function renderForm(){
  document.getElementById("editObjectif").value = e.objectif;
  document.getElementById("editNiveau").value = e.niveau_preuve;
  document.getElementById("editLien").value = e.lien || "";
- document.getElementById("editAvecValeur").value = e.comparaison.avec.valeur;
- document.getElementById("editAvecUnite").value = e.comparaison.avec.unite;
- document.getElementById("editSansValeur").value = e.comparaison.sans.valeur;
- document.getElementById("editSansUnite").value = e.comparaison.sans.unite;
+
+ editComparaisons = (e.comparaisons||[]).map(c=>({mesure:c.mesure||"", standard:c.standard!=null?String(c.standard):"", controle:c.controle!=null?String(c.controle):""}));
+ renderComparaisonsRows();
 
  let tGrid=document.getElementById("traitementsGrid");
  tGrid.innerHTML="";
@@ -544,6 +551,45 @@ function removeOutcomeRow(i){
  renderOutcomesRows();
 }
 
+// ─── Résultats chiffrés (comparaisons) : liste modulable ───
+function renderComparaisonsRows(){
+ let container=document.getElementById("comparaisonsList");
+ if(!container) return;
+ container.innerHTML="";
+ editComparaisons.forEach((row,i)=>{
+  let line=document.createElement("div");
+  line.className="outcomeRow";
+  let m=document.createElement("input");
+  m.id="cmpMesure"+i; m.placeholder="Mesure (ex. OS à 10 ans)"; m.value=row.mesure; m.style.flex="1.4";
+  let s=document.createElement("input");
+  s.id="cmpStd"+i; s.placeholder="Standard %"; s.value=row.standard; s.style.maxWidth="90px";
+  let c=document.createElement("input");
+  c.id="cmpCtrl"+i; c.placeholder="Contrôle %"; c.value=row.controle; c.style.maxWidth="90px";
+  let rm=document.createElement("button");
+  rm.className="small danger"; rm.textContent="✕"; rm.title="Retirer cette mesure";
+  rm.onclick=()=>removeComparaisonRow(i);
+  line.appendChild(m); line.appendChild(s); line.appendChild(c); line.appendChild(rm);
+  container.appendChild(line);
+ });
+}
+function syncComparaisonsDraftFromDOM(){
+ editComparaisons.forEach((row,i)=>{
+  row.mesure = document.getElementById("cmpMesure"+i).value;
+  row.standard = document.getElementById("cmpStd"+i).value;
+  row.controle = document.getElementById("cmpCtrl"+i).value;
+ });
+}
+function addComparaisonRow(){
+ syncComparaisonsDraftFromDOM();
+ editComparaisons.push({mesure:"",standard:"",controle:""});
+ renderComparaisonsRows();
+}
+function removeComparaisonRow(i){
+ syncComparaisonsDraftFromDOM();
+ editComparaisons.splice(i,1);
+ renderComparaisonsRows();
+}
+
 function applyEtudeEdits(){
  let e=etude(selectedId); if(!e) return;
  pushHistory();
@@ -553,10 +599,10 @@ function applyEtudeEdits(){
  e.objectif = document.getElementById("editObjectif").value;
  e.niveau_preuve = document.getElementById("editNiveau").value;
  e.lien = document.getElementById("editLien").value.trim();
- e.comparaison = {
-  avec: {valeur: document.getElementById("editAvecValeur").value.trim(), unite: document.getElementById("editAvecUnite").value.trim()},
-  sans: {valeur: document.getElementById("editSansValeur").value.trim(), unite: document.getElementById("editSansUnite").value.trim()},
- };
+ syncComparaisonsDraftFromDOM();
+ e.comparaisons = editComparaisons
+   .map(c=>({mesure:c.mesure.trim(), standard:c.standard.trim(), controle:c.controle.trim()}))
+   .filter(c=>c.mesure!=="" || c.standard!=="" || c.controle!=="");
  e.traitements_evalues = TRAITEMENTS_FIELDS.filter((t,i)=>document.getElementById("trait"+i).checked);
  // On part des critères existants pour ne jamais perdre un critère absent du formulaire.
  let criteres=Object.assign({}, e.criteres);
@@ -577,7 +623,7 @@ function applyEtudeEdits(){
 
 function addEtude(){
  pushHistory();
- let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaison:defaultComparaison(), outcomes:{}};
+ let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}};
  etudes.push(e);
  selectedId=e._id;
  render();
@@ -615,7 +661,9 @@ function etudeToExcelRow(e, outcomeCols, critFields){
  let row=[e.titre||"", e.auteurs||"", e.reference==="-1"?"":e.reference, e.objectif==="-1"?"":e.objectif, e.niveau_preuve==="-1"?"":e.niveau_preuve];
  TRAITEMENTS_FIELDS.forEach(t=>row.push(e.traitements_evalues.includes(t) ? "1" : "-1"));
  critFields.forEach(c=>row.push(e.criteres[c]!==undefined && e.criteres[c]!=="" ? e.criteres[c] : "-1"));
- row.push(e.lien||"", e.comparaison.avec.valeur, e.comparaison.avec.unite, e.comparaison.sans.valeur, e.comparaison.sans.unite);
+ // Excel ne représente que la 1re mesure (les mesures supplémentaires restent dans le JSON).
+ let c0=(e.comparaisons&&e.comparaisons[0])||{mesure:"",standard:"",controle:""};
+ row.push(e.lien||"", c0.standard, c0.mesure, c0.controle, c0.mesure);
  outcomeCols.forEach(k=>row.push(e.outcomes[k]!==undefined ? e.outcomes[k] : ""));
  return row;
 }
@@ -659,7 +707,7 @@ function importExcelRows(aoa){
  return aoa.slice(1)
   .filter(r=>r.some(c=>c!==undefined && String(c).trim()!==""))
   .map(r=>{
-   let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaison:defaultComparaison(), outcomes:{}};
+   let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}};
    if(titreIdx>=0) e.titre=String(r[titreIdx]==null?"":r[titreIdx]).trim();
    if(autIdx>=0) e.auteurs=String(r[autIdx]==null?"":r[autIdx]).trim();
    if(refIdx>=0) e.reference=String(r[refIdx]==null?"":r[refIdx]).trim();
@@ -677,10 +725,8 @@ function importExcelRows(aoa){
    });
    let cell=i=>{ let ci=compIdx[i]; return ci>=0 ? String(r[ci]==null?"":r[ci]).trim() : ""; };
    e.lien = cell(0);
-   e.comparaison = {
-    avec: {valeur: cell(1), unite: cell(2)},
-    sans: {valeur: cell(3), unite: cell(4)},
-   };
+   let mesure=cell(2)||cell(4), standard=cell(1), controle=cell(3);
+   e.comparaisons = (mesure||standard||controle) ? [{mesure, standard, controle}] : [];
    outcomeIdx.forEach(i=>{
     let v=r[i]; if(v!==undefined && String(v).trim()!=="") e.outcomes[header[i]]=String(v).trim();
    });

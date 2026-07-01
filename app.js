@@ -670,15 +670,45 @@
     return (etude.auteurs && etude.auteurs.trim()) || '';
   }
 
+  // Liste des résultats chiffrés d'une étude : nombre modulable de mesures
+  // { mesure, standard, controle }. Rétro-compatible avec l'ancien format
+  // à une seule comparaison { avec:{valeur,unite}, sans:{valeur,unite} }.
+  function comparaisonsEtude(etude) {
+    if (Array.isArray(etude.comparaisons)) {
+      return etude.comparaisons.map(function(c) {
+        return { mesure: c.mesure || c.unite || '', standard: c.standard, controle: c.controle };
+      });
+    }
+    var c = etude.comparaison;
+    if (c && (c.avec || c.sans)) {
+      return [{
+        mesure: (c.avec && c.avec.unite) || (c.sans && c.sans.unite) || '',
+        standard: c.avec && c.avec.valeur,
+        controle: c.sans && c.sans.valeur
+      }];
+    }
+    return [];
+  }
+
   function creerCarteEtude(etude, score, total, colonnes, mismatches) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
-    var comp = etude.comparaison || { avec: {valeur: 0, unite: ''}, sans: {valeur: 0, unite: ''} };
-    // Coercition numérique stricte : ces valeurs viennent d'un JSON éditable par un humain
-    // et sont injectées dans du HTML (texte + largeur CSS). Number()||0 empêche toute
-    // injection (une chaîne type "<script>" devient 0) et borne l'affichage.
-    var pctAvec = Math.max(0, Math.min(100, Number(comp.avec.valeur) || 0));
-    var pctSans = Math.max(0, Math.min(100, Number(comp.sans.valeur) || 0));
+    // Résultats chiffrés : liste modulable de mesures (ex. "OS à 5 ans", "OS à 10 ans"),
+    // chacune avec sa barre Standard et Contrôle. On affiche tout ce qui est renseigné,
+    // ou rien. Number()||0 borne l'affichage et neutralise toute injection (les valeurs
+    // viennent d'un JSON éditable par un humain).
+    function pct(v){ return Math.max(0, Math.min(100, Number(v) || 0)); }
+    var comps = comparaisonsEtude(etude);
+    var barsHtml = comps.length
+      ? comps.map(function(c){
+          var s = pct(c.standard), t = pct(c.controle);
+          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') +
+            '<div class="barre-header" style="margin-bottom:4px;"><span>Standard</span><span>' + s + '%</span></div>' +
+            '<div class="barre-track"><div class="barre-fill bonne" style="width:' + s + '%;"></div></div>' +
+            '<div class="barre-header" style="margin-top:8px; margin-bottom:4px;"><span>Contrôle</span><span>' + t + '%</span></div>' +
+            '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + t + '%;"></div></div>';
+        }).join('')
+      : '<div style="font-size:12px; color:#9aa1a8;">Résultats chiffrés non renseignés.</div>';
     var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
     var auteurs = auteursEtude(etude);
 
@@ -703,10 +733,7 @@
         '</div>' +
         '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
           '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px;">📊 Résultats chiffrés</div>' +
-          '<div class="barre-header" style="margin-bottom:4px;"><span>Standard' + (comp.avec.unite ? ' (' + esc(comp.avec.unite) + ')' : '') + '</span><span>' + pctAvec + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + pctAvec + '%;"></div></div>' +
-          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Contrôle' + (comp.sans.unite ? ' (' + esc(comp.sans.unite) + ')' : '') + '</span><span>' + pctSans + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + pctSans + '%;"></div></div>' +
+          barsHtml +
         '</div>' +
       '</div>';
 
