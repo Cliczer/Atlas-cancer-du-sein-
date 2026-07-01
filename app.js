@@ -13,6 +13,7 @@
   var history    = [];
   var maxDepth   = 1;
   var criteresSchema = {};        // registre canonique {id: {label, type, valeurs}} (schema_criteres.json)
+  var schemaBrut = {};            // schéma complet chargé, conservé pour la validation
   var avertissementsSchema = [];  // problèmes de chargement du contrat (persistants)
   var avertissements = [];        // problèmes détectés sur le parcours courant (recalculés à chaque résultat)
 
@@ -250,18 +251,28 @@
   // prépendu devant CHAQUE arbre de protocole, sans toucher à la logique clinique SENORIF elle-même.
   // Sert uniquement à peupler le profil patient pour le rapprochement bibliographique
   // (calculerScoreEtude / valeurPatient) avec des critères réellement comparables aux études.
+  // Chaque question du prélude porte un tag canonique (critere + reponses) : le profil
+  // patient est construit via le MÊME mécanisme que les tags des arbres (construireProfil),
+  // pas par une correspondance de titres. C'est le mécanisme unique de rapprochement.
   function construirePrelude(suite) {
-    var qAge = { type: 'numerique', titre: 'Âge de la patiente (années)', suite: suite };
-    var qRP  = { type: 'question', titre: 'Statut RP (récepteurs de la progestérone)', choix: { 'Positif': qAge, 'Négatif': qAge } };
-    var qRE  = { type: 'question', titre: 'Statut RE (récepteurs des œstrogènes)', choix: { 'Positif': qRP, 'Négatif': qRP } };
-    var qM   = { type: 'question', titre: 'Statut métastatique (M)', choix: { 'M0': qRE, 'M1': qRE } };
-    var qN   = { type: 'question', titre: 'Statut ganglionnaire (N)', choix: { 'N0': qM, 'N+': qM } };
+    var qAge = { type: 'numerique', titre: 'Âge de la patiente (années)', critere: 'Age', suite: suite };
+    var qRP  = { type: 'question', titre: 'Statut RP (récepteurs de la progestérone)', critere: 'RP',
+                 choix: { 'Positif': qAge, 'Négatif': qAge }, reponses: { 'Positif': 'RP+', 'Négatif': 'RP-' } };
+    var qRE  = { type: 'question', titre: 'Statut RE (récepteurs des œstrogènes)', critere: 'RE',
+                 choix: { 'Positif': qRP, 'Négatif': qRP }, reponses: { 'Positif': 'RE+', 'Négatif': 'RE-' } };
+    var qM   = { type: 'question', titre: 'Statut métastatique (M)', critere: 'M',
+                 choix: { 'M0': qRE, 'M1': qRE }, reponses: { 'M0': 'M0', 'M1': 'M1' } };
+    var qN   = { type: 'question', titre: 'Statut ganglionnaire (N)', critere: 'N',
+                 choix: { 'N0': qM, 'N+': qM }, reponses: { 'N0': 'N0', 'N+': 'N+' } };
     var qT   = {
-      type: 'question',
-      titre: 'Stade tumoral (T)',
+      type: 'question', titre: 'Stade tumoral (T)', critere: 'T',
       choix: {
         'Tis':  qN, 'T1a': qN, 'T1b': qN, 'T1c': qN, 'T2': qN,
         'T3':   qN, 'T4a': qN, 'T4b': qN, 'T4c': qN, 'T4d': qN
+      },
+      reponses: {
+        'Tis': 'Tis', 'T1a': 'T1a', 'T1b': 'T1b', 'T1c': 'T1c', 'T2': 'T2',
+        'T3': 'T3', 'T4a': 'T4a', 'T4b': 'T4b', 'T4c': 'T4c', 'T4d': 'T4d'
       }
     };
     return qT;
@@ -304,8 +315,18 @@
         etudes     = base.etudes  || [];
         keyMapping = base.mapping || {};
       }
+      if (window.AtlasContrat) {
+        var res = window.AtlasContrat.validerBase({ etudes: etudes }, schemaBrut);
+        if (res.erreurs.length) {
+          avertissementsSchema.push('La base d\'études contient ' + res.erreurs.length +
+            ' erreur(s) de format — certaines études peuvent ne pas s\'afficher correctement.');
+          res.erreurs.forEach(function(m){ console.error('[Atlas] base_etudes :', m); });
+        }
+      }
       console.log('[Atlas] ✅ Littérature chargée. Études disponibles :', etudes.length);
     }).catch(function(err) {
+      avertissementsSchema.push('La base d\'études (base_etudes.json) n\'a pas pu être chargée (' +
+        err.message + '). Aucune donnée de littérature ne sera affichée.');
       console.warn('[Atlas] Littérature non disponible ou erreur :', err.message);
     });
   }
@@ -328,6 +349,14 @@
       if (schema && schema.criteres && typeof schema.criteres === 'object') {
         criteresSchema = schema.criteres;
       }
+      schemaBrut = schema || {};
+      if (window.AtlasContrat) {
+        var res = window.AtlasContrat.validerSchema(schema);
+        if (!res.ok) {
+          avertissementsSchema.push('Le contrat de données (schema_criteres.json) est mal formé : ' + res.erreurs[0]);
+          res.erreurs.forEach(function(m){ console.error('[Atlas] schema :', m); });
+        }
+      }
       console.log('[Atlas] ✅ Schéma de critères chargé (critères canoniques : ' +
         Object.keys(criteresSchema).length + ', synonymes : ' +
         Object.keys(MAPPING).length + ', critères numériques : ' + NUMERIQUES.length + ').');
@@ -338,11 +367,25 @@
     });
   }
 
-  // 2. Chargement initial : schéma + registre des protocoles + littérature, en parallèle
+  // Bannière d'accueil : affiche visiblement tout problème de chargement/validation
+  // des données (schéma ou base) au lieu de les taire dans la console.
+  function renderHomeBanner() {
+    var box = $('home-banner');
+    if (!box) return;
+    if (!avertissementsSchema.length) { box.style.display = 'none'; return; }
+    box.style.cssText = 'display:block;background:#7f1d1d;border:1px solid #fecaca;border-radius:12px;padding:14px 18px;margin-bottom:20px;color:#fff;font-size:13px;line-height:1.5;text-align:left;';
+    box.innerHTML = '<strong>⚠️ Problème de données détecté</strong><ul style="margin:8px 0 0;padding-left:20px;">' +
+      avertissementsSchema.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+  }
+
+  // 2. Chargement initial : schéma d'abord (utile aux deux autres), puis registre + littérature
   function load() {
-    Promise.all([chargerSchema(), chargerListeProtocoles(), chargerLitterature()]).then(function() {
+    chargerSchema().then(function() {
+      return Promise.all([chargerListeProtocoles(), chargerLitterature()]);
+    }).then(function() {
       var bh = $('btn-start-hero');
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
+      renderHomeBanner();
     });
   }
 

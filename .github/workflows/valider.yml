@@ -1,0 +1,33 @@
+name: Valider le contrat de données
+
+# Refuse toute modification (protocoles, base d'études, schéma) qui produirait
+# un JSON invalide ou incohérent avec le contrat partagé, AVANT qu'elle
+# n'atteigne l'application clinique.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'schema_criteres.json'
+      - 'base_etudes.json'
+      - 'protocoles/**'
+      - 'contrat.js'
+      - 'scripts/**'
+  pull_request:
+    paths:
+      - 'schema_criteres.json'
+      - 'base_etudes.json'
+      - 'protocoles/**'
+      - 'contrat.js'
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  valider:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Valider le contrat de données
+        run: node scripts/valider.mjs
