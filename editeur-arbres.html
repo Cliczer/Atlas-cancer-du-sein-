@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Éditeur arbre JSON SENORIF</title>
 <script src="contrat.js?v=1"></script>
+<script src="publier.js?v=1"></script>
 <style>
 :root{
  --bg:#eef1f7;
@@ -199,8 +200,9 @@ details.listGroup[open]>summary::before{content:"▾ "}
  <span class="grpLabel">💾 Enregistrer <span class="hint" style="text-transform:none;font-weight:500">(nom de fichier dans <code>protocoles/</code>)</span></span>
  <span class="grpBtns" style="align-items:center">
   <input id="protocolFilename" placeholder="ex. diagnostic_biopsie.json" style="width:200px">
+  <button class="success" onclick="publierArbre()">Publier sur le site</button>
   <button class="primary" onclick="exportJSON()">Télécharger JSON</button>
-  <button class="success" onclick="saveForGithub()">Vers GitHub</button>
+  <button onclick="AtlasPublish.demanderToken()" title="Changer le jeton GitHub enregistré">Jeton…</button>
  </span>
 </div>
 
@@ -237,7 +239,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
   7. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.<br>
   8. Touche <b>Suppr</b> (ou Backspace hors champ texte) pour supprimer le nœud ou la branche sélectionné(e).
   </p>
-  <div class="notice"><b>Mise à jour GitHub :</b><br>1. Choisissez le protocole à modifier dans le menu « Protocole (registre Atlas) » — il se charge directement depuis le dépôt de l'Atlas.<br>2. Modifiez l'arbre, puis cliquez sur « Vers GitHub » : le fichier est téléchargé sous son <b>nom d'origine</b> (ex. <code>diagnostic_biopsie.json</code>).<br>3. Allez dans le dépôt GitHub de l'Atlas, dossier <code>protocoles/</code>, remplacez ce fichier précis par celui téléchargé, puis « Commit changes ».<br><br><b>Nouveau protocole :</b> donnez-lui un nom de fichier dans le champ qui apparaît, téléchargez-le, ajoutez-le dans <code>protocoles/</code> sur GitHub, puis ajoutez une ligne dans <code>protocoles/index.json</code> (même dépôt) — c'est la seule liste que l'Atlas et cet éditeur lisent pour proposer les protocoles.</div>
+  <div class="notice"><b>Publier sur le site (recommandé) :</b><br>1. Choisissez le protocole (ou créez-en un et donnez-lui un nom de fichier).<br>2. Modifiez l'arbre, puis cliquez sur <b>« Publier sur le site »</b> : le protocole est écrit directement dans le dépôt Atlas. Un nouveau protocole est ajouté automatiquement au registre.<br>3. La première fois, collez un <b>jeton GitHub</b> (bouton « Jeton… ») : GitHub → Settings → Developer settings → Fine-grained tokens, permission « Contents: Read and write » sur le dépôt Atlas. Il reste enregistré uniquement dans ce navigateur.<br>4. Le site se met à jour tout seul (~1 min, après validation automatique).<br><br><b>Sans jeton (repli) :</b> « Télécharger JSON » puis remplacez le fichier dans <code>protocoles/</code> sur GitHub à la main.</div>
   <hr class="divider">
   <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b>
   <div style="margin-top:8px;display:flex;gap:8px">
@@ -1072,11 +1074,27 @@ function downloadTree(filename){
  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function exportJSON(){ if(!validerAvantExport()) return; downloadTree(currentExportFilename()); }
-function saveForGithub(){
+
+// Publication directe sur le site via l'API GitHub. Publie le protocole, et si
+// c'est un nouveau fichier, l'ajoute automatiquement au registre (index.json).
+function publierArbre(){
  if(!validerAvantExport()) return;
+ if(!window.AtlasPublish){ alert("Module de publication indisponible."); return; }
  let filename=currentExportFilename();
- downloadTree(filename);
- alert("Le fichier "+filename+" a été téléchargé. Dans le dépôt GitHub de l'Atlas, remplacez le fichier protocoles/"+filename+" par celui-ci (ou ajoutez-le s'il est nouveau, puis ajoutez une ligne dans protocoles/index.json), puis commitez les changements.");
+ let contenu=JSON.stringify(buildExportPayload(), null, 2);
+ setStatus("Publication de "+filename+" sur le site…", false);
+ AtlasPublish.publier("protocoles/"+filename, contenu, "Mise à jour du protocole "+filename+" via l'éditeur")
+  .then(()=>{
+   let existe=protocolesRegistry.some(p=>p.fichier===filename);
+   if(existe || !protocolesRegistry.length) return; // déjà listé, ou registre non chargé (on n'écrase pas)
+   let id=filename.replace(/\.json$/i,"");
+   let nom=(currentMetadata&&currentMetadata.titre)||id;
+   let nouveau=protocolesRegistry.concat([{id:id,nom:nom,fichier:filename}]);
+   return AtlasPublish.publier("protocoles/index.json", JSON.stringify({protocoles:nouveau}, null, 2), "Ajout de "+filename+" au registre des protocoles")
+    .then(()=>{ protocolesRegistry=nouveau; populateProtocolSelect(); });
+  })
+  .then(()=>{ setStatus("✅ Publié sur le site : "+filename+". La mise à jour sera visible dans ~1 minute.", true); })
+  .catch(err=>{ setStatus("❌ Publication impossible : "+err.message, false); alert("Publication impossible : "+err.message); });
 }
 function saveLocal(){localStorage.setItem("arbre_senorif_editor",JSON.stringify({nodes,edges,currentMetadata,filename:document.getElementById("protocolFilename").value}));alert("Sauvegardé")}
 function loadLocal(){
