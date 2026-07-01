@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Éditeur arbre JSON SENORIF</title>
+<style>
+:root{
+ --bg:#eef1f7;
+ --surface:#ffffff;
+ --surface-alt:#f6f8fc;
+ --border:#e2e8f0;
+ --text:#0f172a;
+ --text-muted:#64748b;
+ --primary:#2563eb;
+ --primary-dark:#1d4ed8;
+ --success:#16a34a;
+ --success-dark:#15803d;
+ --warning:#f59e0b;
+ --danger:#dc2626;
+ --radius:14px;
+ --shadow:0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.05);
+ --shadow-md:0 6px 18px rgba(15,23,42,.10);
+}
+*{box-sizing:border-box}
+html,body{height:100%;touch-action:none}
+body{margin:0;display:flex;flex-direction:column;height:100vh;overflow:hidden;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ background:var(--bg);color:var(--text)}
+
+header{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow)}
+.headerTop{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.toolbar{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;padding:10px 20px 14px}
+
+button{appearance:none;border:1px solid var(--border);background:var(--surface);color:var(--text);
+ font-weight:600;font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer;
+ transition:transform .1s ease,box-shadow .1s ease,background .1s ease,border-color .1s ease;
+ box-shadow:0 1px 2px rgba(15,23,42,.04)}
+button:hover{border-color:#cbd5e1;background:#f8fafc;transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,23,42,.10)}
+button:active{transform:translateY(0)}
+button.primary{background:var(--primary);border-color:var(--primary);color:white}
+button.primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+button.success{background:var(--success);color:white;border-color:var(--success)}
+button.success:hover{background:var(--success-dark);border-color:var(--success-dark)}
+button.danger{background:var(--surface);color:var(--danger);border-color:#fecaca}
+button.danger:hover{background:#fef2f2;border-color:var(--danger)}
+button.ghost{background:var(--surface-alt)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+.grp{display:flex;flex-direction:column;gap:6px;background:var(--surface-alt);border:1px solid var(--border);
+ border-radius:12px;padding:8px 10px}
+.grpLabel{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.grpBtns{display:flex;gap:6px;flex-wrap:wrap}
+.grpBtns button{padding:6px 10px;font-size:12.5px}
+
+.zoomBox,.searchBox{display:flex;gap:6px;align-items:center;background:var(--surface-alt);
+ border:1px solid var(--border);border-radius:12px;padding:8px 10px}
+#zoomValue{font-size:12.5px;font-weight:700;min-width:44px;text-align:center;color:var(--text-muted)}
+.searchBox input{width:190px}
+
+.main{flex:1;min-height:0;display:grid;grid-template-columns:300px 1fr 330px;gap:16px;padding:16px}
+.panel{background:var(--surface);padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+ box-shadow:var(--shadow);overflow:auto}
+#canvas{position:relative;overflow:scroll;cursor:grab;border:1px solid var(--border);border-radius:var(--radius);
+ box-shadow:var(--shadow);background-color:#fbfcfe;
+ background-image:radial-gradient(circle,#dbe3ee 1.2px,transparent 1.2px);background-size:22px 22px}
+#world{position:relative;width:6000px;height:4000px;transform-origin:0 0}
+
+h3{font-size:13.5px;font-weight:800;margin:0 0 10px;color:var(--text)}
+h3 .hint{font-size:11px;color:var(--text-muted);font-weight:500}
+
+.node{position:absolute;width:260px;height:112px;border:2px solid var(--primary);
+ background:linear-gradient(180deg,#eff6ff,#e2ecfd);border-radius:16px;padding:12px;
+ box-shadow:0 4px 14px rgba(37,99,235,.16);cursor:pointer;user-select:none;overflow:hidden;
+ box-sizing:border-box;transition:transform .12s ease,box-shadow .12s ease}
+.node:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,.24)}
+.node.result{border-color:var(--success);background:linear-gradient(180deg,#ecfdf5,#d9f5e3);
+ box-shadow:0 4px 14px rgba(22,163,74,.16)}
+.node.result:hover{box-shadow:0 8px 20px rgba(22,163,74,.24)}
+.node.etape{border-color:#0891b2;background:linear-gradient(180deg,#ecfeff,#cffafe);}
+.node.etape:hover{box-shadow:0 8px 20px rgba(8,145,178,.24)}
+.node.decision{border-color:#9333ea;background:linear-gradient(180deg,#f5f3ff,#ebe5fb)}
+.node.selected{outline:3px solid var(--warning);outline-offset:2px}
+.type{font-size:9.5px;font-weight:800;color:rgba(15,23,42,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em}
+.title{font-weight:700;font-size:13px;line-height:1.3;color:var(--text);white-space:pre-wrap;overflow-wrap:break-word;
+ display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.small{font-size:10.5px;color:var(--text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.edge{position:absolute;height:2px;background:#a8b4c5;transform-origin:left center}
+.edge.selected{background:var(--warning);height:3px}
+.label{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:999px;
+ padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;max-width:220px;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(15,23,42,.10);transition:transform .1s ease}
+.label:hover{transform:translateY(-1px)}
+.label.selected{background:#fef3c7;border-color:var(--warning);color:#92400e;box-shadow:0 3px 8px rgba(245,158,11,.35)}
+
+textarea,input,select{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:10px;
+ padding:9px 10px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface-alt);
+ transition:border-color .12s ease,box-shadow .12s ease}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);
+ box-shadow:0 0 0 3px rgba(37,99,235,.15);background:var(--surface)}
+textarea{min-height:90px}
+.json{font-family:"SF Mono",Consolas,monospace;font-size:12px;min-height:220px}
+label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;
+ margin-top:14px;margin-bottom:6px;display:block}
+.help{font-size:12.5px;color:var(--text-muted);line-height:1.55}
+.divider{margin:18px 0;border:none;border-top:1px solid var(--border)}
+
+.notice{background:#fef3c7;border:1px solid var(--warning);border-radius:10px;padding:10px 12px;
+ margin-bottom:14px;font-size:12px;line-height:1.4;color:#78350f}
+.notice.ok{background:#dcfce7;border-color:var(--success);color:#14532d}
+
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin:0 0 14px;
+ padding-bottom:14px;border-bottom:1px solid var(--border)}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 3px rgba(15,23,42,.05)}
+
+#editEmpty{color:var(--text-muted);font-size:13px;padding:26px 12px;text-align:center;
+ border:1.5px dashed var(--border);border-radius:12px}
+
+.valRow{display:flex;gap:6px;align-items:center;margin:6px 0}
+.valRow input{flex:1}
+.valRow button{padding:6px 9px;font-size:12px;flex-shrink:0}
+
+.listRow{padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12.5px;margin:4px 0;line-height:1.4;
+ border-left:4px solid var(--primary);background:var(--surface-alt);transition:background .12s ease,transform .12s ease}
+.listRow:hover{background:#eef2ff;transform:translateX(2px)}
+.listRow.sel{background:#fef3c7;border-left-color:var(--warning);box-shadow:0 1px 4px rgba(245,158,11,.25)}
+details.listGroup{margin:6px 0}
+details.listGroup>summary{list-style:none}
+details.listGroup>summary::-webkit-details-marker{display:none}
+details.listGroup>summary::before{content:"▸ ";color:var(--text-muted);font-size:10px}
+details.listGroup[open]>summary::before{content:"▾ "}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(2px);
+ z-index:50;align-items:center;justify-content:center;padding:20px}
+.overlay.show{display:flex}
+.modalBox{background:var(--surface);max-width:560px;width:100%;max-height:85vh;overflow:auto;
+ padding:24px;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.35)}
+.modalBox h2{margin-top:0;font-size:18px}
+</style>
+</head>
+<body>
+<style>
+.site-nav{flex-shrink:0;display:flex;align-items:center;gap:6px;background:#0f172a;padding:8px 16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.site-nav-brand{color:#fff;font-weight:800;font-size:13px;margin-right:14px;letter-spacing:-.01em}
+.site-nav a{color:#cbd5e1;text-decoration:none;font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px}
+.site-nav a:hover{background:#1e293b;color:#fff}
+.site-nav a.active{background:#2563eb;color:#fff}
+</style>
+<nav class="site-nav">
+ <span class="site-nav-brand">Atlas cancer du sein</span>
+ <a href="index.html">🩺 Application</a>
+ <a href="editeur-arbres.html" class="active">🌳 Éditeur d'arbres</a>
+ <a href="editeur-base.html">📚 Éditeur de base</a>
+</nav>
+<header>
+<div class="headerTop">
+ <span class="brand">Éditeur arbre JSON SENORIF</span>
+ <div style="display:flex;gap:8px">
+  <button class="ghost" onclick="toggleFullscreen()">⤢ Plein écran</button>
+  <button class="ghost" onclick="toggleHelp()">❓ Aide</button>
+ </div>
+</div>
+
+<div class="toolbar">
+
+<div class="grp">
+ <span class="grpLabel">📂 Charger arbre</span>
+ <span class="grpBtns" style="align-items:center">
+  <select id="protocolSelect" style="width:220px" onchange="loadSelectedProtocol()">
+   <option value="">── Protocole (registre Atlas) ──</option>
+  </select>
+  <button onclick="document.getElementById('fileInput').click()">Depuis l'ordinateur</button>
+ </span>
+</div>
+
+<div class="grp">
+ <span class="grpLabel">✏️ Éditeur</span>
+ <span class="grpBtns">
+  <button onclick="addQuestion()">+ Question</button>
+  <button onclick="addEtape()">+ Étape</button>
+  <button onclick="addResult()">+ Recommandation</button>
+  <button onclick="toggleConnect()">Relier deux nœuds</button>
+ </span>
+</div>
+
+<div class="grp">
+ <span class="grpLabel">🕓 Historique</span>
+ <span class="grpBtns">
+  <button id="undoBtn" onclick="undo()" title="Ctrl+Z">↶ Annuler</button>
+  <button id="redoBtn" onclick="redo()" title="Ctrl+Maj+Z">↷ Rétablir</button>
+ </span>
+</div>
+
+<div class="grp">
+ <span class="grpLabel">💾 Enregistrer <span class="hint" style="text-transform:none;font-weight:500">(nom de fichier dans <code>protocoles/</code>)</span></span>
+ <span class="grpBtns" style="align-items:center">
+  <input id="protocolFilename" placeholder="ex. diagnostic_biopsie.json" style="width:200px">
+  <button class="primary" onclick="exportJSON()">Télécharger JSON</button>
+  <button class="success" onclick="saveForGithub()">Vers GitHub</button>
+ </span>
+</div>
+
+<span class="zoomBox">
+  <button onclick="zoomOut()">−</button>
+  <input id="zoomSlider" type="range" min="3" max="200" value="100" oninput="setZoom(this.value/100)" style="width:130px">
+  <button onclick="zoomIn()">+</button>
+  <span id="zoomValue">100%</span>
+  <button onclick="fitView()">Tout voir</button>
+</span>
+
+<span class="searchBox">
+  <input id="searchBox" placeholder="Rechercher un mot-clé…" oninput="liveSearch()" onkeydown="if(event.key==='Enter')searchNode()">
+  <button onclick="searchNode()">Chercher</button>
+  <span id="searchStatus" style="font-size:11px;color:var(--text-muted);min-width:90px"></span>
+</span>
+
+</div>
+</header>
+
+<input type="file" id="fileInput" accept=".json" style="display:none">
+
+<div id="helpOverlay" class="overlay" onclick="if(event.target===this)toggleHelp()">
+ <div class="modalBox">
+  <h2 style="margin-top:0">Aide</h2>
+  <p class="help">
+  <b>Mode d'emploi :</b><br>
+  1. Cliquez sur un nœud (ou une question de la liste à gauche, ou une réponse de son menu déplié) pour le modifier dans le panneau de droite.<br>
+  2. Une fois vos modifications faites dans le panneau de droite, cliquez sur « Valider » pour les appliquer à l'arbre.<br>
+  3. La forme de l'arbre est calculée automatiquement : vous ne pouvez pas déplacer un nœud à la main, elle se réorganise toute seule dès que vous ajoutez/supprimez un élément.<br>
+  4. <b>Question vs Étape :</b> Une <i>Question</i> peut avoir plusieurs réponses (branches). Une <i>Étape</i> permet soit une suite unique (flèche sans texte), soit de se diviser en plusieurs branches nommées (comme une question).<br>
+  5. Si un nœud est sélectionné (en surbrillance), cliquer sur « + » crée directement le lien avec ce nœud. Sinon, utilisez « Relier deux nœuds » : cliquez le parent puis l'enfant.<br>
+  6. Utilisez la barre de recherche pour retrouver un nœud par mot-clé : l'arbre se centre sur lui et le sélectionne pour modification immédiate.<br>
+  7. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.<br>
+  8. Touche <b>Suppr</b> (ou Backspace hors champ texte) pour supprimer le nœud ou la branche sélectionné(e).
+  </p>
+  <div class="notice"><b>Mise à jour GitHub :</b><br>1. Choisissez le protocole à modifier dans le menu « Protocole (registre Atlas) » — il se charge directement depuis le dépôt de l'Atlas.<br>2. Modifiez l'arbre, puis cliquez sur « Vers GitHub » : le fichier est téléchargé sous son <b>nom d'origine</b> (ex. <code>diagnostic_biopsie.json</code>).<br>3. Allez dans le dépôt GitHub de l'Atlas, dossier <code>protocoles/</code>, remplacez ce fichier précis par celui téléchargé, puis « Commit changes ».<br><br><b>Nouveau protocole :</b> donnez-lui un nom de fichier dans le champ qui apparaît, téléchargez-le, ajoutez-le dans <code>protocoles/</code> sur GitHub, puis ajoutez une ligne dans <code>protocoles/index.json</code> (même dépôt) — c'est la seule liste que l'Atlas et cet éditeur lisent pour proposer les protocoles.</div>
+  <hr class="divider">
+  <b>Brouillon navigateur (sauvegarde temporaire, sans téléchargement) :</b>
+  <div style="margin-top:8px;display:flex;gap:8px">
+   <button onclick="saveLocal()">Sauver brouillon</button>
+   <button onclick="loadLocal()">Recharger brouillon</button>
+  </div>
+  <button class="primary" style="width:100%;margin-top:18px" onclick="toggleHelp()">Fermer</button>
+ </div>
+</div>
+
+<div class="main">
+<div class="panel">
+<div id="loadStatus" class="notice">Chargement du registre des protocoles…</div>
+
+<div class="legend">
+ <span><i class="dot" style="background:#2563eb"></i> Question</span>
+ <span><i class="dot" style="background:#0891b2"></i> Étape</span>
+ <span><i class="dot" style="background:#16a34a"></i> Recommandation</span>
+</div>
+
+<h3>Parcours <span class="hint">(cliquez pour voir les réponses/suites)</span></h3>
+<div id="list"></div>
+</div>
+
+<div id="canvas">
+<div id="world"></div>
+</div>
+
+<div class="panel right">
+<h3>Édition</h3>
+<div id="editEmpty">Cliquez sur un nœud ou une branche.</div>
+
+<div id="nodeEdit" style="display:none">
+<label>Type</label>
+<select id="editType">
+<option value="question">Question</option>
+<option value="etape">Étape / Action</option>
+<option value="resultat">Recommandation</option>
+</select>
+
+<label>Titre (Question, étape ou nom reco)</label>
+<textarea id="editTitle" style="min-height:60px"></textarea>
+
+<div id="critereWrap">
+<label>Critère clinique relié <span class="hint" style="text-transform:none;font-weight:500">(optionnel — relie cette question au vocabulaire des études)</span></label>
+<select id="editCritere"><option value="">— Aucun —</option></select>
+</div>
+
+<label style="display: none;">Données recommandation JSON</label>
+<textarea id="editData" class="json" style="display: none;"></textarea>
+
+<label>Source SENORIF</label>
+<input id="editSource">
+<button class="primary" style="width:100%;margin-top:16px" onclick="applyNodeEdits()">✓ Valider les modifications</button>
+
+<hr class="divider">
+<button class="danger" style="width:100%" onclick="deleteNode()">🗑 Supprimer ce nœud</button>
+</div>
+
+<div id="edgeEdit" style="display:none">
+<label>Réponse(s) / branche <span class="hint" style="text-transform:none;font-weight:500">(plusieurs valeurs possibles pour la même branche)</span></label>
+<div id="edgeValuesWrapper">
+    <div id="editEdgeValues"></div>
+    <button class="ghost" style="width:100%;margin-top:6px" onclick="addEdgeValueField()">+ Ajouter une valeur</button>
+</div>
+<div id="edgeEtapeNotice" style="display:none; margin-bottom: 16px;" class="notice">
+    Si l'étape a une seule suite, laissez vide. Si elle se divise, nommez la branche (ex: 'Bénin').
+</div>
+<div id="edgeValeurWrap" style="display:none;">
+    <label>Valeur canonique de cette réponse <span class="hint" style="text-transform:none;font-weight:500">(pour le matching avec les études)</span></label>
+    <select id="editEdgeValeurSelect"><option value="">— Aucune —</option></select>
+    <input id="editEdgeValeurInput" style="display:none;" placeholder="Valeur numérique (ex. 40)">
+</div>
+<button class="primary" style="width:100%;margin-top:16px" onclick="applyEdgeEdits()">✓ Valider la liaison</button>
+
+<hr class="divider">
+<button class="danger" style="width:100%" onclick="deleteEdge()">🗑 Supprimer branche</button>
+</div>
+
+<div id="previewBox" style="display:none">
+<h3>Aperçu JSON</h3>
+<textarea id="preview" class="json" readonly></textarea>
+</div>
+</div>
+</div>
+
+<script>
+// Éditeur intégré au site Atlas : les données (protocoles, schéma) sont servies
+// par le même site, donc les chemins sont relatifs (plus d'URL de dépôt codée en dur).
+const ATLAS_REPO_RAW_BASE = "";
+
+let nodes=[], edges=[];
+let selectedNode=null, selectedEdge=null;
+let connectMode=false, connectSource=null;
+let pan=null;
+let zoom=1;
+let lastSearchIndex=-1, lastSearchTerm="";
+let undoStack=[], redoStack=[];
+const HISTORY_LIMIT=100;
+
+let currentMetadata=null; // {titre, date_maj} du protocole chargé, conservé tel quel à l'export
+let protocolesRegistry=[]; // [{id, nom, fichier}] chargé depuis protocoles/index.json
+let criteresSchema={};     // {id:{label,type,valeurs}} chargé depuis schema_criteres.json (contrat partagé Atlas)
+
+const NODE_W=240;
+const NODE_H=96;
+const X_GAP=80;
+const Y_GAP=190;
+
+function setStatus(text, ok){
+ const el=document.getElementById("loadStatus");
+ if(!el)return;
+ el.textContent=text;
+ el.className= ok ? "notice ok" : "notice";
+}
+function uid(p){return p+Math.random().toString(36).slice(2,9)}
+function node(id){return nodes.find(n=>n.id===id)}
+function edge(id){return edges.find(e=>e.id===id)}
+
+function edgeValues(e){
+ let vals=String((e&&e.label)||"").split(",").map(s=>s.trim()).filter(Boolean);
+ return vals;
+}
+function edgeLabelDisplay(e){
+ let vals = edgeValues(e);
+ let s = node(e.source);
+ if(vals.length === 0) return (s && s.type==="etape") ? "" : "Réponse";
+ return vals.join(" / ");
+}
+
+function resultTitleFromData(t){
+ let keys=Object.keys(t.donnees||{});
+ return keys.length ? keys.map(k=>k.replace(/^OUT_/i,"")).join(", ") : "Recommandation";
+}
+
+// Les fichiers de protocole réels sont enveloppés en {metadata, tree}.
+// On accepte aussi un arbre brut (sans enveloppe) pour rester compatible avec d'anciens exports.
+function loadProtocolFile(data, filename){
+ currentMetadata = (data && data.tree) ? (data.metadata || {}) : {};
+ document.getElementById("protocolFilename").value = filename || "";
+ treeToGraph((data && data.tree) || data);
+}
+
+function treeToGraph(tree){
+ if(nodes.length) pushHistory();
+ nodes=[]; edges=[];
+ let count=1;
+
+ function walk(t, parent, label, parentReponses){
+  if(!t) return null;
+  let id="n"+count++;
+
+  nodes.push({
+    id:id,
+    type:t.type||"question",
+    titre:t.titre || (t.type==="resultat" ? resultTitleFromData(t) : ""),
+    critere:t.critere||"",
+    donnees:t.donnees||{},
+    infos_science:t.infos_science||{},
+    source_senorif:t.source_senorif || (t.infos_science && t.infos_science.source) || "",
+    x:0,
+    y:0
+  });
+
+  if(parent) edges.push({
+    id:uid("e"), source:parent, target:id, label:label||"",
+    valeur:(parentReponses && parentReponses[label]!==undefined) ? parentReponses[label] : ""
+  });
+
+  if (t.type === "etape") {
+      if (t.suite) {
+          walk(t.suite, id, "", t.reponses);
+      }
+      if (t.choix) {
+          Object.entries(t.choix).forEach(([lab,child])=>walk(child, id, lab, t.reponses));
+      }
+  } else if (t.type !== "resultat" && t.choix) {
+      Object.entries(t.choix).forEach(([lab,child])=>walk(child, id, lab, t.reponses));
+  }
+  return id;
+ }
+
+ walk(tree,null,"");
+ autoLayout();
+ render();
+ setTimeout(fitView, 50);
+}
+
+function autoLayout(){
+ if(!nodes.length) return;
+ let incoming=new Set(edges.map(e=>e.target));
+ let roots=nodes.filter(n=>!incoming.has(n.id));
+ if(!roots.length) roots=[nodes[0]];
+ let cursorX=300;
+ let visited=new Set();
+
+ function place(id, depth){
+  if(visited.has(id)) return node(id);
+  visited.add(id);
+  let n=node(id); if(!n) return null;
+  let y=80+depth*Y_GAP;
+  let childEdges=edges.filter(e=>e.source===id);
+  if(!childEdges.length){
+    n.x=cursorX; n.y=y;
+    cursorX += NODE_W + X_GAP;
+  } else {
+    let childXs=[];
+    childEdges.forEach(e=>{
+      let c=place(e.target, depth+1);
+      if(c) childXs.push(c.x);
+    });
+    
+    n.x = childXs.length ? (Math.min(...childXs)+Math.max(...childXs))/2 : cursorX;
+    
+    let overlap = true;
+    while(overlap) {
+        overlap = false;
+        nodes.forEach(other => {
+            if(other.id !== n.id && visited.has(other.id) && other.y === y) {
+                if(Math.abs(other.x - n.x) < NODE_W + 20) {
+                    n.x = Math.max(n.x, other.x + NODE_W + X_GAP);
+                    overlap = true;
+                }
+            }
+        });
+    }
+
+    if(n.x >= cursorX) cursorX = n.x + NODE_W + X_GAP;
+    n.y=y;
+  }
+  return n;
+ }
+
+ roots.forEach(r=>place(r.id,0));
+ nodes.forEach(n=>{
+   if(!visited.has(n.id)){
+     n.x=cursorX; n.y=80;
+     cursorX += NODE_W + X_GAP;
+     visited.add(n.id);
+   }
+ });
+ resizeWorld();
+}
+
+function graphToTree(){
+ let targets=new Set(edges.map(e=>e.target));
+ let root=nodes.find(n=>!targets.has(n.id))||nodes[0];
+ function build(n){
+  if(!n) return {};
+  if(n.type==="resultat") return {
+    type:"resultat",
+    titre:n.titre||"",
+    donnees:n.donnees||{},
+    infos_science:n.infos_science||{},
+    source_senorif:n.source_senorif||""
+  };
+  
+  if(n.type==="etape") {
+    let outEdges=edges.filter(e=>e.source===n.id);
+    if (outEdges.length === 1 && edgeValues(outEdges[0]).length === 0) {
+        let out={
+            type:"etape",
+            titre:n.titre||"Étape sans titre",
+            suite: build(node(outEdges[0].target)),
+            infos_science:n.infos_science||{},
+            source_senorif:n.source_senorif||""
+        };
+        if(n.critere) out.critere=n.critere;
+        return out;
+    } else {
+        let choix={}, reponses={};
+        outEdges.forEach((e, index)=>{
+          let child=node(e.target);
+          if(!child) return;
+          let subtree=build(child);
+          let vals = edgeValues(e);
+          if(vals.length === 0) vals = ["Branche " + (index+1)];
+          vals.forEach(v=>{ choix[v]=subtree; if(e.valeur) reponses[v]=e.valeur; });
+        });
+        let out={
+            type:"etape",
+            titre:n.titre||"Étape sans titre",
+            choix: choix,
+            infos_science:n.infos_science||{},
+            source_senorif:n.source_senorif||""
+        };
+        if(n.critere) out.critere=n.critere;
+        if(n.critere && Object.keys(reponses).length) out.reponses=reponses;
+        return out;
+    }
+  }
+
+  let choix={}, reponses={};
+  edges.filter(e=>e.source===n.id).forEach((e, index)=>{
+    let child=node(e.target);
+    if(!child) return;
+    let subtree=build(child);
+    let vals = edgeValues(e);
+    if(vals.length === 0) vals = ["Réponse " + (index+1)];
+    vals.forEach(v=>{ choix[v]=subtree; if(e.valeur) reponses[v]=e.valeur; });
+  });
+  let out={
+    type:n.type||"question",
+    titre:n.titre||"Question sans titre",
+    choix:choix,
+    infos_science:n.infos_science||{},
+    source_senorif:n.source_senorif||""
+  };
+  if(n.critere) out.critere=n.critere;
+  if(n.critere && Object.keys(reponses).length) out.reponses=reponses;
+  return out;
+ }
+ return build(root);
+}
+
+function resizeWorld(){
+ let w=document.getElementById("world");
+ if(!nodes.length){w.style.width="2500px"; w.style.height="1800px"; return;}
+ let maxX=Math.max(...nodes.map(n=>n.x))+700;
+ let maxY=Math.max(...nodes.map(n=>n.y))+500;
+ w.style.width=Math.max(2500,maxX)+"px";
+ w.style.height=Math.max(1800,maxY)+"px";
+}
+
+function refreshUndoButtons(){
+ document.getElementById("undoBtn").disabled = !undoStack.length;
+ document.getElementById("redoBtn").disabled = !redoStack.length;
+}
+
+function render(){
+ refreshUndoButtons();
+ resizeWorld();
+ let w=document.getElementById("world");
+ w.innerHTML="";
+ edges.forEach(renderEdge);
+ nodes.forEach(renderNode);
+ renderList();
+ renderEditor();
+ document.getElementById("preview").value=JSON.stringify(graphToTree(),null,2);
+}
+
+function fitFontSize(text){
+ let len=(text||"").length;
+ return len>140 ? "10px" : len>90 ? "11px" : len>55 ? "12px" : "13px";
+}
+
+function renderNode(n){
+ let w=document.getElementById("world");
+ let el=document.createElement("div");
+ el.className="node "+(n.type==="resultat"?"result ":"")+(n.type==="etape"?"etape ":"")+(n.type==="decision"?"decision ":"")+(selectedNode===n.id?"selected":"");
+ el.style.left=n.x+"px"; el.style.top=n.y+"px";
+ let typeLabel = n.type==="resultat" ? "recommandation" : n.type;
+ let titleLabel = n.titre || (n.type==="resultat" ? summary(n) : (n.type==="etape"?"Étape sans titre":"Question sans titre"));
+ let smallLabel = n.type==="resultat" ? "" : summary(n);
+ el.title = titleLabel + (smallLabel ? " — "+smallLabel : "");
+
+ el.innerHTML =
+   "<div class='type'>"+esc(typeLabel)+"</div>" +
+   "<div class='title' style='font-size:"+fitFontSize(titleLabel)+"'>"+esc(titleLabel)+"</div>" +
+   (smallLabel ? "<div class='small'>"+esc(smallLabel)+"</div>" : "");
+
+ // MODIFICATION 3 : stopPropagation pour éviter la sélection multiple parasite
+ el.onpointerdown=function(ev){
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(connectMode){connectClick(n.id);return}
+  selectedNode=n.id;
+  selectedEdge=null;
+  render();
+ };
+ w.appendChild(el);
+}
+
+document.addEventListener("pointerup",()=>{
+ pan=null;
+ document.getElementById("canvas").style.cursor="grab";
+});
+
+document.getElementById("canvas").addEventListener("pointerdown",function(ev){
+ if(ev.target.id!=="canvas" && ev.target.id!=="world") return;
+ pan={
+   sx:ev.clientX,
+   sy:ev.clientY,
+   sl:this.scrollLeft,
+   st:this.scrollTop
+ };
+ this.style.cursor="grabbing";
+ ev.preventDefault();
+});
+
+document.getElementById("canvas").addEventListener("pointermove",function(ev){
+ if(!pan) return;
+ this.scrollLeft=pan.sl-(ev.clientX-pan.sx);
+ this.scrollTop=pan.st-(ev.clientY-pan.sy);
+});
+
+document.getElementById("canvas").addEventListener("pointerleave",function(){
+ pan=null;
+ this.style.cursor="grab";
+});
+
+document.getElementById("canvas").addEventListener("wheel",function(ev){
+ ev.preventDefault();
+ let canvas=this;
+ let rect=canvas.getBoundingClientRect();
+ let cx=ev.clientX-rect.left, cy=ev.clientY-rect.top;
+ let worldX=(canvas.scrollLeft+cx)/zoom;
+ let worldY=(canvas.scrollTop+cy)/zoom;
+ let factor = ev.deltaY<0 ? 1.12 : 1/1.12;
+ setZoom(zoom*factor);
+ canvas.scrollLeft = worldX*zoom - cx;
+ canvas.scrollTop = worldY*zoom - cy;
+}, {passive:false});
+
+["gesturestart","gesturechange","gestureend"].forEach(function(evtName){
+ document.addEventListener(evtName, function(ev){ ev.preventDefault(); }, {passive:false});
+});
+
+function renderEdge(e){
+ let s=node(e.source), t=node(e.target);
+ if(!s||!t)return;
+ let isEtape = s.type === "etape";
+ let w=document.getElementById("world");
+ let x1=s.x+NODE_W/2,y1=s.y+NODE_H,x2=t.x+NODE_W/2,y2=t.y;
+ let dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
+ let sel=selectedEdge===e.id;
+ let line=document.createElement("div");
+ line.className="edge"+(sel?" selected":""); line.style.left=x1+"px"; line.style.top=y1+"px"; line.style.width=len+"px"; line.style.transform="rotate("+ang+"deg)";
+ w.appendChild(line);
+ 
+ let lab=document.createElement("div");
+ lab.className="label"+(sel?" selected":""); 
+ if(isEtape && edgeValues(e).length === 0){
+     lab.style.left=((x1+x2)/2-15)+"px"; 
+     lab.style.top=((y1+y2)/2-10)+"px"; 
+     lab.style.padding = "2px 6px";
+     lab.innerHTML="<span style='color:var(--primary); font-size:14px; line-height:1'>↓</span>";
+ } else {
+     lab.style.left=((x1+x2)/2-40)+"px"; 
+     lab.style.top=((y1+y2)/2-10)+"px"; 
+     lab.textContent=edgeLabelDisplay(e);
+ }
+ lab.onclick=function(){selectedEdge=e.id;selectedNode=null;render()};
+ w.appendChild(lab);
+}
+
+function summary(n){
+ if(n.type==="resultat"){let k=Object.keys(n.donnees||{});return k.length?k.slice(0,3).join(", "):"(vide)"}
+ if(n.type==="etape"){
+     let out=edges.filter(e=>e.source===n.id);
+     if (out.length === 1 && edgeValues(out[0]).length === 0) return "→ "+(node(out[0].target)?.titre||"?");
+     if (out.length > 0) return out.map(edgeLabelDisplay).join("  •  ");
+     return "(aucune suite)";
+ }
+ let out=edges.filter(e=>e.source===n.id);return out.length?out.map(edgeLabelDisplay).join("  •  "):"(aucune réponse)"
+}
+
+function nodeColor(type){
+ if(type==="resultat") return "#16a34a";
+ if(type==="etape") return "#0891b2";
+ if(type==="decision") return "#9333ea";
+ return "#2563eb";
+}
+
+function buildQuestionRow(n){
+ let childEdges=edges.filter(e=>e.source===n.id);
+ let det=document.createElement("details");
+ det.className="listGroup";
+ det.open=false;
+ let sum=document.createElement("summary");
+ sum.className="listRow"+(selectedNode===n.id?" sel":"");
+ sum.style.borderLeftColor=nodeColor(n.type);
+ sum.textContent=n.titre||"(sans titre)";
+ sum.onclick=function(){selectedNode=n.id; selectedEdge=null; centerOnNode(n.id); render();};
+ det.appendChild(sum);
+
+ if(!childEdges.length){
+  let empty=document.createElement("div");
+  empty.className="listRow"; empty.style.marginLeft="14px"; empty.style.opacity=".6";
+  empty.textContent="(aucune suite)";
+  det.appendChild(empty);
+ }
+ childEdges.forEach(e=>{
+  let child=node(e.target);
+  let row=document.createElement("div");
+  row.className="listRow"+(selectedEdge===e.id?" sel":"");
+  row.style.marginLeft="14px"; row.style.borderLeftColor="#f59e0b";
+  let labelDisplay = (n.type === "etape" && edgeValues(e).length === 0) ? "Suite" : edgeLabelDisplay(e);
+  row.textContent="↳ "+((n.type==="etape" && edgeValues(e).length === 0)?"":"« "+labelDisplay+" » → ")+(child?(child.titre||"(sans titre)"):"?");
+  row.onclick=function(ev){
+   ev.stopPropagation();
+   selectedEdge=e.id; selectedNode=null;
+   if(child) centerOnNode(child.id);
+   render();
+  };
+  det.appendChild(row);
+ });
+ return det;
+}
+
+function renderList(){
+ let list=document.getElementById("list"); list.innerHTML="";
+ nodes.filter(n=>n.type!=="resultat").forEach(n=>list.appendChild(buildQuestionRow(n)));
+}
+
+function renderEditor(){
+ let n=node(selectedNode), e=edge(selectedEdge);
+ document.getElementById("editEmpty").style.display=n||e?"none":"block";
+ document.getElementById("nodeEdit").style.display=n?"block":"none";
+ document.getElementById("edgeEdit").style.display=e?"block":"none";
+ if(n){
+  document.getElementById("editType").value=n.type;
+  document.getElementById("editTitle").value=n.titre||"";
+  document.getElementById("editData").value=JSON.stringify(n.donnees||{},null,2);
+  document.getElementById("editSource").value=n.source_senorif||"";
+  document.getElementById("critereWrap").style.display = n.type==="resultat" ? "none" : "block";
+  populateCritereSelect(n.critere||"");
+ }
+ if(e){
+  document.getElementById("edgeValuesWrapper").style.display="block";
+  let s=node(e.source);
+  if(s && s.type==="etape"){
+      document.getElementById("edgeEtapeNotice").style.display="block";
+  } else {
+      document.getElementById("edgeEtapeNotice").style.display="none";
+  }
+  renderEdgeValueFields(edgeValues(e));
+  populateEdgeValeur(e);
+ }
+}
+
+// Menu déroulant « Critère » : liste les critères canoniques du contrat partagé.
+function populateCritereSelect(selected){
+ let sel=document.getElementById("editCritere");
+ sel.innerHTML='<option value="">— Aucun —</option>';
+ Object.keys(criteresSchema).forEach(id=>{
+  let o=document.createElement("option");
+  o.value=id;
+  o.textContent=(criteresSchema[id].label||id)+" ("+id+")";
+  sel.appendChild(o);
+ });
+ if(selected && !criteresSchema[selected]){
+  let o=document.createElement("option"); o.value=selected; o.textContent=selected+" (hors schéma)"; sel.appendChild(o);
+ }
+ sel.value=selected||"";
+}
+
+// Contrôle « Valeur canonique » d'une réponse : dépend du critère porté par la question parente.
+function populateEdgeValeur(e){
+ let src=node(e.source);
+ let wrap=document.getElementById("edgeValeurWrap");
+ let selEl=document.getElementById("editEdgeValeurSelect");
+ let inpEl=document.getElementById("editEdgeValeurInput");
+ if(!src || !src.critere){ wrap.style.display="none"; return; }
+ wrap.style.display="block";
+ let def=criteresSchema[src.critere];
+ if(def && def.type==="numerique"){
+  selEl.style.display="none"; inpEl.style.display="block";
+  inpEl.value=e.valeur||"";
+ } else {
+  inpEl.style.display="none"; selEl.style.display="block";
+  selEl.innerHTML='<option value="">— Aucune —</option>';
+  let vals=(def && def.valeurs) || [];
+  vals.forEach(v=>{ let o=document.createElement("option"); o.value=v; o.textContent=v; selEl.appendChild(o); });
+  if(e.valeur && vals.indexOf(e.valeur)===-1){ let o=document.createElement("option"); o.value=e.valeur; o.textContent=e.valeur+" (hors schéma)"; selEl.appendChild(o); }
+  selEl.value=e.valeur||"";
+ }
+}
+
+function renderEdgeValueFields(values){
+ let box=document.getElementById("editEdgeValues");
+ box.innerHTML="";
+ (values.length?values:[""]).forEach(v=>addEdgeValueField(v));
+}
+function addEdgeValueField(value){
+ let box=document.getElementById("editEdgeValues");
+ let row=document.createElement("div");
+ row.className="valRow";
+ let input=document.createElement("input");
+ input.value=value||"";
+ input.placeholder="Valeur de réponse";
+ let rm=document.createElement("button");
+ rm.className="danger"; rm.textContent="✕"; rm.title="Retirer cette valeur";
+ rm.onclick=function(){row.remove()};
+ row.appendChild(input); row.appendChild(rm);
+ box.appendChild(row);
+}
+
+function snapshotState(){
+ return JSON.stringify({nodes:nodes, edges:edges});
+}
+function restoreState(snap){
+ let o=JSON.parse(snap);
+ nodes=o.nodes; edges=o.edges;
+ selectedNode=null; selectedEdge=null;
+ render();
+}
+function pushHistory(){
+ undoStack.push(snapshotState());
+ if(undoStack.length>HISTORY_LIMIT) undoStack.shift();
+ redoStack=[];
+}
+function undo(){
+ if(!undoStack.length) return;
+ redoStack.push(snapshotState());
+ restoreState(undoStack.pop());
+}
+function redo(){
+ if(!redoStack.length) return;
+ undoStack.push(snapshotState());
+ restoreState(redoStack.pop());
+}
+
+// MODIFICATION 1 : touche Suppr/Backspace + Ctrl+Z/Y fusionnés en un seul listener
+document.addEventListener("keydown",function(ev){
+ let tag=ev.target && ev.target.tagName;
+ if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT") return;
+
+ if(ev.key==="Delete"||ev.key==="Backspace"){
+  ev.preventDefault();
+  if(selectedNode) deleteNode();
+  else if(selectedEdge) deleteEdge();
+  return;
+ }
+
+ if(!(ev.ctrlKey||ev.metaKey)) return;
+ let key=ev.key.toLowerCase();
+ if(key==="z" && !ev.shiftKey){ ev.preventDefault(); undo(); }
+ else if(key==="y" || (key==="z" && ev.shiftKey)){ ev.preventDefault(); redo(); }
+});
+
+function capFirst(s){
+ s=String(s||"");
+ if(!s) return s;
+ return s.charAt(0).toUpperCase()+s.slice(1);
+}
+
+function applyNodeEdits(){
+ let n=node(selectedNode); if(!n) return;
+ pushHistory();
+ n.type=document.getElementById("editType").value;
+ n.titre=capFirst(document.getElementById("editTitle").value);
+ n.critere=document.getElementById("editCritere").value;
+ n.source_senorif=document.getElementById("editSource").value;
+ try{
+  n.donnees=JSON.parse(document.getElementById("editData").value||"{}");
+  if(n.type==="resultat"&&!n.titre) n.titre=resultTitleFromData(n);
+ }catch(err){
+  alert("JSON données invalide : "+err.message+"\nLes autres champs ont été appliqués, mais pas les données.");
+ }
+ render();
+}
+function applyEdgeEdits(){
+ let e=edge(selectedEdge); if(!e) return;
+ pushHistory();
+ let inputs=document.getElementById("editEdgeValues").querySelectorAll("input");
+ let vals=Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
+ e.label=vals.join(", ");
+ let src=node(e.source);
+ if(src && src.critere){
+  let def=criteresSchema[src.critere];
+  e.valeur=(def && def.type==="numerique")
+   ? document.getElementById("editEdgeValeurInput").value.trim()
+   : document.getElementById("editEdgeValeurSelect").value;
+ } else {
+  e.valeur="";
+ }
+ render();
+}
+
+function addNodeLinkedToSelection(newNode){
+ let parentId=selectedNode;
+ nodes.push(newNode);
+ if(parentId && node(parentId)) {
+     if(node(parentId).type === "etape") {
+         edges.push({id:uid("e"),source:parentId,target:newNode.id,label:""});
+     } else {
+         edges.push({id:uid("e"),source:parentId,target:newNode.id,label:"Réponse"});
+     }
+ }
+ selectedNode=newNode.id; selectedEdge=null;
+ autoLayout(); render();
+}
+function addQuestion(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"question",titre:"Nouvelle question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0})}
+function addEtape(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"etape",titre:"Nouvelle étape",donnees:{},infos_science:{},source_senorif:"",x:0,y:0})}
+function addResult(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"resultat",titre:"Nouvelle recommandation",donnees:{"Traitement":"1"},infos_science:{},source_senorif:"",x:0,y:0})}
+function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
+function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
+function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Cliquez le parent puis l'enfant":"Mode liaison désactivé")}
+function connectClick(id){
+    if(!connectSource){connectSource=id;return;}
+    else{
+        pushHistory();
+        let s = node(connectSource);
+        if(s && s.type === "etape") {
+            edges.push({id:uid("e"),source:connectSource,target:id,label:""});
+        } else {
+            edges.push({id:uid("e"),source:connectSource,target:id,label:"Réponse"});
+        }
+        connectSource=null;connectMode=false;autoLayout();render();
+    }
+}
+
+// MODIFICATION 2 : plein écran sur le canvas
+function toggleFullscreen(){
+ let elem=document.getElementById("canvas");
+ if(!document.fullscreenElement){
+  elem.requestFullscreen().catch(err=>alert("Erreur plein écran : "+err.message));
+ } else {
+  document.exitFullscreen();
+ }
+}
+
+function fold(s){
+ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+}
+
+function findMatches(term){
+ let f=fold(term);
+ if(!f) return [];
+ let nodeMatches=nodes.filter(n=>{
+  let hay=fold(n.titre+" "+JSON.stringify(n.donnees||{})+" "+(n.source_senorif||""));
+  return hay.includes(f);
+ }).map(n=>({kind:"node", id:n.id}));
+ let edgeMatches=edges.filter(e=>fold(e.label||"").includes(f)).map(e=>({kind:"edge", id:e.id}));
+ return nodeMatches.concat(edgeMatches);
+}
+
+function jumpToMatch(m){
+ if(zoom<0.4) setZoom(0.6);
+ if(m.kind==="edge"){
+  selectedEdge=m.id; selectedNode=null;
+  centerOnEdge(m.id);
+ } else {
+  selectedNode=m.id; selectedEdge=null;
+  centerOnNode(m.id);
+ }
+ render();
+}
+
+function setSearchStatus(text){
+ document.getElementById("searchStatus").textContent=text;
+}
+
+let liveSearchTimer=null;
+function liveSearch(){
+ clearTimeout(liveSearchTimer);
+ liveSearchTimer=setTimeout(()=>{
+  let term=(document.getElementById("searchBox").value||"").trim();
+  if(!term){ setSearchStatus(""); return; }
+  let matches=findMatches(term);
+  lastSearchTerm=term; lastSearchIndex=0;
+  if(!matches.length){ setSearchStatus("Aucun résultat"); return; }
+  setSearchStatus(matches.length+" résultat"+(matches.length>1?"s":""));
+  jumpToMatch(matches[0]);
+ }, 250);
+}
+
+function searchNode(){
+ let term=(document.getElementById("searchBox").value||"").trim();
+ if(!term){ setSearchStatus(""); return; }
+ let matches=findMatches(term);
+ if(!matches.length){ setSearchStatus("Aucun résultat"); return; }
+ if(term!==lastSearchTerm){ lastSearchIndex=-1; lastSearchTerm=term; }
+ lastSearchIndex=(lastSearchIndex+1)%matches.length;
+ setSearchStatus((lastSearchIndex+1)+"/"+matches.length+" résultats");
+ jumpToMatch(matches[lastSearchIndex]);
+}
+
+function toggleHelp(){
+ document.getElementById("helpOverlay").classList.toggle("show");
+}
+
+document.getElementById("fileInput").addEventListener("change",function(ev){
+ let f=ev.target.files[0]; if(!f)return;
+ let r=new FileReader();
+ r.onload=()=>{try{loadProtocolFile(JSON.parse(r.result), f.name);setStatus("Fichier JSON importé : "+f.name, true)}catch(e){alert("JSON invalide: "+e.message)}};
+ r.readAsText(f);
+});
+
+function currentExportFilename(){
+ let name=(document.getElementById("protocolFilename").value||"").trim();
+ if(!name) name="nouveau_protocole.json";
+ if(!/\.json$/i.test(name)) name+=".json";
+ return name;
+}
+
+function buildExportPayload(){
+ let metadata = Object.assign({titre:"", date_maj:""}, currentMetadata||{});
+ metadata.date_maj = new Date().toISOString().slice(0,10);
+ return {metadata: metadata, tree: graphToTree()};
+}
+
+function downloadTree(filename){
+ let txt=JSON.stringify(buildExportPayload(),null,2);
+ let blob=new Blob([txt],{type:"application/json;charset=utf-8"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download=filename;
+ a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function exportJSON(){downloadTree(currentExportFilename())}
+function saveForGithub(){
+ let filename=currentExportFilename();
+ downloadTree(filename);
+ alert("Le fichier "+filename+" a été téléchargé. Dans le dépôt GitHub de l'Atlas, remplacez le fichier protocoles/"+filename+" par celui-ci (ou ajoutez-le s'il est nouveau, puis ajoutez une ligne dans protocoles/index.json), puis commitez les changements.");
+}
+function saveLocal(){localStorage.setItem("arbre_senorif_editor",JSON.stringify({nodes,edges,currentMetadata,filename:document.getElementById("protocolFilename").value}));alert("Sauvegardé")}
+function loadLocal(){
+ let s=localStorage.getItem("arbre_senorif_editor");if(!s)return alert("Pas de sauvegarde");
+ let o=JSON.parse(s);nodes=o.nodes;edges=o.edges;currentMetadata=o.currentMetadata||{};
+ document.getElementById("protocolFilename").value=o.filename||"";
+ render();setTimeout(fitView,50);
+}
+
+function populateProtocolSelect(){
+ let sel=document.getElementById("protocolSelect");
+ sel.innerHTML='<option value="">── Protocole (registre Atlas) ──</option>';
+ protocolesRegistry.forEach(p=>{
+  let opt=document.createElement("option");
+  opt.value=p.fichier; opt.textContent=p.nom;
+  sel.appendChild(opt);
+ });
+}
+
+function loadRegistry(){
+ return fetch(ATLAS_REPO_RAW_BASE+"protocoles/index.json?_v="+Date.now())
+  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(reg=>{ protocolesRegistry=(reg && reg.protocoles)||[]; populateProtocolSelect(); });
+}
+
+// Contrat partagé : vocabulaire canonique des critères, lu depuis le dépôt Atlas.
+// Sert à proposer aux médecins des menus déroulants « Critère » et « Valeur canonique »
+// pour relier une question/réponse au vocabulaire des études, sans toucher au code.
+function loadSchemaCriteres(){
+ return fetch(ATLAS_REPO_RAW_BASE+"schema_criteres.json?_v="+Date.now())
+  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(s=>{ criteresSchema=(s && s.criteres)||{}; })
+  .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; });
+}
+
+function loadSelectedProtocol(){
+ let filename=document.getElementById("protocolSelect").value;
+ if(!filename) return;
+ setStatus("Chargement de "+filename+"…", false);
+ fetch(ATLAS_REPO_RAW_BASE+"protocoles/"+filename+"?_v="+Date.now())
+  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(data=>{
+   loadProtocolFile(data, filename);
+   setStatus("Protocole chargé depuis GitHub : "+filename, true);
+  })
+  .catch(err=>{
+   setStatus("Chargement impossible ("+err.message+"). Utilisez « Depuis l'ordinateur » pour charger le JSON à la main.", false);
+  });
+}
+function setZoom(z){
+ zoom=Math.max(0.03,Math.min(2,z));
+ document.getElementById("world").style.transform="scale("+zoom+")";
+ document.getElementById("zoomSlider").value=Math.round(zoom*100);
+ document.getElementById("zoomValue").textContent=Math.round(zoom*100)+"%";
+}
+function zoomIn(){setZoom(zoom+0.1)}
+function zoomOut(){setZoom(zoom-0.1)}
+
+function fitView(){
+ if(!nodes.length)return;
+ let canvas=document.getElementById("canvas");
+ let minX=Math.min(...nodes.map(n=>n.x));
+ let maxX=Math.max(...nodes.map(n=>n.x+NODE_W));
+ let minY=Math.min(...nodes.map(n=>n.y));
+ let maxY=Math.max(...nodes.map(n=>n.y+NODE_H));
+ let treeW=maxX-minX+300;
+ let treeH=maxY-minY+300;
+ let z=Math.min(canvas.clientWidth/treeW, canvas.clientHeight/treeH, 1);
+ setZoom(z);
+ canvas.scrollLeft=Math.max(0,(minX-150)*zoom);
+ canvas.scrollTop=Math.max(0,(minY-120)*zoom);
+}
+
+function centerOnNode(id){
+ let n=node(id); if(!n)return;
+ let canvas=document.getElementById("canvas");
+ canvas.scrollLeft=Math.max(0,(n.x-300)*zoom);
+ canvas.scrollTop=Math.max(0,(n.y-200)*zoom);
+}
+
+function centerOnEdge(id){
+ let e=edge(id); if(!e)return;
+ let s=node(e.source), t=node(e.target); if(!s||!t)return;
+ let canvas=document.getElementById("canvas");
+ let mx=(s.x+t.x)/2, my=(s.y+t.y)/2;
+ canvas.scrollLeft=Math.max(0,(mx-300)*zoom);
+ canvas.scrollTop=Math.max(0,(my-200)*zoom);
+}
+
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+
+setStatus("Chargement du registre des protocoles…", false);
+loadSchemaCriteres();
+loadRegistry().then(()=>{
+ setStatus("Registre chargé : choisissez un protocole ci-dessus, ou importez un fichier depuis l'ordinateur.", true);
+}).catch(err=>{
+ setStatus("Impossible de charger le registre des protocoles ("+err.message+"). Utilisez « Depuis l'ordinateur » pour charger un fichier JSON à la main.", false);
+});
+</script>
+</body>
+</html>
