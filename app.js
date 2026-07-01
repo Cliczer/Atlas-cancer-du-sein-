@@ -141,11 +141,11 @@
       }
     }
 
+    // Valeur numérique unique (ex. "45") : concordance stricte uniquement.
+    // (L'ancien "match partiel à 0.5 si ±20 %" était un seuil arbitraire sans
+    // justification clinique — supprimé : un critère numérique concorde ou non.)
     var numE = parseFloat(nE.replace(/[^0-9.-]/g,''));
-    if (!isNaN(numE)) {
-      if (numP === numE) return 1;
-      if (Math.abs(numP-numE)/Math.max(Math.abs(numE),1) <= 0.2) return 0.5;
-    }
+    if (!isNaN(numE) && numP === numE) return 1;
     return 0;
   }
 
@@ -197,21 +197,11 @@
       tous.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
   }
 
-  function extraireTraitementsRecommandes(donnees) {
-    var t = [];
-    Object.keys(donnees || {}).forEach(function(k) {
-      var v = String(donnees[k]||'').trim();
-      if (v === '1' || v === '1.0') t.push(k.replace(/^OUT_/i,''));
-    });
-    console.log('[Atlas] 💊 Traitements recommandés :', t);
-    return t;
-  }
-
   // Un critère "joker" (-1, nc, vide…) signifie que l'étude ne s'est pas prononcée
   // sur ce critère. Il est neutre : ni compté dans le score, ni affiché comme "concordant" —
   // sinon il dilue les vrais désaccords (ex. 1 vrai mismatch + 10 jokers ≈ 91%, alors que
   // sur les seuls critères réellement évalués, c'est 0%).
-  function calculerScoreEtude(etude, profilPatient, traitementsRecommandes) {
+  function calculerScoreEtude(etude, profilPatient) {
     var criteres = etude.criteres || {};
     var pts = 0, evalues = 0;
     var colonnesGagnantes = [];
@@ -600,21 +590,20 @@
 
     try {
       var profil = construireProfil();
-      var traitements = extraireTraitementsRecommandes(donnees);
-      renderEtudes(profil, traitements);
+      renderEtudes(profil);
       renderAvertissements();
     } catch(err) {
       console.error('[Atlas] Erreur analyse littérature :', err);
     }
   }
 
-  function renderEtudes(profil, traitementsRecommandes) {
+  function renderEtudes(profil) {
     var section = $('etudes-section'); if (!section) return;
     section.innerHTML = '';
     if (!etudes || !etudes.length) return;
 
     var scored = etudes.map(function(e) {
-      var res = calculerScoreEtude(e, profil, traitementsRecommandes);
+      var res = calculerScoreEtude(e, profil);
       return { etude: e, score: res.valeur, total: res.total, colonnes: res.colonnes, mismatches: res.mismatches };
     });
 
@@ -680,6 +669,11 @@
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
     var comp = etude.comparaison || { avec: {valeur: 0, unite: ''}, sans: {valeur: 0, unite: ''} };
+    // Coercition numérique stricte : ces valeurs viennent d'un JSON éditable par un humain
+    // et sont injectées dans du HTML (texte + largeur CSS). Number()||0 empêche toute
+    // injection (une chaîne type "<script>" devient 0) et borne l'affichage.
+    var pctAvec = Math.max(0, Math.min(100, Number(comp.avec.valeur) || 0));
+    var pctSans = Math.max(0, Math.min(100, Number(comp.sans.valeur) || 0));
     var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
     var auteurs = auteursEtude(etude);
 
@@ -704,10 +698,10 @@
         '</div>' +
         '<div class="etude-bars" style="width: 260px; flex-shrink:0;">' +
           '<div style="font-size: 11px; font-weight: 700; color: #636e72; text-transform: uppercase; margin-bottom: 10px;">📊 Résultats chiffrés</div>' +
-          '<div class="barre-header" style="margin-bottom:4px;"><span>Standard' + (comp.avec.unite ? ' (' + esc(comp.avec.unite) + ')' : '') + '</span><span>' + (comp.avec.valeur || 0) + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + (comp.avec.valeur || 0) + '%;"></div></div>' +
-          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Contrôle' + (comp.sans.unite ? ' (' + esc(comp.sans.unite) + ')' : '') + '</span><span>' + (comp.sans.valeur || 0) + '%</span></div>' +
-          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + (comp.sans.valeur || 0) + '%;"></div></div>' +
+          '<div class="barre-header" style="margin-bottom:4px;"><span>Standard' + (comp.avec.unite ? ' (' + esc(comp.avec.unite) + ')' : '') + '</span><span>' + pctAvec + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill bonne" style="width:' + pctAvec + '%;"></div></div>' +
+          '<div class="barre-header" style="margin-top:14px; margin-bottom:4px;"><span>Contrôle' + (comp.sans.unite ? ' (' + esc(comp.sans.unite) + ')' : '') + '</span><span>' + pctSans + '%</span></div>' +
+          '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + pctSans + '%;"></div></div>' +
         '</div>' +
       '</div>';
 
