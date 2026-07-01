@@ -219,13 +219,14 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </span>
 
 <span class="searchBox">
-  <input id="searchBox" placeholder="Rechercher un mot-clé…" oninput="liveSearch()" onkeydown="if(event.key==='Enter')searchNode()">
+  <input id="searchBox" placeholder="Rechercher dans TOUS les arbres…" oninput="liveSearch()" onkeydown="if(event.key==='Enter')searchNode()">
   <button onclick="searchNode()">Chercher</button>
   <span id="searchStatus" style="font-size:11px;color:var(--text-muted);min-width:90px"></span>
 </span>
 
 </div>
 </header>
+<div id="searchResults" style="display:none;position:fixed;right:20px;top:118px;z-index:60;width:380px;max-height:55vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);padding:6px"></div>
 
 <input type="file" id="fileInput" accept=".json" style="display:none">
 
@@ -1013,26 +1014,78 @@ function setSearchStatus(text){
 let liveSearchTimer=null;
 function liveSearch(){
  clearTimeout(liveSearchTimer);
- liveSearchTimer=setTimeout(()=>{
-  let term=(document.getElementById("searchBox").value||"").trim();
-  if(!term){ setSearchStatus(""); return; }
-  let matches=findMatches(term);
-  lastSearchTerm=term; lastSearchIndex=0;
-  if(!matches.length){ setSearchStatus("Aucun résultat"); return; }
-  setSearchStatus(matches.length+" résultat"+(matches.length>1?"s":""));
-  jumpToMatch(matches[0]);
- }, 250);
+ liveSearchTimer=setTimeout(()=>runGlobalSearch((document.getElementById("searchBox").value||"").trim()), 250);
+}
+function searchNode(){ runGlobalSearch((document.getElementById("searchBox").value||"").trim()); }
+
+// Recherche dans TOUS les arbres (pas seulement celui affiché). Les résultats
+// s'affichent en liste ; cliquer un résultat ouvre le bon protocole et s'y positionne.
+function runGlobalSearch(term){
+ let box=document.getElementById("searchResults");
+ if(!term){ box.style.display="none"; box.innerHTML=""; setSearchStatus(""); return; }
+ if(!protocolesData.length){ setSearchStatus("Arbres en cours de chargement…"); return; }
+ let results=searchAllProtocols(term);
+ setSearchStatus(results.length+" résultat"+(results.length>1?"s":"")+" (tous arbres)");
+ box.innerHTML="";
+ if(!results.length){ box.style.display="block"; box.innerHTML='<div style="padding:10px;color:var(--text-muted);font-size:12.5px">Aucun résultat dans les arbres.</div>'; return; }
+ let parProto={};
+ results.forEach(r=>{ (parProto[r.fichier]=parProto[r.fichier]||{nom:r.nom, items:[]}).items.push(r); });
+ Object.keys(parProto).forEach(fichier=>{
+  let grp=parProto[fichier];
+  let head=document.createElement("div");
+  head.textContent=grp.nom||fichier;
+  head.style.cssText="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--text-muted);padding:8px 8px 4px";
+  box.appendChild(head);
+  grp.items.slice(0,25).forEach(r=>{
+   let row=document.createElement("div");
+   row.className="listRow";
+   row.style.cssText="padding:7px 9px;margin:2px 4px;font-size:12.5px;cursor:pointer;border-radius:8px";
+   row.textContent=(r.kind==="edge"?"↳ ":"")+r.texte;
+   row.onclick=()=>ouvrirResultat(fichier, r.texte, r.kind);
+   box.appendChild(row);
+  });
+ });
+ box.style.display="block";
 }
 
-function searchNode(){
- let term=(document.getElementById("searchBox").value||"").trim();
- if(!term){ setSearchStatus(""); return; }
- let matches=findMatches(term);
- if(!matches.length){ setSearchStatus("Aucun résultat"); return; }
- if(term!==lastSearchTerm){ lastSearchIndex=-1; lastSearchTerm=term; }
- lastSearchIndex=(lastSearchIndex+1)%matches.length;
- setSearchStatus((lastSearchIndex+1)+"/"+matches.length+" résultats");
- jumpToMatch(matches[lastSearchIndex]);
+function collectSearchable(data){
+ let items=[], tree=(data&&data.tree)||data;
+ (function w(t){
+  if(!t||typeof t!=="object") return;
+  if(t.titre) items.push({texte:String(t.titre), kind:"node"});
+  if(t.choix) Object.entries(t.choix).forEach(([lab,ch])=>{ if(lab) items.push({texte:String(lab), kind:"edge"}); w(ch); });
+  if(t.suite) w(t.suite);
+ })(tree);
+ return items;
+}
+function searchAllProtocols(term){
+ let f=fold(term); if(!f) return [];
+ let res=[], seen=new Set();
+ protocolesData.forEach(p=>{
+  collectSearchable(p.data).forEach(it=>{
+   if(fold(it.texte).includes(f)){
+    let key=p.fichier+"|"+it.kind+"|"+it.texte;
+    if(!seen.has(key)){ seen.add(key); res.push({fichier:p.fichier, nom:p.nom, texte:it.texte, kind:it.kind}); }
+   }
+  });
+ });
+ return res;
+}
+function jumpToTexte(texte, kind){
+ let target=null;
+ if(kind==="edge"){ let e=edges.find(ed=>edgeValues(ed).includes(texte) || (ed.label||"")===texte); if(e) target={kind:"edge", id:e.id}; }
+ if(!target){ let n=nodes.find(nd=>nd.titre===texte); if(n) target={kind:"node", id:n.id}; }
+ if(!target){ let e=edges.find(ed=>edgeValues(ed).includes(texte)); if(e) target={kind:"edge", id:e.id}; }
+ if(target) jumpToMatch(target);
+}
+function ouvrirResultat(fichier, texte, kind){
+ document.getElementById("searchResults").style.display="none";
+ let cur=(document.getElementById("protocolFilename").value||"").trim();
+ if(fichier===cur){ jumpToTexte(texte, kind); return; } // même arbre : sauter sans recharger (préserve les modifs)
+ let p=protocolesData.find(x=>x.fichier===fichier); if(!p) return;
+ loadProtocolFile(p.data, fichier);
+ setStatus("Ouvert : "+(p.nom||fichier), true);
+ setTimeout(()=>jumpToTexte(texte, kind), 180);
 }
 
 function toggleHelp(){
@@ -1113,6 +1166,18 @@ function loadRegistry(){
  return fetch(ATLAS_REPO_RAW_BASE+"protocoles/index.json?_v="+Date.now())
   .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
   .then(reg=>{ protocolesRegistry=(reg && reg.protocoles)||[]; populateProtocolSelect(); });
+}
+
+// Charge et met en cache TOUS les protocoles, pour permettre la recherche
+// transversale (dans tous les arbres) sans re-télécharger à chaque frappe.
+let protocolesData=[]; // [{fichier, nom, data}]
+function loadAllProtocols(){
+ return Promise.all((protocolesRegistry||[]).map(p=>
+  fetch(ATLAS_REPO_RAW_BASE+"protocoles/"+p.fichier+"?_v="+Date.now())
+   .then(r=>r.ok?r.json():null)
+   .then(data=>({fichier:p.fichier, nom:p.nom, data}))
+   .catch(()=>({fichier:p.fichier, nom:p.nom, data:null}))
+ )).then(list=>{ protocolesData=list.filter(x=>x.data); });
 }
 
 // Contrat partagé : vocabulaire canonique des critères, lu depuis le dépôt Atlas.
@@ -1200,8 +1265,14 @@ setStatus("Chargement du registre des protocoles…", false);
 loadSchemaCriteres();
 loadRegistry().then(()=>{
  setStatus("Registre chargé : choisissez un protocole ci-dessus, ou importez un fichier depuis l'ordinateur.", true);
+ return loadAllProtocols();
 }).catch(err=>{
  setStatus("Impossible de charger le registre des protocoles ("+err.message+"). Utilisez « Depuis l'ordinateur » pour charger un fichier JSON à la main.", false);
+});
+// Fermer la liste de résultats en cliquant ailleurs.
+document.addEventListener("pointerdown",function(ev){
+ let box=document.getElementById("searchResults");
+ if(box && box.style.display!=="none" && !box.contains(ev.target) && ev.target.id!=="searchBox"){ box.style.display="none"; }
 });
 </script>
 </body>

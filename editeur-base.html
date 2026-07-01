@@ -237,7 +237,10 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 <label>Traitements évalués</label>
 <div class="checkGrid" id="traitementsGrid"></div>
 
-<label>Critères cliniques <span class="hint">(-1 = non évalué → neutre, exclu du score et du badge de correspondance ; syntaxe sinon : valeur exacte, plage 10-50, ou &lt;2 / &lt;=2 / &gt;2 / &gt;=2)</span></label>
+<label style="display:flex;align-items:center;justify-content:space-between">
+ <span>Critères cliniques <span class="hint" style="text-transform:none;font-weight:500">(-1 = non évalué → neutre ; sinon : valeur exacte, plage 10-50, ou &lt;2 / &gt;=2…)</span></span>
+ <button class="small" onclick="addCritereLibre()">+ Ajouter un critère</button>
+</label>
 <div class="critGrid" id="criteresGrid"></div>
 
 <label>Lien de l'article (PubMed, DOI…)</label>
@@ -589,6 +592,22 @@ function removeComparaisonRow(i){
  syncComparaisonsDraftFromDOM();
  editComparaisons.splice(i,1);
  renderComparaisonsRows();
+}
+
+// Ajoute un critère libre (hors schéma) à l'étude en cours d'édition.
+function addCritereLibre(){
+ let e=etude(selectedId);
+ if(!e){ alert("Sélectionnez d'abord une étude."); return; }
+ let nom=prompt("Nom du critère à ajouter (ex. Grade, Emboles, Ki67 (%)…) :");
+ if(nom===null) return;
+ nom=nom.trim();
+ if(!nom) return;
+ // Applique d'abord les saisies en cours pour ne pas les perdre au re-render.
+ applyEtudeEdits();
+ if(e.criteres[nom]!==undefined){ alert('Le critère « '+nom+' » existe déjà.'); selectEtude(e._id); return; }
+ pushHistory();
+ e.criteres[nom]="-1";
+ selectEtude(e._id);
 }
 
 function applyEtudeEdits(){
