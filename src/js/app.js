@@ -196,7 +196,7 @@
   // 1a. Chargement de la liste des protocoles (registre unique : protocoles/index.json)
   function chargerListeProtocoles() {
     var v = '?_v=' + Date.now();
-    return fetch('protocoles/index.json' + v).then(function(r) {
+    return fetch('./src/data/protocoles/index.json' + v).then(function(r) {
       if (!r.ok) throw new Error('protocoles/index.json HTTP ' + r.status);
       return r.json();
     }).then(function(reg) {
