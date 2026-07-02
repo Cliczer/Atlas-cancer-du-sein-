@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
 <title>Éditeur d'arbre de décision</title>
-<script src="contrat.js?v=1"></script>
-<script src="publier.js?v=1"></script>
+<script src="src/js/contrat.js?v=1"></script>
+<script src="src/js/publier.js?v=1"></script>
 <style>
 :root{
  --bg:#eef1f7;
@@ -388,7 +388,8 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <script>
 // Éditeur intégré au site Atlas : les données (protocoles, schéma) sont servies
 // par le même site, donc les chemins sont relatifs (plus d'URL de dépôt codée en dur).
-const ATLAS_REPO_RAW_BASE = "";
+const ATLAS_REPO_RAW_BASE = "src/data/"; // données servies sous src/data/ (lecture)
+const ATLAS_DATA_REPO_BASE = "src/data/"; // chemin dépôt pour la publication (écriture)
 
 let nodes=[], edges=[];
 let selectedNode=null, selectedEdge=null;
@@ -1253,14 +1254,14 @@ function publierArbre(){
  let filename=currentExportFilename();
  let contenu=JSON.stringify(buildExportPayload(), null, 2);
  setStatus("Publication de "+filename+" sur le site…", false);
- AtlasPublish.publier("protocoles/"+filename, contenu, "Mise à jour du protocole "+filename+" via l'éditeur")
+ AtlasPublish.publier(ATLAS_DATA_REPO_BASE+"protocoles/"+filename, contenu, "Mise à jour du protocole "+filename+" via l'éditeur")
   .then(()=>{
    let existe=protocolesRegistry.some(p=>p.fichier===filename);
    if(existe || !protocolesRegistry.length) return; // déjà listé, ou registre non chargé (on n'écrase pas)
    let id=filename.replace(/\.json$/i,"");
    let nom=(currentMetadata&&currentMetadata.titre)||id;
    let nouveau=protocolesRegistry.concat([{id:id,nom:nom,fichier:filename}]);
-   return AtlasPublish.publier("protocoles/index.json", JSON.stringify({protocoles:nouveau}, null, 2), "Ajout de "+filename+" au registre des protocoles")
+   return AtlasPublish.publier(ATLAS_DATA_REPO_BASE+"protocoles/index.json", JSON.stringify({protocoles:nouveau}, null, 2), "Ajout de "+filename+" au registre des protocoles")
     .then(()=>{ protocolesRegistry=nouveau; populateProtocolSelect(); });
   })
   .then(()=>{ modifie=false; setStatus("✅ Publié sur le site : "+filename+". La mise à jour sera visible dans ~1 minute.", true); })

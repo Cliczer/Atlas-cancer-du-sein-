@@ -10,8 +10,8 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { AtlasContrat: C } = require(join(ROOT, 'contrat.js'));
-const schema = JSON.parse(readFileSync(join(ROOT, 'schema_criteres.json'), 'utf8'));
+const { AtlasContrat: C } = require(join(ROOT, 'src', 'js', 'contrat.js'));
+const schema = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'schema_criteres.json'), 'utf8'));
 const MAP = schema.valeurs_synonymes, NUM = schema.criteres_numeriques, NEU = schema.valeurs_neutres;
 
 let passed = 0, failed = 0;

@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { AtlasContrat: C } = require(join(ROOT, 'contrat.js'));
+const { AtlasContrat: C } = require(join(ROOT, 'src', 'js', 'contrat.js'));
 
 let passed = 0, failed = 0;
 function ok(nom, cond) { if (cond) passed++; else { failed++; console.error('❌ ' + nom); } }
@@ -29,7 +29,7 @@ function norm(t) {
 function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 
 // 1. Round-trip sur tous les protocoles réels
-const dir = join(ROOT, 'protocoles');
+const dir = join(ROOT, 'src', 'data', 'protocoles');
 readdirSync(dir).filter(f => f.endsWith('.json') && f !== 'index.json').forEach(f => {
   const data = JSON.parse(readFileSync(join(dir, f), 'utf8'));
   const tree = data.tree || data;

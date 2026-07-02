@@ -12,10 +12,11 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { AtlasContrat } = require(join(ROOT, 'contrat.js'));
+const DATA = join(ROOT, 'src', 'data'); // données déplacées sous src/data/
+const { AtlasContrat } = require(join(ROOT, 'src', 'js', 'contrat.js'));
 
 function lire(p) {
-  try { return JSON.parse(readFileSync(join(ROOT, p), 'utf8')); }
+  try { return JSON.parse(readFileSync(join(DATA, p), 'utf8')); }
   catch (e) { return { __erreurLecture: `${p} : JSON illisible — ${e.message}` }; }
 }
 
@@ -41,14 +42,14 @@ if (registre.__erreurLecture) {
   listes.forEach((p) => {
     if (!p.fichier) { erreurs.push(`protocoles/index.json : entrée sans "fichier".`); return; }
     const chemin = `protocoles/${p.fichier}`;
-    if (!existsSync(join(ROOT, chemin))) { erreurs.push(`protocoles/index.json référence "${p.fichier}" mais le fichier est absent.`); return; }
+    if (!existsSync(join(DATA, chemin))) { erreurs.push(`protocoles/index.json référence "${p.fichier}" mais le fichier est absent.`); return; }
     const data = lire(chemin);
     if (data.__erreurLecture) erreurs.push(data.__erreurLecture);
     else collecter(AtlasContrat.validerProtocole(p.fichier, data, schema));
   });
   // Protocoles présents mais non listés dans le registre
   const listés = new Set(listes.map((p) => p.fichier));
-  readdirSync(join(ROOT, 'protocoles')).filter((f) => f.endsWith('.json') && f !== 'index.json').forEach((f) => {
+  readdirSync(join(DATA, 'protocoles')).filter((f) => f.endsWith('.json') && f !== 'index.json').forEach((f) => {
     if (!listés.has(f)) avert.push(`protocoles/${f} présent mais absent de index.json (invisible dans l'app).`);
   });
 }

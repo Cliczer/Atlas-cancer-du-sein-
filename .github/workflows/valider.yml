@@ -7,17 +7,17 @@ on:
   push:
     branches: [main]
     paths:
-      - 'schema_criteres.json'
-      - 'base_etudes.json'
-      - 'protocoles/**'
-      - 'contrat.js'
+      - 'src/data/schema_criteres.json'
+      - 'src/data/base_etudes.json'
+      - 'src/data/protocoles/**'
+      - 'src/js/contrat.js'
       - 'scripts/**'
   pull_request:
     paths:
-      - 'schema_criteres.json'
-      - 'base_etudes.json'
-      - 'protocoles/**'
-      - 'contrat.js'
+      - 'src/data/schema_criteres.json'
+      - 'src/data/base_etudes.json'
+      - 'src/data/protocoles/**'
+      - 'src/js/contrat.js'
       - 'scripts/**'
   workflow_dispatch:
 

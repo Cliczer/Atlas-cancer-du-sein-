@@ -6,8 +6,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
 <title>Éditeur base d'études SENORIF</title>
 <script src="xlsx.core.min.js"></script>
-<script src="contrat.js?v=1"></script>
-<script src="publier.js?v=1"></script>
+<script src="src/js/contrat.js?v=1"></script>
+<script src="src/js/publier.js?v=1"></script>
 <style>
 :root{
  --bg:#eef1f7;
@@ -315,7 +315,8 @@ const HISTORY_LIMIT=100;
 
 // Éditeur intégré au site Atlas : le contrat partagé (schema_criteres.json) et la base
 // (base_etudes.json) sont servis par le même site → chemins relatifs, aucun couplage codé en dur.
-const ATLAS_REPO_RAW_BASE = "";
+const ATLAS_REPO_RAW_BASE = "src/data/"; // données servies sous src/data/ (lecture)
+const ATLAS_DATA_REPO_BASE = "src/data/"; // chemin dépôt pour la publication (écriture)
 
 // Liste de critères de secours, utilisée uniquement si le contrat partagé n'est pas chargé.
 const CRITERES_FIELDS_DEFAUT = ["T","N","RE","RP","HER2","Grade","Ki67 (%)","Marges (mm)","Age","Emboles","Triple N","MCC"];
@@ -995,7 +996,7 @@ function publierBase(){
  if(!window.AtlasPublish){ alert("Module de publication indisponible."); return; }
  let contenu=JSON.stringify(exportData(), null, 4);
  setStatus("Publication de base_etudes.json sur le site…", false);
- AtlasPublish.publier("base_etudes.json", contenu, "Mise à jour de la base d'études via l'éditeur")
+ AtlasPublish.publier(ATLAS_DATA_REPO_BASE+"base_etudes.json", contenu, "Mise à jour de la base d'études via l'éditeur")
   .then(()=>{ setStatus("✅ Publié sur le site. La mise à jour sera visible dans ~1 minute.", true); })
   .catch(err=>{ setStatus("❌ Publication impossible : "+err.message, false); alert("Publication impossible : "+err.message); });
 }
