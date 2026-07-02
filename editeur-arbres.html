@@ -62,8 +62,17 @@ button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 .searchBox input{width:190px}
 
 .main{flex:1;min-height:0;display:grid;grid-template-columns:300px 1fr 330px;gap:16px;padding:16px}
-/* Plein écran : panneaux resserrés pour donner plus de place au canvas, tout reste accessible */
+/* Flèches Annuler/Rétablir : grosses et lisibles */
+.btn-fleche{font-size:20px;font-weight:800;line-height:1;padding:5px 12px;min-width:42px;color:var(--primary)}
+/* Plein écran : on cache l'en-tête (plus de place) et on montre une barre d'outils flottante */
 body.fs-actif .main{grid-template-columns:240px 1fr 270px;gap:10px;padding:8px}
+body.fs-actif header{display:none}
+body.fs-actif #fsToolbar{display:flex}
+#fsToolbar{display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100;gap:6px;
+ align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+ box-shadow:var(--shadow-md);padding:6px 8px;flex-wrap:wrap;max-width:96vw}
+#fsToolbar button{padding:6px 10px;font-size:12.5px}
+#fsToolbar .sep{width:1px;height:22px;background:var(--border);margin:0 2px}
 .panel{background:var(--surface);padding:16px;border:1px solid var(--border);border-radius:var(--radius);
  box-shadow:var(--shadow);overflow:auto}
 #canvas{position:relative;overflow:scroll;cursor:grab;border:1px solid var(--border);border-radius:var(--radius);
@@ -74,7 +83,7 @@ body.fs-actif .main{grid-template-columns:240px 1fr 270px;gap:10px;padding:8px}
 h3{font-size:13.5px;font-weight:800;margin:0 0 10px;color:var(--text)}
 h3 .hint{font-size:11px;color:var(--text-muted);font-weight:500}
 
-.node{position:absolute;width:260px;height:112px;border:2px solid var(--primary);
+.node{position:absolute;width:300px;height:132px;border:2px solid var(--primary);
  background:linear-gradient(180deg,#eff6ff,#e2ecfd);border-radius:16px;padding:12px;
  box-shadow:0 4px 14px rgba(37,99,235,.16);cursor:pointer;user-select:none;overflow:hidden;
  box-sizing:border-box;transition:transform .12s ease,box-shadow .12s ease;z-index:1}
@@ -177,21 +186,22 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div class="toolbar">
 
 <div class="grp">
- <span class="grpLabel">📂 Charger</span>
- <span class="grpBtns" style="align-items:center">
-  <select id="protocolSelect" style="width:250px" onchange="loadSelectedProtocol()" title="Charge un protocole actuellement publié sur le site">
-   <option value="">↻ Charger la version actuelle — choisir…</option>
+ <span class="grpLabel">📂 Charger un arbre</span>
+ <span class="grpBtns" style="align-items:center;gap:8px">
+  <span style="font-size:11.5px;font-weight:700;color:var(--text)">Version en ligne (du site)&nbsp;:</span>
+  <select id="protocolSelect" style="width:230px" onchange="loadSelectedProtocol()" title="Récupère un protocole actuellement publié sur le site">
+   <option value="">— choisir un protocole —</option>
   </select>
-  <span style="font-size:11px;color:var(--text-muted)">ou</span>
-  <button onclick="document.getElementById('fileInput').click()" title="Importer un fichier JSON depuis votre ordinateur">📁 Importer un fichier</button>
+  <span style="font-size:12px;color:var(--text-muted);font-weight:700">OU</span>
+  <button onclick="document.getElementById('fileInput').click()" title="Importer un fichier JSON depuis votre ordinateur">📁 Importer un fichier JSON</button>
  </span>
 </div>
 
 <div class="grp">
  <span class="grpLabel">✏️ Éditeur</span>
  <span class="grpBtns" style="align-items:center">
-  <button id="undoBtn" onclick="undo()" title="Annuler (Ctrl+Z)" style="font-size:16px;line-height:1">↶</button>
-  <button id="redoBtn" onclick="redo()" title="Rétablir (Ctrl+Maj+Z)" style="font-size:16px;line-height:1">↷</button>
+  <button id="undoBtn" onclick="undo()" title="Annuler (Ctrl+Z)" class="btn-fleche">↩</button>
+  <button id="redoBtn" onclick="redo()" title="Rétablir (Ctrl+Maj+Z)" class="btn-fleche">↪</button>
   <button onclick="addQuestion()">+ Question</button>
   <button onclick="addEtape()">+ Étape</button>
   <button onclick="addResult()">+ Recommandation</button>
@@ -256,6 +266,22 @@ details.listGroup[open]>summary::before{content:"▾ "}
    <button class="success" style="flex:1" onclick="validerRevue()">✓ Valider la revue</button>
   </div>
  </div>
+</div>
+
+<div id="fsToolbar">
+ <button class="btn-fleche" onclick="undo()" title="Annuler">↩</button>
+ <button class="btn-fleche" onclick="redo()" title="Rétablir">↪</button>
+ <span class="sep"></span>
+ <button onclick="addQuestion()">+ Question</button>
+ <button onclick="addEtape()">+ Étape</button>
+ <button onclick="addResult()">+ Reco</button>
+ <button onclick="toggleConnect()">Relier</button>
+ <span class="sep"></span>
+ <button onclick="zoomOut()">−</button>
+ <button onclick="zoomIn()">+</button>
+ <button onclick="fitView()">Tout voir</button>
+ <span class="sep"></span>
+ <button class="danger" onclick="toggleFullscreen()">✕ Quitter</button>
 </div>
 
 <input type="file" id="fileInput" accept=".json" style="display:none">
@@ -376,10 +402,10 @@ let currentMetadata=null; // {titre, date_maj} du protocole chargé, conservé t
 let protocolesRegistry=[]; // [{id, nom, fichier}] chargé depuis protocoles/index.json
 let criteresSchema={};     // {id:{label,type,valeurs}} chargé depuis schema_criteres.json (contrat partagé Atlas)
 
-const NODE_W=260;  // doit correspondre à .node{width} en CSS, sinon les nœuds se chevauchent
-const NODE_H=112;  // doit correspondre à .node{height} en CSS
+const NODE_W=300;  // doit correspondre à .node{width} en CSS, sinon les nœuds se chevauchent
+const NODE_H=132;  // doit correspondre à .node{height} en CSS
 const X_GAP=70;
-const Y_GAP=200;
+const Y_GAP=220;
 
 function setStatus(text, ok){
  const el=document.getElementById("loadStatus");
@@ -747,7 +773,7 @@ function render(){
 
 function fitFontSize(text){
  let len=(text||"").length;
- return len>150 ? "12px" : len>90 ? "12.5px" : len>55 ? "13px" : "14px";
+ return len>170 ? "12.5px" : len>110 ? "13px" : len>60 ? "14px" : "15px";
 }
 
 function renderNode(n){
@@ -1412,7 +1438,9 @@ function fitView(){
  let maxY=Math.max(...nodes.map(n=>n.y+NODE_H));
  let treeW=maxX-minX+300;
  let treeH=maxY-minY+300;
- let z=Math.min(canvas.clientWidth/treeW, canvas.clientHeight/treeH, 1);
+ // Plancher de zoom : on ne rétrécit pas au point de rendre les bulles illisibles
+ // (quitte à devoir faire défiler un grand arbre).
+ let z=Math.max(0.5, Math.min(canvas.clientWidth/treeW, canvas.clientHeight/treeH, 1));
  setZoom(z);
  canvas.scrollLeft=Math.max(0,(minX-150)*zoom);
  canvas.scrollTop=Math.max(0,(minY-120)*zoom);

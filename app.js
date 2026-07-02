@@ -828,13 +828,19 @@
   }
 
   // ─── Vue patiente : présentation simplifiée des résultats (pictogrammes "X sur 100") ───
+  // Silhouette de femme (tête + robe) colorée : remplie = concernée, grise = non.
+  function iconeFemme(couleur) {
+    return '<svg width="13" height="18" viewBox="0 0 24 30" style="margin:1px;flex-shrink:0;" aria-hidden="true">' +
+      '<circle cx="12" cy="5" r="4.2" fill="' + couleur + '"/>' +
+      '<path d="M12 10 L18 27 H6 Z" fill="' + couleur + '"/></svg>';
+  }
   function pictoGrille(valeur, couleur) {
     var n = Math.max(0, Math.min(100, Math.round(Number(valeur) || 0)));
-    var dots = '';
+    var femmes = '';
     for (var i = 0; i < 100; i++) {
-      dots += '<span style="width:11px;height:11px;border-radius:50%;display:inline-block;margin:1.5px;background:' + (i < n ? couleur : '#e5e7eb') + ';"></span>';
+      femmes += iconeFemme(i < n ? couleur : '#dbe0e6');
     }
-    return '<div style="display:flex;flex-wrap:wrap;width:145px;flex-shrink:0;">' + dots + '</div>';
+    return '<div style="display:flex;flex-wrap:wrap;width:160px;flex-shrink:0;">' + femmes + '</div>';
   }
 
   function phraseResume(c) {
