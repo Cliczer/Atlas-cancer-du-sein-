@@ -3,16 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- CSP : l'app ne parle qu'à son propre domaine + Google Fonts. connect-src 'self'
-       empêche l'exfiltration de données vers un domaine tiers même en cas de faille. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" />
   <title>Atlas des facteurs pronostics en cancer du sein</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* ─────────────────────────────────────────
-        RESET & BASE
-       ───────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -46,9 +41,6 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* ─────────────────────────────────────────
-        HEADER COMMUN
-       ───────────────────────────────────────── */
     .header {
       background: var(--white);
       border-bottom: 1px solid var(--border);
@@ -82,9 +74,6 @@
     }
     .header-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ─────────────────────────────────────────
-        BOUTONS & FORMULAIRES
-       ───────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -126,9 +115,6 @@
     }
     .select-protocol:focus { border-color: var(--orange); }
 
-    /* ─────────────────────────────────────────
-        ÉCRANS
-       ───────────────────────────────────────── */
     #screen-home .hero {
       background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
       color: var(--white);
@@ -196,14 +182,12 @@
     .barre-fill.bonne { background-color: var(--green); }
     .barre-fill.mauvaise { background-color: var(--orange); }
 
-    /* Badge "X/Y critères concordants" — visible immédiatement sur chaque étude */
     .badge-correspondance { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px; }
     .badge-correspondance.badge-ok     { background: var(--green-bg); color: var(--green); }
     .badge-correspondance.badge-ko     { background: var(--red-bg);   color: var(--red); }
     .badge-correspondance.badge-mixte  { background: #fef3c7;         color: #92400e; }
     .badge-correspondance.badge-neutre { background: var(--grey-bg);  color: var(--muted); }
 
-    /* Chips de critères (remplacent les phrases en prose) */
     .critere-chip { display: inline-block; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 99px; margin: 0 6px 6px 0; }
     .critere-chip.chip-ok { background: var(--green-bg); color: var(--green); }
     .critere-chip.chip-ko { background: var(--red-bg);   color: var(--red); }
@@ -311,7 +295,7 @@
   </div>
 </div>
 
-<script src="./src/js/app.js"></script>
-<script src="app.js?v=2"></script>
+<script src="./src/js/contrat.js?v=1"></script>
+<script src="./src/js/app.js?v=2"></script>
 </body>
 </html>
