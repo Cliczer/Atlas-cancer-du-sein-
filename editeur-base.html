@@ -197,7 +197,7 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
   3. « + Étude » crée une étude vide. « ⧉ Dupliquer » copie l'étude actuellement sélectionnée (pratique pour des études très proches).<br>
   3b. <b>Titre</b> et <b>Auteurs</b> sont affichés séparément par l'Atlas (titre en gras, auteurs en plus petit dessous). Pour les études importées depuis l'ancienne citation unique, ce découpage a été fait automatiquement quand le format le permettait ; sinon les deux champs sont vides et l'Atlas affiche temporairement toute la « Référence brute » à la place — complétez Titre/Auteurs ici dès que vous éditez une de ces études.<br>
   4. Les <b>critères cliniques</b> (T, N, RE, RP, HER2, Grade, Ki67, Marges, Age, Emboles, Triple N, MCC) suivent la syntaxe du moteur de correspondance de l'Atlas : une valeur exacte (ex. <code>1</code>), une plage <code>10-50</code>, ou une comparaison <code>&lt;2</code>, <code>&lt;=2</code>, <code>&gt;2</code>, <code>&gt;=2</code>. Laissez <code>-1</code> (valeur par défaut) si le critère n'est pas évalué par l'étude : il est alors totalement neutre — exclu du score <i>et</i> du badge « X/Y critères concordants » affiché sur l'Atlas, il ne compte ni comme un accord ni comme un désaccord. N'utilisez <code>-1</code> que si l'étude ne dit vraiment rien sur ce critère ; sinon, le badge sous-comptera les critères réellement évalués.<br>
-  5. Les <b>résultats chiffrés</b> affichés par l'Atlas sont une <b>liste de mesures</b> : ajoutez-en autant que l'étude en rapporte (ex. « OS à 5 ans », « OS à 10 ans »), chacune avec sa valeur Standard (%) et Contrôle (%). L'Atlas affiche toutes les mesures renseignées, ou rien si la liste est vide. Le <b>lien de l'article</b> est aussi affiché tel quel.<br>
+  5. Les <b>résultats chiffrés</b> affichés par l'Atlas sont une <b>liste de mesures</b> (ex. « OS à 5 ans », « OS à 10 ans »). Chaque mesure compare un <b>nombre libre de bras / traitements</b> que vous nommez vous-même (ex. « Chirurgie seule » 74 % vs « Chirurgie + RT » 82 %) — rien n'est codé en dur. Bouton « + Ajouter un traitement à comparer » pour chaque mesure. L'Atlas affiche tout ce qui est renseigné, ou rien. Le <b>lien de l'article</b> est aussi affiché tel quel.<br>
   6. Les <b>résultats chiffrés</b> (« outcomes ») sont des notes libres de travail, non affichées par l'Atlas : ajoutez autant de lignes nom/valeur que nécessaire avec « + Ajouter un résultat ».<br>
   7. La recherche filtre la liste en direct sur tous les champs (référence, objectif, niveau de preuve, lien, traitements, critères, résultats).<br>
   8. Ctrl+Z pour annuler, Ctrl+Maj+Z pour rétablir.
@@ -248,7 +248,10 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 </div>
 <button class="small" style="margin-top:6px" onclick="marquerRevuAujourdhui()">✓ Marquer revu aujourd'hui</button>
 
-<label>Traitements évalués</label>
+<label style="display:flex;align-items:center;justify-content:space-between">
+ <span>Traitements évalués</span>
+ <button class="small" onclick="addTraitementLibre()">+ Ajouter un traitement</button>
+</label>
 <div class="checkGrid" id="traitementsGrid"></div>
 
 <label style="display:flex;align-items:center;justify-content:space-between">
@@ -261,7 +264,7 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 <input id="editLien" placeholder="https://pubmed.ncbi.nlm.nih.gov/...">
 
 <label style="display:flex;align-items:center;justify-content:space-between">
- Résultats chiffrés affichés dans l'Atlas <span class="hint" style="text-transform:none;font-weight:500">(autant de mesures que voulu : mesure + Standard % + Contrôle %)</span>
+ Résultats chiffrés affichés dans l'Atlas <span class="hint" style="text-transform:none;font-weight:500">(mesures × bras/traitements comparés — noms libres)</span>
  <button class="small" onclick="addComparaisonRow()">+ Ajouter une mesure</button>
 </label>
 <div id="comparaisonsList"></div>
@@ -296,6 +299,14 @@ const ATLAS_REPO_RAW_BASE = "";
 // Liste de critères de secours, utilisée uniquement si le contrat partagé n'est pas chargé.
 const CRITERES_FIELDS_DEFAUT = ["T","N","RE","RP","HER2","Grade","Ki67 (%)","Marges (mm)","Age","Emboles","Triple N","MCC"];
 const TRAITEMENTS_FIELDS = ["Chirurgie mammaire","Chirurgie axillaire","RT","CNA","CT rattrapage","CTadj","Immunothérapie","Hormonothérapie"];
+let formTraitementsFields=[]; // liste des traitements rendus (fixe + ceux présents dans les études)
+// Traitements affichés = liste de base ∪ tout traitement déjà présent dans une étude
+// (pour ne jamais masquer/perdre un traitement ajouté librement).
+function getTraitementsFields(){
+ let base=TRAITEMENTS_FIELDS.slice(), seen=new Set(base);
+ etudes.forEach(e=>(e.traitements_evalues||[]).forEach(t=>{ if(!seen.has(t)){ seen.add(t); base.push(t); } }));
+ return base;
+}
 // Le pont critère->question (mapping) est désormais géré par les tags canoniques des arbres.
 // Une base créée de zéro part donc d'un mapping vide (et non d'un mapping inerte mal formé).
 const DEFAULT_MAPPING = {};
@@ -329,23 +340,27 @@ function setStatus(text, ok){
 function blankToDash(s){ return (s==="-1") ? "" : s; }
 function dashIfBlank(s){ s=String(s==null?"":s).trim(); return s===""? "-1" : s; }
 
-// Résultats chiffrés : liste modulable de mesures { mesure, standard, controle }.
-// L'Atlas affiche chaque mesure sous forme de deux barres (Standard / Contrôle).
-// Rétro-compatible avec l'ancien format à une seule comparaison { avec, sans }.
+// Résultats chiffrés : liste de mesures ; chaque mesure compare un nombre libre
+// de BRAS { label (traitement), valeur }. Les traitements comparés ne sont pas
+// codés en dur. Rétro-compatible avec {standard,controle} et l'ancien {avec,sans}.
+function brasDe(c){
+ if(Array.isArray(c.bras)) return c.bras.map(b=>({label:b.label||"", valeur:(b.valeur!=null?String(b.valeur):"")}));
+ let bras=[];
+ if(c.standard!==undefined) bras.push({label:"Standard", valeur:String(c.standard)});
+ if(c.controle!==undefined) bras.push({label:"Contrôle", valeur:String(c.controle)});
+ return bras;
+}
 function loadComparaisons(e){
  if(Array.isArray(e.comparaisons)){
-  return e.comparaisons.map(c=>({
-   mesure: (c.mesure!==undefined ? c.mesure : (c.unite||"")) || "",
-   standard: c.standard!==undefined ? String(c.standard) : (c.avec && c.avec.valeur!==undefined ? String(c.avec.valeur) : ""),
-   controle: c.controle!==undefined ? String(c.controle) : (c.sans && c.sans.valeur!==undefined ? String(c.sans.valeur) : "")
-  }));
+  return e.comparaisons.map(c=>{ let bras=brasDe(c); if(!bras.length) bras=[{label:"",valeur:""}]; return {mesure:(c.mesure!==undefined?c.mesure:(c.unite||""))||"", bras}; });
  }
  let c=e.comparaison;
  if(c && (c.avec || c.sans)){
   let mesure=(c.avec && c.avec.unite) || (c.sans && c.sans.unite) || "";
-  let standard=(c.avec && c.avec.valeur!==undefined) ? String(c.avec.valeur) : "";
-  let controle=(c.sans && c.sans.valeur!==undefined) ? String(c.sans.valeur) : "";
-  if(mesure||standard||controle) return [{mesure, standard, controle}];
+  let bras=[];
+  if(c.avec && c.avec.valeur!==undefined) bras.push({label:"Standard", valeur:String(c.avec.valeur)});
+  if(c.sans && c.sans.valeur!==undefined) bras.push({label:"Contrôle", valeur:String(c.sans.valeur)});
+  if(mesure||bras.length) return [{mesure, bras: bras.length?bras:[{label:"",valeur:""}]}];
  }
  return [];
 }
@@ -385,8 +400,13 @@ function exportData(){
    traitements_evalues: e.traitements_evalues.slice(),
    criteres: Object.assign({}, e.criteres),
    comparaisons: (e.comparaisons||[])
-     .filter(c=>String(c.mesure||"").trim()!=="" || String(c.standard||"").trim()!=="" || String(c.controle||"").trim()!=="")
-     .map(c=>({ mesure: (c.mesure||"").trim(), standard: numOrString(c.standard), controle: numOrString(c.controle) })),
+     .map(c=>({
+       mesure: (c.mesure||"").trim(),
+       bras: (c.bras||[])
+         .filter(b=>String(b.label||"").trim()!=="" || String(b.valeur||"").trim()!=="")
+         .map(b=>({ label: (b.label||"").trim(), valeur: numOrString(b.valeur) }))
+     }))
+     .filter(c=>c.mesure!=="" || c.bras.length),
    outcomes: Object.assign({}, e.outcomes),
    date_revue: e.date_revue || "",
    revu_par: e.revu_par || "",
@@ -535,12 +555,17 @@ function renderForm(){
  document.getElementById("editRevuPar").value = e.revu_par || "";
  document.getElementById("editLien").value = e.lien || "";
 
- editComparaisons = (e.comparaisons||[]).map(c=>({mesure:c.mesure||"", standard:c.standard!=null?String(c.standard):"", controle:c.controle!=null?String(c.controle):""}));
+ editComparaisons = (e.comparaisons||[]).map(c=>{
+  let bras=(c.bras||[]).map(b=>({label:b.label||"", valeur:b.valeur!=null?String(b.valeur):""}));
+  if(!bras.length) bras=[{label:"",valeur:""}];
+  return {mesure:c.mesure||"", bras};
+ });
  renderComparaisonsRows();
 
  let tGrid=document.getElementById("traitementsGrid");
  tGrid.innerHTML="";
- TRAITEMENTS_FIELDS.forEach((t,i)=>{
+ formTraitementsFields = getTraitementsFields();
+ formTraitementsFields.forEach((t,i)=>{
   let rowEl=document.createElement("label");
   rowEl.className="checkRow";
   rowEl.style.margin="0"; rowEl.style.textTransform="none"; rowEl.style.fontWeight="500"; rowEl.style.fontSize="12.5px"; rowEl.style.color="var(--text)";
@@ -612,43 +637,83 @@ function removeOutcomeRow(i){
  renderOutcomesRows();
 }
 
-// ─── Résultats chiffrés (comparaisons) : liste modulable ───
+// ─── Résultats chiffrés : mesures → bras (traitements comparés, éditables) ───
 function renderComparaisonsRows(){
  let container=document.getElementById("comparaisonsList");
  if(!container) return;
  container.innerHTML="";
  editComparaisons.forEach((row,i)=>{
-  let line=document.createElement("div");
-  line.className="outcomeRow";
+  let block=document.createElement("div");
+  block.style.cssText="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:var(--surface-alt)";
+  let top=document.createElement("div"); top.className="outcomeRow";
   let m=document.createElement("input");
-  m.id="cmpMesure"+i; m.placeholder="Mesure (ex. OS à 10 ans)"; m.value=row.mesure; m.style.flex="1.4";
-  let s=document.createElement("input");
-  s.id="cmpStd"+i; s.placeholder="Standard %"; s.value=row.standard; s.style.maxWidth="90px";
-  let c=document.createElement("input");
-  c.id="cmpCtrl"+i; c.placeholder="Contrôle %"; c.value=row.controle; c.style.maxWidth="90px";
-  let rm=document.createElement("button");
-  rm.className="small danger"; rm.textContent="✕"; rm.title="Retirer cette mesure";
-  rm.onclick=()=>removeComparaisonRow(i);
-  line.appendChild(m); line.appendChild(s); line.appendChild(c); line.appendChild(rm);
-  container.appendChild(line);
+  m.id="cmpMesure"+i; m.placeholder="Mesure (ex. OS à 10 ans)"; m.value=row.mesure; m.style.flex="1";
+  let rmM=document.createElement("button");
+  rmM.className="small danger"; rmM.textContent="✕ mesure"; rmM.title="Retirer cette mesure";
+  rmM.onclick=()=>removeComparaisonRow(i);
+  top.appendChild(m); top.appendChild(rmM); block.appendChild(top);
+
+  let brasWrap=document.createElement("div"); brasWrap.style.marginTop="6px";
+  row.bras.forEach((b,j)=>{
+   let line=document.createElement("div"); line.className="outcomeRow";
+   let lab=document.createElement("input");
+   lab.id="cmpBrasLabel"+i+"_"+j; lab.placeholder="Traitement comparé (ex. Chirurgie + RT)"; lab.value=b.label; lab.style.flex="1.4";
+   let val=document.createElement("input");
+   val.id="cmpBrasVal"+i+"_"+j; val.placeholder="valeur %"; val.value=b.valeur; val.style.maxWidth="90px";
+   let rmB=document.createElement("button");
+   rmB.className="small danger"; rmB.textContent="✕"; rmB.title="Retirer ce bras";
+   rmB.onclick=()=>removeBrasRow(i,j);
+   line.appendChild(lab); line.appendChild(val); line.appendChild(rmB);
+   brasWrap.appendChild(line);
+  });
+  let addB=document.createElement("button");
+  addB.className="small"; addB.style.marginTop="4px"; addB.textContent="+ Ajouter un traitement à comparer";
+  addB.onclick=()=>addBrasRow(i);
+  block.appendChild(brasWrap); block.appendChild(addB);
+  container.appendChild(block);
  });
 }
 function syncComparaisonsDraftFromDOM(){
  editComparaisons.forEach((row,i)=>{
-  row.mesure = document.getElementById("cmpMesure"+i).value;
-  row.standard = document.getElementById("cmpStd"+i).value;
-  row.controle = document.getElementById("cmpCtrl"+i).value;
+  let m=document.getElementById("cmpMesure"+i); if(m) row.mesure=m.value;
+  row.bras.forEach((b,j)=>{
+   let lab=document.getElementById("cmpBrasLabel"+i+"_"+j), val=document.getElementById("cmpBrasVal"+i+"_"+j);
+   if(lab) b.label=lab.value;
+   if(val) b.valeur=val.value;
+  });
  });
 }
 function addComparaisonRow(){
  syncComparaisonsDraftFromDOM();
- editComparaisons.push({mesure:"",standard:"",controle:""});
+ editComparaisons.push({mesure:"", bras:[{label:"",valeur:""}]});
  renderComparaisonsRows();
 }
 function removeComparaisonRow(i){
  syncComparaisonsDraftFromDOM();
  editComparaisons.splice(i,1);
  renderComparaisonsRows();
+}
+function addBrasRow(i){
+ syncComparaisonsDraftFromDOM();
+ editComparaisons[i].bras.push({label:"",valeur:""});
+ renderComparaisonsRows();
+}
+function removeBrasRow(i,j){
+ syncComparaisonsDraftFromDOM();
+ editComparaisons[i].bras.splice(j,1);
+ if(!editComparaisons[i].bras.length) editComparaisons[i].bras.push({label:"",valeur:""});
+ renderComparaisonsRows();
+}
+
+// Ajoute un traitement libre (hors liste de base) à l'étude en cours.
+function addTraitementLibre(){
+ let e=etude(selectedId);
+ if(!e){ alert("Sélectionnez d'abord une étude."); return; }
+ let nom=prompt("Nom du traitement à ajouter :");
+ if(nom===null) return; nom=nom.trim(); if(!nom) return;
+ applyEtudeEdits();
+ if(!e.traitements_evalues.includes(nom)) e.traitements_evalues.push(nom);
+ selectEtude(e._id);
 }
 
 // Ajoute un critère libre (hors schéma) à l'étude en cours d'édition.
@@ -686,9 +751,14 @@ function applyEtudeEdits(){
  e.lien = document.getElementById("editLien").value.trim();
  syncComparaisonsDraftFromDOM();
  e.comparaisons = editComparaisons
-   .map(c=>({mesure:c.mesure.trim(), standard:c.standard.trim(), controle:c.controle.trim()}))
-   .filter(c=>c.mesure!=="" || c.standard!=="" || c.controle!=="");
- e.traitements_evalues = TRAITEMENTS_FIELDS.filter((t,i)=>document.getElementById("trait"+i).checked);
+   .map(c=>({
+     mesure:(c.mesure||"").trim(),
+     bras:(c.bras||[])
+       .map(b=>({label:(b.label||"").trim(), valeur:(b.valeur||"").trim()}))
+       .filter(b=>b.label!=="" || b.valeur!=="")
+   }))
+   .filter(c=>c.mesure!=="" || c.bras.length);
+ e.traitements_evalues = formTraitementsFields.filter((t,i)=>document.getElementById("trait"+i).checked);
  // On part des critères existants pour ne jamais perdre un critère absent du formulaire.
  let criteres=Object.assign({}, e.criteres);
  formCriteresFields.forEach((c,i)=>{
@@ -746,9 +816,10 @@ function etudeToExcelRow(e, outcomeCols, critFields){
  let row=[e.titre||"", e.auteurs||"", e.reference==="-1"?"":e.reference, e.objectif==="-1"?"":e.objectif, e.niveau_preuve==="-1"?"":e.niveau_preuve];
  TRAITEMENTS_FIELDS.forEach(t=>row.push(e.traitements_evalues.includes(t) ? "1" : "-1"));
  critFields.forEach(c=>row.push(e.criteres[c]!==undefined && e.criteres[c]!=="" ? e.criteres[c] : "-1"));
- // Excel ne représente que la 1re mesure (les mesures supplémentaires restent dans le JSON).
- let c0=(e.comparaisons&&e.comparaisons[0])||{mesure:"",standard:"",controle:""};
- row.push(e.lien||"", c0.standard, c0.mesure, c0.controle, c0.mesure);
+ // Excel ne représente que la 1re mesure et ses 2 premiers bras (le reste reste dans le JSON).
+ let c0=(e.comparaisons&&e.comparaisons[0])||{mesure:"",bras:[]};
+ let b0=(c0.bras&&c0.bras[0])||{label:"",valeur:""}, b1=(c0.bras&&c0.bras[1])||{label:"",valeur:""};
+ row.push(e.lien||"", b0.valeur, c0.mesure, b1.valeur, c0.mesure);
  outcomeCols.forEach(k=>row.push(e.outcomes[k]!==undefined ? e.outcomes[k] : ""));
  return row;
 }
@@ -810,8 +881,11 @@ function importExcelRows(aoa){
    });
    let cell=i=>{ let ci=compIdx[i]; return ci>=0 ? String(r[ci]==null?"":r[ci]).trim() : ""; };
    e.lien = cell(0);
-   let mesure=cell(2)||cell(4), standard=cell(1), controle=cell(3);
-   e.comparaisons = (mesure||standard||controle) ? [{mesure, standard, controle}] : [];
+   let mesure=cell(2)||cell(4), sv=cell(1), cv=cell(3);
+   let bras=[];
+   if(String(sv).trim()!=="") bras.push({label:"Standard", valeur:sv});
+   if(String(cv).trim()!=="") bras.push({label:"Contrôle", valeur:cv});
+   e.comparaisons = (mesure||bras.length) ? [{mesure, bras}] : [];
    outcomeIdx.forEach(i=>{
     let v=r[i]; if(v!==undefined && String(v).trim()!=="") e.outcomes[header[i]]=String(v).trim();
    });

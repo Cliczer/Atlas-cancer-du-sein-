@@ -720,25 +720,36 @@
     return (etude.auteurs && etude.auteurs.trim()) || '';
   }
 
-  // Liste des résultats chiffrés d'une étude : nombre modulable de mesures
-  // { mesure, standard, controle }. Rétro-compatible avec l'ancien format
-  // à une seule comparaison { avec:{valeur,unite}, sans:{valeur,unite} }.
+  // Résultats chiffrés d'une étude : liste de mesures, chacune comparant un
+  // nombre libre de BRAS { label (traitement), valeur }. Les traitements comparés
+  // ne sont donc pas codés en dur. Rétro-compatible avec :
+  //  - comparaisons:[{mesure, standard, controle}] (2 bras nommés Standard/Contrôle),
+  //  - comparaison:{avec:{valeur,unite}, sans:{valeur,unite}} (ancien format unique).
+  function brasDeComparaison(c) {
+    if (Array.isArray(c.bras)) {
+      return c.bras.map(function(b){ return { label: b.label || '', valeur: b.valeur }; });
+    }
+    var bras = [];
+    if (c.standard !== undefined) bras.push({ label: 'Standard', valeur: c.standard });
+    if (c.controle !== undefined) bras.push({ label: 'Contrôle', valeur: c.controle });
+    return bras;
+  }
   function comparaisonsEtude(etude) {
     if (Array.isArray(etude.comparaisons)) {
       return etude.comparaisons.map(function(c) {
-        return { mesure: c.mesure || c.unite || '', standard: c.standard, controle: c.controle };
+        return { mesure: c.mesure || c.unite || '', bras: brasDeComparaison(c) };
       });
     }
     var c = etude.comparaison;
     if (c && (c.avec || c.sans)) {
-      return [{
-        mesure: (c.avec && c.avec.unite) || (c.sans && c.sans.unite) || '',
-        standard: c.avec && c.avec.valeur,
-        controle: c.sans && c.sans.valeur
-      }];
+      var bras = [];
+      if (c.avec) bras.push({ label: 'Standard', valeur: c.avec.valeur });
+      if (c.sans) bras.push({ label: 'Contrôle', valeur: c.sans.valeur });
+      return [{ mesure: (c.avec && c.avec.unite) || (c.sans && c.sans.unite) || '', bras: bras }];
     }
     return [];
   }
+  var PALETTE_BARS = ['#2563eb','#16a34a','#9333ea','#0891b2','#f59e0b','#e11d48','#0d9488'];
 
   function creerCarteEtude(etude, score, total, colonnes, mismatches) {
     var card = document.createElement('div');
@@ -751,12 +762,12 @@
     var comps = comparaisonsEtude(etude);
     var barsHtml = comps.length
       ? comps.map(function(c){
-          var s = pct(c.standard), t = pct(c.controle);
-          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') +
-            '<div class="barre-header" style="margin-bottom:4px;"><span>Standard</span><span>' + s + '%</span></div>' +
-            '<div class="barre-track"><div class="barre-fill bonne" style="width:' + s + '%;"></div></div>' +
-            '<div class="barre-header" style="margin-top:8px; margin-bottom:4px;"><span>Contrôle</span><span>' + t + '%</span></div>' +
-            '<div class="barre-track"><div class="barre-fill mauvaise" style="width:' + t + '%;"></div></div>';
+          var barres = (c.bras || []).map(function(b, i){
+            var v = pct(b.valeur);
+            return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + v + '%</span></div>' +
+              '<div class="barre-track"><div class="barre-fill" style="width:' + v + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
+          }).join('');
+          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + barres;
         }).join('')
       : '<div style="font-size:12px; color:#9aa1a8;">Résultats chiffrés non renseignés.</div>';
     var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
