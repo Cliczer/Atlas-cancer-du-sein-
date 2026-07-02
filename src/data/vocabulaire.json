@@ -48,6 +48,7 @@
       "groupes": {
         "N+":    ["N1", "N2", "N3"],
         "pN+":   ["N1", "N2", "N3"],
+        "pN4+":  ["N1", "N2", "N3"],
         "pN1-2": ["N1", "N2"],
         "pN1-3": ["N1", "N2", "N3"]
       }
@@ -111,7 +112,8 @@
         { "id": "MP",    "libelle": "Mastectomie partielle (conservatrice)", "alias": ["MP", "tumorectomie", "conservateur", "conservatrice"] },
         { "id": "MT",    "libelle": "Mastectomie totale", "alias": ["MT", "M radicale", "mastectomie"] },
         { "id": "TSSM",  "libelle": "Mastectomie avec conservation de l'étui cutané", "alias": ["TSSM"] }
-      ]
+      ],
+      "ignorer": ["reconstruction immédiate", "reconstruction"]
     },
 
     "Chirurgie_axillaire": {
@@ -131,7 +133,11 @@
         { "id": "axillaire",       "libelle": "RT axillaire", "alias": ["axillaire"] },
         { "id": "supraclaviculaire","libelle": "RT sus-claviculaire", "alias": ["supraclaviculaire", "sus-claviculaire"] },
         { "id": "aucune",          "libelle": "Pas de RT", "alias": ["non", "Non", "abstention"] }
-      ]
+      ],
+      "groupes": {
+        "toute": ["mammaire", "paroi", "axillaire", "supraclaviculaire"],
+        "oui":   ["mammaire", "paroi", "axillaire", "supraclaviculaire"]
+      }
     },
 
     "Chimio_adjuvante": {
@@ -142,12 +148,20 @@
       "label": "Chimiothérapie néoadjuvante", "role": "intervention", "type": "oui_non"
     },
     "Hormonotherapie": {
-      "label": "Hormonothérapie", "role": "intervention", "type": "oui_non"
+      "label": "Hormonothérapie", "role": "intervention", "type": "oui_non",
+      "vrai": ["tamoxifène", "tamoxifene", "anti-aromatase", "létrozole", "letrozole"]
     },
     "Immunotherapie": {
-      "label": "Immunothérapie", "role": "intervention", "type": "oui_non"
+      "label": "Immunothérapie", "role": "intervention", "type": "oui_non",
+      "vrai": ["pembrolizumab", "atezolizumab"]
+    },
+    "Chimio_rattrapage": {
+      "label": "Chimiothérapie de rattrapage", "role": "intervention", "type": "oui_non"
     }
   },
+
+  "criteres_ignores": ["Autre_intervention"],
+  "_criteres_ignores_aide": "Anciennes clés de la base sans valeur pour le matching (annotations). Ignorées en silence par la migration.",
 
   "correspondance_anciennes_cles": {
     "_note": "Anciennes clés de la base → clé du vocabulaire v2. Utilisé par la migration.",

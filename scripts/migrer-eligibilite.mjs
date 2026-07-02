@@ -40,12 +40,16 @@ for (const [cid, def] of Object.entries(CRIT)) {
     (v.alias || []).forEach(a => add(a, [v.id]));
   });
   Object.entries(def.groupes || {}).forEach(([g, ids]) => add(g, ids));
+  // Tokens explicitement ignorés (annotations) : présents dans la table mais
+  // sans id → ni résolus, ni signalés comme "non résolus".
+  (def.ignorer || []).forEach(t => add(t, []));
   resolveur[cid] = table;
 }
 
 // clé ancienne base → clé vocabulaire v2
 const REMAP = vocab.correspondance_anciennes_cles || {};
 const cleV2 = k => REMAP[k] || k;
+const IGNORER_CRIT = new Set(vocab.criteres_ignores || []);
 
 // ── Rapport ──
 const rapport = {
@@ -83,6 +87,7 @@ base.etudes.forEach(e => {
   Object.keys(criteres).forEach(cleAncienne => {
     const brut = criteres[cleAncienne];
     if (estNeutre(brut)) return; // l'étude ne s'est pas prononcée
+    if (IGNORER_CRIT.has(cleAncienne)) return; // annotation sans valeur de matching
     const cid = cleV2(cleAncienne);
     const def = CRIT[cid];
     if (!def) { note('criteres_inconnus', cleAncienne, nom); return; }
@@ -96,10 +101,13 @@ base.etudes.forEach(e => {
 
     if (def.type === 'oui_non') {
       const s = norm(brut);
-      const oui = /^oui/.test(s), non = /^non/.test(s);
-      if (oui && /\bnon\b/.test(s) && !/^oui,\s*"/.test(brut)) { note('ouinon_ambigus', cid + ' ▸ ' + brut, nom); return; }
+      const vrai = (def.vrai || []).map(norm), faux = (def.faux || []).map(norm);
+      const ditOui = /(^|[,\s])oui/.test(s) || vrai.some(t => s.indexOf(t) !== -1);
+      const ditNon = /(^|[,\s])non/.test(s) || faux.some(t => s.indexOf(t) !== -1);
+      if (ditOui && ditNon) { note('contraintes_non_discriminantes', cid, nom); return; } // les deux bras → pas un critère d'inclusion
+      if (!ditOui && !ditNon) { note('ouinon_ambigus', cid + ' ▸ ' + brut, nom); return; } // ni oui ni non reconnu
       if (/=/.test(brut) || brut.length > 12) note('free_text_intervention', cid + ' ▸ ' + brut, nom); // détail de protocole, ignoré au match
-      contraintes.push({ role: def.role, critere: cid, op: 'est', valeur: oui ? true : false });
+      contraintes.push({ role: def.role, critere: cid, op: 'est', valeur: ditOui });
       return;
     }
 
