@@ -200,6 +200,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div class="grp">
  <span class="grpLabel">🔎 Revue</span>
  <span class="grpBtns" style="align-items:center">
+  <button onclick="ouvrirCouverture()" title="Liste les réponses non reliées à un critère (trous du matching)">🎯 Couverture matching</button>
   <button onclick="marquerArbreRevu()" title="Enregistre la date de vérification de ce protocole">✓ Marquer vérifié</button>
   <span id="revueStatus" style="font-size:11px;color:var(--text-muted)"></span>
  </span>
@@ -232,6 +233,15 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </div>
 </header>
 <div id="searchResults" style="display:none;position:fixed;right:20px;top:118px;z-index:60;width:380px;max-height:55vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);padding:6px"></div>
+
+<div id="coverageOverlay" class="overlay" onclick="if(event.target===this)this.classList.remove('show')">
+ <div class="modalBox">
+  <h2 style="margin-top:0">🎯 Couverture du matching</h2>
+  <p class="help" id="coverageIntro"></p>
+  <div id="coverageList"></div>
+  <button class="primary" style="width:100%;margin-top:18px" onclick="document.getElementById('coverageOverlay').classList.remove('show')">Fermer</button>
+ </div>
+</div>
 
 <input type="file" id="fileInput" accept=".json" style="display:none">
 
@@ -408,6 +418,37 @@ function marquerArbreRevu(){
  if(qui!==null) currentMetadata.revu_par=qui.trim();
  afficherRevueStatus();
  setStatus("Protocole marqué vérifié le "+currentMetadata.date_revue+". Cliquez « Publier sur le site » pour enregistrer.", true);
+}
+
+// Vérificateur de couverture : liste les réponses NON reliées à un critère
+// (elles ne participent pas au matching). Cliquer une ligne va la taguer.
+function ouvrirCouverture(){
+ let branches=[];
+ edges.forEach(e=>{
+  let src=node(e.source); if(!src || src.type==="resultat") return;
+  let vals=edgeValues(e);
+  if(!vals.length) return; // étape à suite unique : pas une réponse
+  branches.push({edgeId:e.id, question:src.titre||"(sans titre)", answer:vals.join(" / "), tagged:edgeHasValeurs(e)});
+ });
+ let untag=branches.filter(b=>!b.tagged);
+ let cur=(document.getElementById("protocolFilename").value||"").trim()||"(arbre courant)";
+ let intro=document.getElementById("coverageIntro"), box=document.getElementById("coverageList");
+ box.innerHTML="";
+ if(!branches.length){
+  intro.textContent="Aucune réponse dans cet arbre — chargez un protocole.";
+ } else {
+  intro.innerHTML="Protocole <b>"+esc(cur)+"</b> — <b>"+(branches.length-untag.length)+"/"+branches.length+"</b> réponses reliées à un critère.<br>"+
+   (untag.length ? "Ces réponses ne participent PAS au matching (cliquez pour aller les taguer) :" : "✅ Toutes les réponses sont reliées à au moins un critère.");
+  untag.forEach(b=>{
+   let row=document.createElement("div");
+   row.className="listRow";
+   row.style.cssText="padding:8px 10px;margin:4px 0;border-radius:8px;cursor:pointer;border-left:4px solid var(--warning);background:var(--surface-alt)";
+   row.innerHTML="<b>"+esc(b.answer)+"</b> <span style='color:var(--text-muted)'>— "+esc(b.question)+"</span>";
+   row.onclick=function(){ selectedEdge=b.edgeId; selectedNode=null; document.getElementById("coverageOverlay").classList.remove("show"); centerOnEdge(b.edgeId); render(); };
+   box.appendChild(row);
+  });
+ }
+ document.getElementById("coverageOverlay").classList.add("show");
 }
 
 function treeToGraph(tree){
