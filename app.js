@@ -80,77 +80,8 @@
     return String(v).toLowerCase().trim();
   }
 
-  // Valeurs "neutres" (l'étude ne s'est pas prononcée) : définies dans le schéma
-  // (schema.valeurs_neutres), avec repli sur la liste intégrée.
-  function estJoker(v) {
-    return NEUTRES.indexOf(normaliser(v)) !== -1;
-  }
-
-  function valeurPatient(profil, nomCritere) {
-    if (profil[nomCritere] !== undefined) return profil[nomCritere];
-    var alts = keyMapping[nomCritere];
-    if (alts) {
-      for (var i = 0; i < alts.length; i++) {
-        if (profil[alts[i]] !== undefined) return profil[alts[i]];
-      }
-    }
-    var nC = normaliser(nomCritere);
-    var cles = Object.keys(profil);
-    for (var j = 0; j < cles.length; j++) {
-      if (normaliser(cles[j]) === nC) return profil[cles[j]];
-    }
-    return undefined;
-  }
-
-  function matchCategoriel(vP, vE) {
-    var nP = normaliser(vP);
-    var nE = normaliser(vE);
-    if (nP === nE) return 1;
-    if (MAPPING[vP] && MAPPING[vP].map(normaliser).indexOf(nE) !== -1) return 1;
-    if (MAPPING[vE] && MAPPING[vE].map(normaliser).indexOf(nP) !== -1) return 1;
-    if (nE.indexOf(',') !== -1) {
-      var parties = nE.split(',').map(function(p){ return p.trim(); });
-      var eqP = MAPPING[vP] ? MAPPING[vP].map(normaliser) : [];
-      for (var i = 0; i < parties.length; i++) {
-        if (parties[i] === nP || eqP.indexOf(parties[i]) !== -1) return 1;
-      }
-    }
-    return 0;
-  }
-
-  // Critère d'étude (vE) au format : valeur exacte ("2"), plage ("10-50"),
-  // ou comparaison ("<2", "<=2", ">2", ">=2"). Valeur patient (vP) toujours un nombre brut.
-  function matchNumerique(vP, vE) {
-    var nP = normaliser(vP), nE = normaliser(vE);
-    if (nP === nE) return 1;
-
-    var numP = parseFloat(nP.replace(',', '.'));
-    if (isNaN(numP)) return 0;
-
-    var plage = nE.match(/^(-?\d+(?:[.,]\d+)?)\s*-\s*(-?\d+(?:[.,]\d+)?)$/);
-    if (plage) {
-      var lo = parseFloat(plage[1].replace(',', '.')), hi = parseFloat(plage[2].replace(',', '.'));
-      return (numP >= lo && numP <= hi) ? 1 : 0;
-    }
-
-    var cmp = nE.match(/^(<=|>=|<|>)\s*(-?\d+(?:[.,]\d+)?)$/);
-    if (cmp) {
-      var seuil = parseFloat(cmp[2].replace(',', '.'));
-      switch (cmp[1]) {
-        case '<':  return numP <  seuil ? 1 : 0;
-        case '<=': return numP <= seuil ? 1 : 0;
-        case '>':  return numP >  seuil ? 1 : 0;
-        case '>=': return numP >= seuil ? 1 : 0;
-      }
-    }
-
-    // Valeur numérique unique (ex. "45") : concordance stricte uniquement.
-    // (L'ancien "match partiel à 0.5 si ±20 %" était un seuil arbitraire sans
-    // justification clinique — supprimé : un critère numérique concorde ou non.)
-    var numE = parseFloat(nE.replace(/[^0-9.-]/g,''));
-    if (!isNaN(numE) && numP === numE) return 1;
-    return 0;
-  }
+  // Le moteur de correspondance (matchCategoriel, matchNumerique, valeurPatient,
+  // calculerScore) vit dans contrat.js (AtlasContrat), partagé avec les tests et la CI.
 
   // Valide un tag canonique (critère + valeur) posé dans l'éditeur d'arbres contre le schéma.
   // Tout vocabulaire inconnu est enregistré pour affichage : jamais ignoré en silence.
@@ -210,32 +141,13 @@
       tous.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
   }
 
-  // Un critère "joker" (-1, nc, vide…) signifie que l'étude ne s'est pas prononcée
-  // sur ce critère. Il est neutre : ni compté dans le score, ni affiché comme "concordant" —
-  // sinon il dilue les vrais désaccords (ex. 1 vrai mismatch + 10 jokers ≈ 91%, alors que
-  // sur les seuls critères réellement évalués, c'est 0%).
+  // Délègue au moteur partagé (contrat.js). Les critères neutres sont ignorés
+  // (ni score, ni concordance). Dégrade proprement si le module manque.
   function calculerScoreEtude(etude, profilPatient) {
-    var criteres = etude.criteres || {};
-    var pts = 0, evalues = 0;
-    var colonnesGagnantes = [];
-    var colonnesBloquantes = [];
-
-    Object.keys(criteres).forEach(function(nom) {
-        var vE = criteres[nom];
-        if (estJoker(vE)) return; // critère non évalué par l'étude : ignoré, pas un "match"
-        var vP = valeurPatient(profilPatient, nom);
-        if (vP === undefined || String(vP).trim() === '') return;
-
-        evalues++;
-        var s = NUMERIQUES.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE);
-        pts += s;
-        if (s > 0) colonnesGagnantes.push(nom); else colonnesBloquantes.push(nom);
+    if (!window.AtlasContrat) return { valeur: null, total: 0, colonnes: [], mismatches: [] };
+    return window.AtlasContrat.calculerScore(etude, profilPatient, {
+      mapping: MAPPING, numeriques: NUMERIQUES, neutres: NEUTRES, keyMapping: keyMapping
     });
-
-    // Aucun critère comparable avec le profil patient : pas de score plausible,
-    // l'étude ne doit pas être classée comme "match" (cf. renderEtudes).
-    var final = evalues === 0 ? null : Math.round((pts/evalues)*100);
-    return { valeur: final, total: evalues, colonnes: colonnesGagnantes, mismatches: colonnesBloquantes };
   }
 
   function depth(node, d) {

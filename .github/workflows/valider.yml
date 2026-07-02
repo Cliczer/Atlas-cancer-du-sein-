@@ -31,3 +31,5 @@ jobs:
           node-version: '20'
       - name: Valider le contrat de données
         run: node scripts/valider.mjs
+      - name: Tests unitaires du moteur de correspondance
+        run: node scripts/test-matching.mjs
