@@ -275,11 +275,20 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 </label>
 <div class="checkGrid" id="traitementsGrid"></div>
 
-<label style="display:flex;align-items:center;justify-content:space-between">
- <span>Critères cliniques <span class="hint" style="text-transform:none;font-weight:500">(-1 = non évalué → neutre ; sinon : valeur exacte, plage 10-50, ou &lt;2 / &gt;=2…)</span></span>
- <button class="small" onclick="addCritereLibre()">+ Ajouter un critère</button>
+<label style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+ <span>Critères d'inclusion (matching) <span class="hint" style="text-transform:none;font-weight:500">(qui la patiente doit être pour relever de l'étude — c'est ce que l'Atlas utilise)</span></span>
+ <button class="small" onclick="addContrainteRow()">+ Ajouter un critère</button>
 </label>
-<div class="critGrid" id="criteresGrid"></div>
+<div id="contraintesList"></div>
+
+<details style="margin-top:10px">
+ <summary style="cursor:pointer;font-size:12px;color:var(--text-muted)">Ancien format « Critères cliniques » (texte libre, plus utilisé par l'Atlas)</summary>
+ <label style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+  <span class="hint" style="text-transform:none;font-weight:500">Conservé pour référence. Le matching s'appuie désormais sur les critères d'inclusion ci-dessus.</span>
+  <button class="small" onclick="addCritereLibre()">+ Ajouter un critère</button>
+ </label>
+ <div class="critGrid" id="criteresGrid"></div>
+</details>
 
 <label>Lien de l'article (PubMed, DOI…)</label>
 <input id="editLien" placeholder="https://pubmed.ncbi.nlm.nih.gov/...">
@@ -595,6 +604,9 @@ function renderForm(){
  });
  renderComparaisonsRows();
 
+ editContraintes = (e.contraintes||[]).map(c=>Object.assign({}, c, c.valeurs?{valeurs:c.valeurs.slice()}:{}));
+ renderContraintesRows();
+
  let tGrid=document.getElementById("traitementsGrid");
  tGrid.innerHTML="";
  formTraitementsFields = getTraitementsFields();
@@ -805,6 +817,7 @@ function applyEtudeEdits(){
        .filter(b=>b.label!=="" || b.valeur!=="")
    }))
    .filter(c=>c.mesure!=="" || c.bras.length);
+ e.contraintes = contraintesPropres();
  e.traitements_evalues = formTraitementsFields.filter((t,i)=>document.getElementById("trait"+i).checked);
  // On part des critères existants pour ne jamais perdre un critère absent du formulaire.
  let criteres=Object.assign({}, e.criteres);
@@ -1037,6 +1050,113 @@ function loadSchemaCriteres(){
   .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; schemaComplet={}; });
 }
 
+// Dictionnaire typé v2 : alimente le constructeur de critères d'inclusion.
+let vocab = null;
+function loadVocabulaire(){
+ return fetch(ATLAS_REPO_RAW_BASE+"vocabulaire.json?_v="+Date.now())
+  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(v=>{ vocab=v||null; })
+  .catch(err=>{ console.warn("vocabulaire.json non chargé :", err.message); vocab=null; });
+}
+
+// ── Constructeur de critères d'inclusion (contraintes typées) ──────────────
+let editContraintes = []; // brouillon des contraintes de l'étude sélectionnée
+
+function vocabCriteres(){ return (vocab && vocab.criteres) || {}; }
+// Options de valeurs d'un critère catégoriel : valeurs atomiques (par libellé) + groupes.
+function optionsValeurs(cid){
+ let def = vocabCriteres()[cid]; if(!def) return [];
+ let out = (def.valeurs||[]).map(v=>({value:v.id, label:v.libelle||v.id}));
+ Object.keys(def.groupes||{}).forEach(g=>out.push({value:g, label:g+" (groupe)"}));
+ return out;
+}
+
+function renderContraintesRows(){
+ let box=document.getElementById("contraintesList"); if(!box) return;
+ box.innerHTML="";
+ if(!vocab){ box.innerHTML='<div class="hint" style="text-transform:none">Dictionnaire (vocabulaire.json) non chargé — constructeur indisponible.</div>'; return; }
+ let crits=vocabCriteres();
+ editContraintes.forEach((c,i)=>{
+  let row=document.createElement("div");
+  row.style.cssText="display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;padding:8px;margin-bottom:6px;background:var(--surface-alt)";
+  // sélecteur de critère
+  let sel=document.createElement("select"); sel.id="ctrCrit"+i; sel.style.minWidth="190px";
+  Object.keys(crits).forEach(k=>{ let o=document.createElement("option"); o.value=k; o.textContent=(crits[k].label||k)+(crits[k].role==="intervention"?" (traitement)":""); if(k===c.critere)o.selected=true; sel.appendChild(o); });
+  sel.onchange=()=>{ syncContraintesFromDOM(); let def=crits[sel.value]||{}; let c2=editContraintes[i]; c2.critere=sel.value; c2.op = def.type==="numerique"?">=":(def.type==="oui_non"?"est":"dans"); delete c2.valeurs; delete c2.valeur; delete c2.min; delete c2.max; renderContraintesRows(); };
+  row.appendChild(sel);
+  let def=crits[c.critere]||{};
+
+  if(def.type==="numerique"){
+   let op=document.createElement("select"); op.id="ctrOp"+i; op.style.width="90px";
+   ["entre",">=","<=",">","<","="].forEach(o=>{ let e=document.createElement("option"); e.value=o; e.textContent=o; if(o===c.op)e.selected=true; op.appendChild(e); });
+   op.onchange=()=>{ syncContraintesFromDOM(); editContraintes[i].op=op.value; renderContraintesRows(); };
+   row.appendChild(op);
+   if(c.op==="entre"){
+    let mn=document.createElement("input"); mn.id="ctrMin"+i; mn.type="number"; mn.placeholder="min"; mn.value=(c.min!=null?c.min:""); mn.style.width="80px";
+    let mx=document.createElement("input"); mx.id="ctrMax"+i; mx.type="number"; mx.placeholder="max"; mx.value=(c.max!=null?c.max:""); mx.style.width="80px";
+    row.appendChild(mn); row.appendChild(document.createTextNode("→")); row.appendChild(mx);
+   } else {
+    let vl=document.createElement("input"); vl.id="ctrVal"+i; vl.type="number"; vl.placeholder="valeur"; vl.value=(c.valeur!=null?c.valeur:""); vl.style.width="90px";
+    row.appendChild(vl);
+   }
+   if(def.unite){ let u=document.createElement("span"); u.className="hint"; u.style.textTransform="none"; u.textContent=def.unite; row.appendChild(u); }
+  } else if(def.type==="oui_non"){
+   let op=document.createElement("select"); op.id="ctrBool"+i; op.style.width="110px";
+   [["true","Oui"],["false","Non"]].forEach(([v,t])=>{ let e=document.createElement("option"); e.value=v; e.textContent=t; if(String(c.valeur)===v)e.selected=true; op.appendChild(e); });
+   row.appendChild(document.createTextNode("=")); row.appendChild(op);
+  } else { // catégoriel : op "dans" + multi-sélection
+   let lbl=document.createElement("span"); lbl.className="hint"; lbl.style.textTransform="none"; lbl.textContent="parmi :"; row.appendChild(lbl);
+   let ms=document.createElement("select"); ms.id="ctrVals"+i; ms.multiple=true; ms.size=Math.min(6,Math.max(3,optionsValeurs(c.critere).length)); ms.style.minWidth="200px";
+   let sset=new Set(c.valeurs||[]);
+   optionsValeurs(c.critere).forEach(o=>{ let e=document.createElement("option"); e.value=o.value; e.textContent=o.label; if(sset.has(o.value))e.selected=true; ms.appendChild(e); });
+   row.appendChild(ms);
+  }
+
+  let rm=document.createElement("button"); rm.className="small danger"; rm.textContent="✕"; rm.title="Retirer ce critère";
+  rm.onclick=()=>{ syncContraintesFromDOM(); editContraintes.splice(i,1); renderContraintesRows(); };
+  row.appendChild(rm);
+  box.appendChild(row);
+ });
+}
+
+function syncContraintesFromDOM(){
+ let crits=vocabCriteres();
+ editContraintes.forEach((c,i)=>{
+  let sel=document.getElementById("ctrCrit"+i); if(sel) c.critere=sel.value;
+  let def=crits[c.critere]||{};
+  if(def.type==="numerique"){
+   let op=document.getElementById("ctrOp"+i); if(op) c.op=op.value;
+   if(c.op==="entre"){ let mn=document.getElementById("ctrMin"+i), mx=document.getElementById("ctrMax"+i); c.min=mn&&mn.value!==""?Number(mn.value):null; c.max=mx&&mx.value!==""?Number(mx.value):null; delete c.valeur; delete c.valeurs; }
+   else { let vl=document.getElementById("ctrVal"+i); c.valeur=vl&&vl.value!==""?Number(vl.value):null; delete c.min; delete c.max; delete c.valeurs; }
+  } else if(def.type==="oui_non"){
+   c.op="est"; let op=document.getElementById("ctrBool"+i); c.valeur = op ? (op.value==="true") : true; delete c.valeurs; delete c.min; delete c.max;
+  } else {
+   c.op="dans"; let ms=document.getElementById("ctrVals"+i);
+   c.valeurs = ms ? Array.from(ms.selectedOptions).map(o=>o.value) : (c.valeurs||[]); delete c.valeur; delete c.min; delete c.max;
+  }
+ });
+}
+
+function addContrainteRow(){
+ syncContraintesFromDOM();
+ let cids=Object.keys(vocabCriteres()); if(!cids.length){ alert("Dictionnaire non chargé."); return; }
+ let cid=cids[0], def=vocabCriteres()[cid];
+ let c={critere:cid, op: def.type==="numerique"?">=":(def.type==="oui_non"?"est":"dans")};
+ if(def.type==="numerique") c.valeur=null; else if(def.type==="oui_non") c.valeur=true; else c.valeurs=[];
+ editContraintes.push(c); renderContraintesRows();
+}
+
+// Nettoie le brouillon en contraintes exportables (retire les incomplètes).
+function contraintesPropres(){
+ syncContraintesFromDOM();
+ return editContraintes.filter(c=>{
+  if(c.op==="dans") return Array.isArray(c.valeurs) && c.valeurs.length;
+  if(c.op==="est") return typeof c.valeur==="boolean";
+  if(c.op==="entre") return c.min!=null && c.max!=null;
+  return c.valeur!=null;
+ }).map(c=>Object.assign({}, c));
+}
+
 // Vérificateur de couverture (base d'études) : valeurs de critères hors vocabulaire
 // (le matching ne les reconnaîtra pas) + études sans aucun critère ni résultat.
 function ouvrirCouverture(){
@@ -1088,7 +1208,7 @@ function reloadRealData(){
   });
 }
 
-loadSchemaCriteres().then(reloadRealData);
+Promise.all([loadSchemaCriteres(), loadVocabulaire()]).then(reloadRealData);
 </script>
 </body>
 </html>
