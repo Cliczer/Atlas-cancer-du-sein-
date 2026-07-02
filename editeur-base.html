@@ -252,6 +252,16 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 <label>Niveau de preuve</label>
 <input id="editNiveau" placeholder="Ex. : 1, IIa, ou une phrase libre">
 
+<label>Importance <span class="hint" style="text-transform:none;font-weight:500">(classement du curateur — trie et met en avant l'étude dans l'Atlas)</span></label>
+<select id="editImportance">
+ <option value="0">☆ Non classée</option>
+ <option value="1">★ 1 — mineure</option>
+ <option value="2">★★ 2</option>
+ <option value="3">★★★ 3 — moyenne</option>
+ <option value="4">★★★★ 4</option>
+ <option value="5">★★★★★ 5 — majeure</option>
+</select>
+
 <label>Revue médicale <span class="hint" style="text-transform:none;font-weight:500">(suivi des vérifications)</span></label>
 <div class="critGrid">
  <div class="critField"><label>Dernière revue le</label><input id="editDateRevue" type="date"></div>
@@ -390,6 +400,7 @@ function loadData(obj){
   criteres: Object.assign(defaultCriteres(), e.criteres||{}),
   comparaisons: loadComparaisons(e),
   outcomes: Object.assign({}, e.outcomes||{}),
+  importance: Number(e.importance) || 0,
   date_revue: e.date_revue || "",
   revu_par: e.revu_par || "",
  }));
@@ -420,6 +431,7 @@ function exportData(){
      }))
      .filter(c=>c.mesure!=="" || c.bras.length),
    outcomes: Object.assign({}, e.outcomes),
+   importance: Number(e.importance) || 0,
    date_revue: e.date_revue || "",
    revu_par: e.revu_par || "",
   })),
@@ -563,6 +575,7 @@ function renderForm(){
  document.getElementById("editReference").value = e.reference;
  document.getElementById("editObjectif").value = e.objectif;
  document.getElementById("editNiveau").value = e.niveau_preuve;
+ document.getElementById("editImportance").value = String(Number(e.importance)||0);
  document.getElementById("editDateRevue").value = e.date_revue || "";
  document.getElementById("editRevuPar").value = e.revu_par || "";
  document.getElementById("editLien").value = e.lien || "";
@@ -762,6 +775,7 @@ function applyEtudeEdits(){
  e.reference = document.getElementById("editReference").value;
  e.objectif = document.getElementById("editObjectif").value;
  e.niveau_preuve = document.getElementById("editNiveau").value;
+ e.importance = Number(document.getElementById("editImportance").value) || 0;
  e.date_revue = document.getElementById("editDateRevue").value;
  e.revu_par = document.getElementById("editRevuPar").value.trim();
  e.lien = document.getElementById("editLien").value.trim();
@@ -794,7 +808,7 @@ function applyEtudeEdits(){
 
 function addEtude(){
  pushHistory();
- let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}, date_revue:"", revu_par:""};
+ let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}, importance:0, date_revue:"", revu_par:""};
  etudes.push(e);
  selectedId=e._id;
  render();
@@ -879,7 +893,7 @@ function importExcelRows(aoa){
  return aoa.slice(1)
   .filter(r=>r.some(c=>c!==undefined && String(c).trim()!==""))
   .map(r=>{
-   let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}, date_revue:"", revu_par:""};
+   let e={_id:uid("e"), titre:"", auteurs:"", reference:"", objectif:"", niveau_preuve:"", lien:"", traitements_evalues:[], criteres:defaultCriteres(), comparaisons:[], outcomes:{}, importance:0, date_revue:"", revu_par:""};
    if(titreIdx>=0) e.titre=String(r[titreIdx]==null?"":r[titreIdx]).trim();
    if(autIdx>=0) e.auteurs=String(r[autIdx]==null?"":r[autIdx]).trim();
    if(refIdx>=0) e.reference=String(r[refIdx]==null?"":r[refIdx]).trim();

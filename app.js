@@ -581,7 +581,10 @@
 
     var retenues = scored
       .filter(function(e) { return e.colonnes.length > 0; })
-      .sort(function(a,b) { return b.colonnes.length - a.colonnes.length; });
+      .sort(function(a,b) {
+        var ia = Number(a.etude.importance) || 0, ib = Number(b.etude.importance) || 0;
+        return (ib - ia) || (b.colonnes.length - a.colonnes.length); // importance d'abord, puis concordance
+      });
     dernieresEtudesRetenues = retenues.map(function(r){ return r.etude; });
 
     var h3 = document.createElement('h3');
@@ -628,6 +631,14 @@
       return { texte: '❌ 0/' + total + ' critère concordant', cls: 'badge-ko' };
     }
     return { texte: '⚠️ ' + nbMatch + '/' + total + ' critères concordants', cls: 'badge-mixte' };
+  }
+
+  // Étoiles d'importance (classement du curateur, 0–5). Vide si non classée.
+  function etoiles(n) {
+    n = Math.max(0, Math.min(5, Number(n) || 0));
+    if (!n) return '';
+    return '<span title="Importance ' + n + '/5" style="color:#f59e0b;font-size:14px;letter-spacing:1px;">' +
+      Array(n + 1).join('★') + '<span style="color:#d1d5db;">' + Array(6 - n).join('★') + '</span></span>';
   }
 
   function chips(noms, cls) {
@@ -715,6 +726,7 @@
               (etude.niveau_preuve && etude.objectif ? ' — ' : '') +
               (etude.objectif ? esc(etude.objectif) : '') +
             '</div>' : '') +
+          (etude.importance ? '<div style="margin-bottom:8px;">' + etoiles(etude.importance) + '</div>' : '') +
           '<span class="badge-correspondance ' + corr.cls + '">' + corr.texte + '</span>' +
           '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin: 10px 0 0; display:block;">Voir le détail des critères ↓</button>' +
           '<div class="zone-details" style="display:none; padding-top: 10px;">' +
@@ -786,6 +798,7 @@
       var comps = comparaisonsEtude(etude);
       h += '<div style="border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;">';
       h += '<h3 style="font-size:18px;font-weight:800;margin:0 0 4px;">' + esc(titreEtude(etude)) + '</h3>';
+      if (etude.importance) h += '<div style="margin-bottom:6px;">' + etoiles(etude.importance) + '</div>';
       if (etude.niveau_preuve) h += '<div style="color:#636e72;font-size:13px;margin-bottom:14px;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</div>';
       if (!comps.length) h += '<p style="color:#9aa1a8;">Pas de résultat chiffré renseigné pour cette étude.</p>';
       comps.forEach(function(c) {
