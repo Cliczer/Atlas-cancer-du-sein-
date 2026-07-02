@@ -101,7 +101,11 @@
         profil[node.critere] = valeur;
         validerTag(node.critere, valeur);
       }
-      if (node.titre && label) profil[node.titre] = label;
+      // Le profil n'est constitué que de tags canoniques (reponses[label] ou
+      // node.critere). L'ancien repli « profil[titreQuestion] = label » a été
+      // retiré : il polluait le profil de clés non canoniques et rendait le
+      // matching imprévisible. Toute question qui doit peser sur le matching
+      // porte désormais un tag explicite (reponses/critere) dans son protocole.
     });
     console.log('[Atlas] 👤 Profil :', JSON.stringify(profil));
     return profil;
@@ -448,24 +452,7 @@
     input.focus();
   }
 
-  function cls(val) {
-    var v = String(val||'').trim();
-    if (v==='1'||v==='1.0') return 'rec';
-    if (v==='0'||v==='0.0') return 'nrec';
-    return 'ns';
-  }
-
-  function badge(val) {
-    var v = String(val||'').trim();
-    if (v==='1'||v==='1.0') return '✓ Recommandé';
-    if (v==='0'||v==='0.0') return '✗ Non recommandé';
-    return 'Non spécifié';
-  }
-
   function renderResults(node) {
-    var donnees = node.donnees || {};
-    var sourceSenorif = node.source_senorif || "Référentiel National (Validé SENORIF)";
-
     $('quiz-progress-bar').style.width = '100%';
     $('quiz-pct-label').textContent    = '100 %';
     $('quiz-step-label').textContent   = 'Terminé';
@@ -492,20 +479,6 @@
     sourceDiv.className = 'recommendation-box';
     sourceDiv.innerHTML = '<span class="recommendation-label">✅ Recommandation</span><span class="recommendation-text">' + esc(node.titre || 'Orientation thérapeutique validée') + '</span>';
     grid.appendChild(sourceDiv);
-
-    var entries = Object.keys(donnees).map(function(k) {
-      return {name: k.replace(/^OUT_/i,''), val: donnees[k], cls: cls(donnees[k])};
-    });
-    entries.sort(function(a,b) { return ({rec:0,nrec:1,ns:2}[a.cls]) - ({rec:0,nrec:1,ns:2}[b.cls]); });
-
-    if (entries.length > 0) {
-      entries.forEach(function(e) {
-        var card = document.createElement('div'); card.className = 'result-card ' + e.cls;
-        var h4 = document.createElement('h4'); h4.textContent = e.name;
-        var b  = document.createElement('span'); b.className = 'badge ' + e.cls; b.textContent = badge(e.val);
-        card.appendChild(h4); card.appendChild(b); grid.appendChild(card);
-      });
-    }
 
     show('screen-results');
 

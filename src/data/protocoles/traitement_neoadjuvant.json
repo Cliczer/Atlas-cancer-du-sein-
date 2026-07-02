@@ -45,6 +45,10 @@
               "choix": {
                 "Pas de mutation": { "type": "resultat", "titre": "Capécitabine + Poursuite Pembrolizumab" },
                 "Mutation": { "type": "resultat", "titre": "Olaparib + Poursuite Pembrolizumab" }
+              },
+              "reponses": {
+                "Pas de mutation": { "Mutation": "BRCA sauvage" },
+                "Mutation": { "Mutation": "BRCA muté" }
               }
             }
           }
@@ -64,6 +68,10 @@
               "choix": {
                 "Pas de mutation": { "type": "resultat", "titre": "Capécitabine" },
                 "Mutation": { "type": "resultat", "titre": "Olaparib" }
+              },
+              "reponses": {
+                "Pas de mutation": { "Mutation": "BRCA sauvage" },
+                "Mutation": { "Mutation": "BRCA muté" }
               }
             }
           }

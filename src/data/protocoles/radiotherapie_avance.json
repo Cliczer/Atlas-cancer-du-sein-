@@ -55,6 +55,10 @@
             "choix": {
               "BRCA muté": { "type": "resultat", "titre": "Inhibiteur de la PARP" },
               "BRCA sauvage": { "type": "resultat", "titre": "Chimiothérapie monothérapie ou association" }
+            },
+            "reponses": {
+              "BRCA muté": { "Mutation": "BRCA muté" },
+              "BRCA sauvage": { "Mutation": "BRCA sauvage" }
             }
           },
           "Rechute < 6 mois": {
