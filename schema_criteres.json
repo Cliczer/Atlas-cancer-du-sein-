@@ -1,5 +1,7 @@
 {
   "version": 1,
+  "mode_demo": true,
+  "_mode_demo_aide": "true = bannière « données de test non validées » affichée sur l'application (par sécurité). Passez à false UNIQUEMENT quand les données ont été validées cliniquement pour un usage réel.",
   "_description": "Contrat de données partagé de l'écosystème Atlas cancer du sein. Centralise la configuration du moteur de correspondance (matching) entre les réponses du quiz et les critères des études, HORS du code de l'application. Ce fichier est la source de vérité lue par l'Atlas (app.js) ; les éditeurs (arbre / base de données) peuvent le lire et l'alimenter via le raw GitHub du dépôt Atlas. Modifier ce fichier ne demande aucune intervention dans le code source. ATTENTION : la comparaison est sensible aux accents — écrivez les valeurs exactement comme elles apparaissent dans la base d'études.",
 
   "criteres": {

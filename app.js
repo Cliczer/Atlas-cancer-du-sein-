@@ -356,6 +356,10 @@
         NEUTRES = schema.valeurs_neutres.map(normaliser);
       }
       schemaBrut = schema || {};
+      // Bannière « démo » affichée par défaut ; masquée seulement si validé explicitement.
+      if (schema && schema.mode_demo === false) {
+        var bn = $('demo-banner'); if (bn) bn.style.display = 'none';
+      }
       if (window.AtlasContrat) {
         var res = window.AtlasContrat.validerSchema(schema);
         if (!res.ok) {

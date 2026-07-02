@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- CSP : l'app ne parle qu'à son propre domaine + Google Fonts. connect-src 'self'
+       empêche l'exfiltration de données vers un domaine tiers même en cas de faille. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" />
   <title>Atlas des facteurs pronostics en cancer du sein</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -216,6 +219,10 @@
   </style>
 </head>
 <body>
+
+<div id="demo-banner" style="background:#7f1d1d;color:#fff;font-size:13px;font-weight:600;text-align:center;padding:8px 14px;line-height:1.4;">
+  ⚠️ Démonstration — données de test <u>non validées</u>. Ne pas utiliser pour une décision médicale réelle.
+</div>
 
 <div id="screen-home" class="screen active">
   <header class="header">
