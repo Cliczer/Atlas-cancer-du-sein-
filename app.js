@@ -737,7 +737,7 @@
   function comparaisonsEtude(etude) {
     if (Array.isArray(etude.comparaisons)) {
       return etude.comparaisons.map(function(c) {
-        return { mesure: c.mesure || c.unite || '', bras: brasDeComparaison(c) };
+        return { mesure: c.mesure || '', unite: c.unite || '', bras: brasDeComparaison(c) };
       });
     }
     var c = etude.comparaison;
@@ -745,7 +745,7 @@
       var bras = [];
       if (c.avec) bras.push({ label: 'Standard', valeur: c.avec.valeur });
       if (c.sans) bras.push({ label: 'Contrôle', valeur: c.sans.valeur });
-      return [{ mesure: (c.avec && c.avec.unite) || (c.sans && c.sans.unite) || '', bras: bras }];
+      return [{ mesure: (c.avec && c.avec.unite) || (c.sans && c.sans.unite) || '', unite: '', bras: bras }];
     }
     return [];
   }
@@ -762,10 +762,16 @@
     var comps = comparaisonsEtude(etude);
     var barsHtml = comps.length
       ? comps.map(function(c){
+          // % → barre absolue (0-100). Autre unité (mois, points…) → barre relative au max.
+          var estPct = !c.unite || c.unite === '%';
+          var vals = (c.bras || []).map(function(b){ return Number(b.valeur) || 0; });
+          var maxV = Math.max.apply(null, vals.concat([0]));
           var barres = (c.bras || []).map(function(b, i){
-            var v = pct(b.valeur);
-            return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + v + '%</span></div>' +
-              '<div class="barre-track"><div class="barre-fill" style="width:' + v + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
+            var raw = Number(b.valeur) || 0;
+            var largeur = estPct ? pct(raw) : (maxV > 0 ? Math.round(raw / maxV * 100) : 0);
+            var affich = estPct ? (pct(raw) + '%') : (raw + (c.unite ? (' ' + esc(c.unite)) : ''));
+            return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + affich + '</span></div>' +
+              '<div class="barre-track"><div class="barre-fill" style="width:' + largeur + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
           }).join('');
           return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + barres;
         }).join('')

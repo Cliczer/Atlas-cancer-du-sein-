@@ -352,7 +352,7 @@ function brasDe(c){
 }
 function loadComparaisons(e){
  if(Array.isArray(e.comparaisons)){
-  return e.comparaisons.map(c=>{ let bras=brasDe(c); if(!bras.length) bras=[{label:"",valeur:""}]; return {mesure:(c.mesure!==undefined?c.mesure:(c.unite||""))||"", bras}; });
+  return e.comparaisons.map(c=>{ let bras=brasDe(c); if(!bras.length) bras=[{label:"",valeur:""}]; return {mesure:(c.mesure||"")||"", unite:(c.unite||""), bras}; });
  }
  let c=e.comparaison;
  if(c && (c.avec || c.sans)){
@@ -360,7 +360,7 @@ function loadComparaisons(e){
   let bras=[];
   if(c.avec && c.avec.valeur!==undefined) bras.push({label:"Standard", valeur:String(c.avec.valeur)});
   if(c.sans && c.sans.valeur!==undefined) bras.push({label:"Contrôle", valeur:String(c.sans.valeur)});
-  if(mesure||bras.length) return [{mesure, bras: bras.length?bras:[{label:"",valeur:""}]}];
+  if(mesure||bras.length) return [{mesure, unite:"", bras: bras.length?bras:[{label:"",valeur:""}]}];
  }
  return [];
 }
@@ -402,6 +402,7 @@ function exportData(){
    comparaisons: (e.comparaisons||[])
      .map(c=>({
        mesure: (c.mesure||"").trim(),
+       unite: (c.unite||"").trim(),
        bras: (c.bras||[])
          .filter(b=>String(b.label||"").trim()!=="" || String(b.valeur||"").trim()!=="")
          .map(b=>({ label: (b.label||"").trim(), valeur: numOrString(b.valeur) }))
@@ -558,7 +559,7 @@ function renderForm(){
  editComparaisons = (e.comparaisons||[]).map(c=>{
   let bras=(c.bras||[]).map(b=>({label:b.label||"", valeur:b.valeur!=null?String(b.valeur):""}));
   if(!bras.length) bras=[{label:"",valeur:""}];
-  return {mesure:c.mesure||"", bras};
+  return {mesure:c.mesure||"", unite:c.unite||"", bras};
  });
  renderComparaisonsRows();
 
@@ -648,10 +649,13 @@ function renderComparaisonsRows(){
   let top=document.createElement("div"); top.className="outcomeRow";
   let m=document.createElement("input");
   m.id="cmpMesure"+i; m.placeholder="Mesure (ex. OS à 10 ans)"; m.value=row.mesure; m.style.flex="1";
+  let u=document.createElement("input");
+  u.id="cmpUnite"+i; u.placeholder="unité (% par défaut)"; u.value=row.unite||""; u.style.maxWidth="120px";
+  u.title="Unité affichée : % (défaut), mois, ans, points… Pour une unité autre que %, les barres sont mises à l'échelle relative.";
   let rmM=document.createElement("button");
   rmM.className="small danger"; rmM.textContent="✕ mesure"; rmM.title="Retirer cette mesure";
   rmM.onclick=()=>removeComparaisonRow(i);
-  top.appendChild(m); top.appendChild(rmM); block.appendChild(top);
+  top.appendChild(m); top.appendChild(u); top.appendChild(rmM); block.appendChild(top);
 
   let brasWrap=document.createElement("div"); brasWrap.style.marginTop="6px";
   row.bras.forEach((b,j)=>{
@@ -676,6 +680,7 @@ function renderComparaisonsRows(){
 function syncComparaisonsDraftFromDOM(){
  editComparaisons.forEach((row,i)=>{
   let m=document.getElementById("cmpMesure"+i); if(m) row.mesure=m.value;
+  let u=document.getElementById("cmpUnite"+i); if(u) row.unite=u.value;
   row.bras.forEach((b,j)=>{
    let lab=document.getElementById("cmpBrasLabel"+i+"_"+j), val=document.getElementById("cmpBrasVal"+i+"_"+j);
    if(lab) b.label=lab.value;
@@ -685,7 +690,7 @@ function syncComparaisonsDraftFromDOM(){
 }
 function addComparaisonRow(){
  syncComparaisonsDraftFromDOM();
- editComparaisons.push({mesure:"", bras:[{label:"",valeur:""}]});
+ editComparaisons.push({mesure:"", unite:"", bras:[{label:"",valeur:""}]});
  renderComparaisonsRows();
 }
 function removeComparaisonRow(i){
