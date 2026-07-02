@@ -419,8 +419,10 @@ function node(id){return nodes.find(n=>n.id===id)}
 function edge(id){return edges.find(e=>e.id===id)}
 
 function edgeValues(e){
- let vals=String((e&&e.label)||"").split(",").map(s=>s.trim()).filter(Boolean);
- return vals;
+ // Liste explicite (fidèle : un libellé peut contenir des virgules, ex.
+ // « cT1N0, RH+, Ménopause »). Repli legacy sur découpage du label si absente.
+ if(e && Array.isArray(e.valeursListe)) return e.valeursListe.filter(Boolean);
+ return String((e&&e.label)||"").split(",").map(s=>s.trim()).filter(Boolean);
 }
 function edgeHasValeurs(e){ return e && e.valeurs && Object.keys(e.valeurs).length>0; }
 function edgeLabelDisplay(e){
@@ -443,6 +445,7 @@ function loadProtocolFile(data, filename){
  document.getElementById("protocolFilename").value = filename || "";
  treeToGraph((data && data.tree) || data);
  afficherRevueStatus();
+ modifie=false; // fraîchement chargé : rien à publier
 }
 
 // Revue au niveau du protocole : date de dernière vérification médicale,
@@ -528,7 +531,9 @@ function ouvrirRevue(){
  let list=document.getElementById("revueList"); list.innerHTML="";
  let draft=loadRevueDraft();
  outlineNodes().forEach(it=>{
-  let n=it.node, k=n.type+"|"+(n.titre||""), st=draft[k]||{revu:false,note:""};
+  // Clé par identifiant de nœud (déterministe pour un arbre donné) : pas de
+  // collision entre nœuds homonymes, contrairement à "type|titre".
+  let n=it.node, k=n.id, st=draft[k]||{revu:false,note:""};
   let row=document.createElement("div"); row.setAttribute("data-rk",k);
   row.style.cssText="display:flex;gap:8px;align-items:center;padding:5px 0;margin-left:"+(it.depth*16)+"px;border-bottom:1px solid var(--border)";
   let cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!st.revu;
@@ -559,52 +564,10 @@ function validerRevue(){
 
 function treeToGraph(tree){
  if(nodes.length) pushHistory();
- nodes=[]; edges=[];
- let count=1;
-
- // Convertit reponses[label] (nouveau format objet {crit:val}, OU ancien format
- // chaîne + t.critere) en un dictionnaire {critereId: valeur} porté par la branche.
- function deriveValeurs(reponses, label, parentCritere){
-  let r = reponses ? reponses[label] : undefined;
-  if(r && typeof r==="object") return Object.assign({}, r);
-  if(typeof r==="string" && r!=="" && parentCritere){ let o={}; o[parentCritere]=r; return o; }
-  return {};
- }
-
- function walk(t, parent, label, parentReponses, parentCritere){
-  if(!t) return null;
-  let id="n"+count++;
-
-  nodes.push({
-    id:id,
-    type:t.type||"question",
-    titre:t.titre || (t.type==="resultat" ? resultTitleFromData(t) : ""),
-    donnees:t.donnees||{},
-    infos_science:t.infos_science||{},
-    source_senorif:t.source_senorif || (t.infos_science && t.infos_science.source) || "",
-    x:0,
-    y:0
-  });
-
-  if(parent) edges.push({
-    id:uid("e"), source:parent, target:id, label:label||"",
-    valeurs: deriveValeurs(parentReponses, label, parentCritere)
-  });
-
-  if (t.type === "etape") {
-      if (t.suite) {
-          walk(t.suite, id, "", t.reponses, t.critere);
-      }
-      if (t.choix) {
-          Object.entries(t.choix).forEach(([lab,child])=>walk(child, id, lab, t.reponses, t.critere));
-      }
-  } else if (t.type !== "resultat" && t.choix) {
-      Object.entries(t.choix).forEach(([lab,child])=>walk(child, id, lab, t.reponses, t.critere));
-  }
-  return id;
- }
-
- walk(tree,null,"");
+ // Sérialisation déléguée au contrat partagé (AtlasContrat) : source de vérité
+ // unique, testée par scripts/test-serialisation.mjs (round-trip fidèle).
+ let g=window.AtlasContrat.treeVersGraphe(tree);
+ nodes=g.nodes; edges=g.edges;
  autoLayout();
  render();
  setTimeout(fitView, 50);
@@ -680,70 +643,9 @@ function autoLayout(){
 }
 
 function graphToTree(){
- let targets=new Set(edges.map(e=>e.target));
- let root=nodes.find(n=>!targets.has(n.id))||nodes[0];
- function build(n){
-  if(!n) return {};
-  if(n.type==="resultat") return {
-    type:"resultat",
-    titre:n.titre||"",
-    donnees:n.donnees||{},
-    infos_science:n.infos_science||{},
-    source_senorif:n.source_senorif||""
-  };
-  
-  if(n.type==="etape") {
-    let outEdges=edges.filter(e=>e.source===n.id);
-    if (outEdges.length === 1 && edgeValues(outEdges[0]).length === 0) {
-        return {
-            type:"etape",
-            titre:n.titre||"Étape sans titre",
-            suite: build(node(outEdges[0].target)),
-            infos_science:n.infos_science||{},
-            source_senorif:n.source_senorif||""
-        };
-    } else {
-        let choix={}, reponses={};
-        outEdges.forEach((e, index)=>{
-          let child=node(e.target);
-          if(!child) return;
-          let subtree=build(child);
-          let vals = edgeValues(e);
-          if(vals.length === 0) vals = ["Branche " + (index+1)];
-          vals.forEach(v=>{ choix[v]=subtree; if(edgeHasValeurs(e)) reponses[v]=e.valeurs; });
-        });
-        let out={
-            type:"etape",
-            titre:n.titre||"Étape sans titre",
-            choix: choix,
-            infos_science:n.infos_science||{},
-            source_senorif:n.source_senorif||""
-        };
-        if(Object.keys(reponses).length) out.reponses=reponses;
-        return out;
-    }
-  }
-
-  let choix={}, reponses={};
-  edges.filter(e=>e.source===n.id).forEach((e, index)=>{
-    let child=node(e.target);
-    if(!child) return;
-    let subtree=build(child);
-    let vals = edgeValues(e);
-    if(vals.length === 0) vals = ["Réponse " + (index+1)];
-    vals.forEach(v=>{ choix[v]=subtree; if(edgeHasValeurs(e)) reponses[v]=e.valeurs; });
-  });
-  let out={
-    type:n.type||"question",
-    titre:n.titre||"Question sans titre",
-    choix:choix,
-    infos_science:n.infos_science||{},
-    source_senorif:n.source_senorif||""
-  };
-  if(Object.keys(reponses).length) out.reponses=reponses;
-  return out;
- }
- return build(root);
+ // Désérialisation déléguée au contrat partagé (AtlasContrat) : garde anti-boucle
+ // incluse, testée par scripts/test-serialisation.mjs.
+ return window.AtlasContrat.grapheVersTree(nodes, edges);
 }
 
 function resizeWorld(){
@@ -1053,11 +955,16 @@ function restoreState(snap){
  selectedNode=null; selectedEdge=null;
  render();
 }
+let modifie=false; // modifications non publiées en attente
 function pushHistory(){
  undoStack.push(snapshotState());
  if(undoStack.length>HISTORY_LIMIT) undoStack.shift();
  redoStack=[];
+ modifie=true;
 }
+// Empêche de perdre un travail non publié (fermeture d'onglet / rechargement).
+window.addEventListener("beforeunload",function(ev){ if(modifie){ ev.preventDefault(); ev.returnValue=""; } });
+function confirmerPerteModifs(){ return !modifie || confirm("Des modifications ne sont pas encore publiées. Les perdre ?"); }
 function undo(){
  if(!undoStack.length) return;
  redoStack.push(snapshotState());
@@ -1121,6 +1028,7 @@ function applyEdgeEdits(){
  let inputs=document.getElementById("editEdgeValues").querySelectorAll("input");
  let vals=Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
  e.label=vals.join(", ");
+ e.valeursListe=vals; // liste fidèle (source de vérité), le label reste l'affichage
  syncEdgeCriteresFromDOM();
  let valeurs={};
  editEdgeCriteres.forEach(row=>{
@@ -1151,6 +1059,12 @@ function addResult(){pushHistory();addNodeLinkedToSelection({id:uid("n"),type:"r
 function deleteNode(){if(!selectedNode)return;pushHistory();nodes=nodes.filter(n=>n.id!==selectedNode);edges=edges.filter(e=>e.source!==selectedNode&&e.target!==selectedNode);selectedNode=null;autoLayout();render()}
 function deleteEdge(){if(!selectedEdge)return;pushHistory();edges=edges.filter(e=>e.id!==selectedEdge);selectedEdge=null;autoLayout();render()}
 function toggleConnect(){connectMode=!connectMode;connectSource=null;alert(connectMode?"Cliquez le parent puis l'enfant":"Mode liaison désactivé")}
+// Peut-on atteindre `to` depuis `from` en suivant les flèches ? (détection de boucle)
+function estAtteignable(from, to){
+ let pile=[from], vus=new Set();
+ while(pile.length){ let cur=pile.pop(); if(cur===to) return true; if(vus.has(cur)) continue; vus.add(cur); edges.filter(e=>e.source===cur).forEach(e=>pile.push(e.target)); }
+ return false;
+}
 function connectClick(id){
     if(!connectSource){
         if(node(id) && node(id).type==="resultat"){
@@ -1160,6 +1074,10 @@ function connectClick(id){
         connectSource=id;return;
     }
     else{
+        // L'arbre garde UN seul chemin entrant par nœud et AUCUNE boucle.
+        if(id===connectSource){ alert("Un nœud ne peut pas se relier à lui-même."); connectSource=null;connectMode=false; return; }
+        if(edges.some(e=>e.target===id)){ alert("Ce nœud a déjà un parent : un arbre n'autorise qu'un seul chemin entrant.\nCréez plutôt un nouveau nœud."); connectSource=null;connectMode=false; return; }
+        if(estAtteignable(id, connectSource)){ alert("Liaison refusée : elle créerait une boucle dans l'arbre."); connectSource=null;connectMode=false; return; }
         pushHistory();
         edges.push({id:uid("e"),source:connectSource,target:id,label:""});
         connectSource=null;connectMode=false;autoLayout();render();
@@ -1284,6 +1202,7 @@ function ouvrirResultat(fichier, texte, kind){
  document.getElementById("searchResults").style.display="none";
  let cur=(document.getElementById("protocolFilename").value||"").trim();
  if(fichier===cur){ jumpToTexte(texte, kind); return; } // même arbre : sauter sans recharger (préserve les modifs)
+ if(!confirmerPerteModifs()) return;
  let p=protocolesData.find(x=>x.fichier===fichier); if(!p) return;
  loadProtocolFile(p.data, fichier);
  setStatus("Ouvert : "+(p.nom||fichier), true);
@@ -1295,7 +1214,8 @@ function toggleHelp(){
 }
 
 document.getElementById("fileInput").addEventListener("change",function(ev){
- let f=ev.target.files[0]; if(!f)return;
+ let f=ev.target.files[0]; if(!f){return;}
+ if(!confirmerPerteModifs()){ ev.target.value=""; return; }
  let r=new FileReader();
  r.onload=()=>{try{loadProtocolFile(JSON.parse(r.result), f.name);setStatus("Fichier JSON importé : "+f.name, true)}catch(e){alert("JSON invalide: "+e.message)}};
  r.readAsText(f);
@@ -1343,7 +1263,7 @@ function publierArbre(){
    return AtlasPublish.publier("protocoles/index.json", JSON.stringify({protocoles:nouveau}, null, 2), "Ajout de "+filename+" au registre des protocoles")
     .then(()=>{ protocolesRegistry=nouveau; populateProtocolSelect(); });
   })
-  .then(()=>{ setStatus("✅ Publié sur le site : "+filename+". La mise à jour sera visible dans ~1 minute.", true); })
+  .then(()=>{ modifie=false; setStatus("✅ Publié sur le site : "+filename+". La mise à jour sera visible dans ~1 minute.", true); })
   .catch(err=>{ setStatus("❌ Publication impossible : "+err.message, false); alert("Publication impossible : "+err.message); });
 }
 function saveLocal(){localStorage.setItem("arbre_senorif_editor",JSON.stringify({nodes,edges,currentMetadata,filename:document.getElementById("protocolFilename").value}));alert("Sauvegardé")}
@@ -1410,6 +1330,7 @@ function validerAvantExport(){
 function loadSelectedProtocol(){
  let filename=document.getElementById("protocolSelect").value;
  if(!filename) return;
+ if(!confirmerPerteModifs()){ document.getElementById("protocolSelect").value=""; return; }
  setStatus("Chargement de "+filename+"…", false);
  fetch(ATLAS_REPO_RAW_BASE+"protocoles/"+filename+"?_v="+Date.now())
   .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })

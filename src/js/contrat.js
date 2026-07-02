@@ -237,9 +237,87 @@
     return { valeur: evalues === 0 ? null : Math.round((pts / evalues) * 100), total: evalues, colonnes: colonnes, mismatches: mismatches };
   }
 
+  // ── Sérialisation arbre ⇄ graphe (éditeur d'arbres) — PURE, testable ──
+  // Liste des valeurs/libellés portés par une branche. On privilégie la liste
+  // explicite `valeursListe` (fidèle : un libellé peut contenir des virgules,
+  // ex. « cT1N0, RH+, Ménopause »). Sinon repli legacy : découpage du label par
+  // virgule (anciens graphes sans valeursListe).
+  function edgeValeursListe(e) {
+    if (e && Array.isArray(e.valeursListe)) return e.valeursListe.filter(Boolean);
+    return String((e && e.label) || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+  function edgeADesValeurs(e) { return !!(e && e.valeurs && Object.keys(e.valeurs).length); }
+
+  // Arbre JSON → {nodes, edges}. IDs de nœuds déterministes (n1, n2… en DFS).
+  function treeVersGraphe(tree) {
+    var nodes = [], edges = [], count = { n: 1, e: 1 };
+    function titreResultat(t) {
+      var k = Object.keys(t.donnees || {});
+      return k.length ? k.map(function(x){ return x.replace(/^OUT_/i, ''); }).join(', ') : 'Recommandation';
+    }
+    function deriveValeurs(reponses, label, parentCritere) {
+      var r = reponses ? reponses[label] : undefined;
+      if (r && typeof r === 'object') return Object.assign({}, r);
+      if (typeof r === 'string' && r !== '' && parentCritere) { var o = {}; o[parentCritere] = r; return o; }
+      return {};
+    }
+    function walk(t, parent, label, parentReponses, parentCritere) {
+      if (!t) return null;
+      var id = 'n' + (count.n++);
+      nodes.push({
+        id: id, type: t.type || 'question',
+        titre: t.titre || (t.type === 'resultat' ? titreResultat(t) : ''),
+        donnees: t.donnees || {}, infos_science: t.infos_science || {},
+        source_senorif: t.source_senorif || (t.infos_science && t.infos_science.source) || '', x: 0, y: 0
+      });
+      if (parent) edges.push({ id: 'e' + (count.e++), source: parent, target: id, label: label || '', valeursListe: label ? [label] : [], valeurs: deriveValeurs(parentReponses, label, parentCritere) });
+      if (t.type === 'etape') {
+        if (t.suite) walk(t.suite, id, '', t.reponses, t.critere);
+        if (t.choix) Object.keys(t.choix).forEach(function(lab){ walk(t.choix[lab], id, lab, t.reponses, t.critere); });
+      } else if (t.type !== 'resultat' && t.choix) {
+        Object.keys(t.choix).forEach(function(lab){ walk(t.choix[lab], id, lab, t.reponses, t.critere); });
+      }
+      return id;
+    }
+    walk(tree, null, '');
+    return { nodes: nodes, edges: edges };
+  }
+
+  // {nodes, edges} → arbre JSON. Garde anti-boucle (un nœud sérialisé une seule fois).
+  function grapheVersTree(nodes, edges) {
+    var parId = {}; nodes.forEach(function(n){ parId[n.id] = n; });
+    var targets = {}; edges.forEach(function(e){ targets[e.target] = true; });
+    var root = nodes.filter(function(n){ return !targets[n.id]; })[0] || nodes[0];
+    var construits = {};
+    function build(n) {
+      if (!n) return {};
+      if (construits[n.id]) return { type: 'resultat', titre: '(référence circulaire ignorée)' };
+      construits[n.id] = true;
+      if (n.type === 'resultat') return { type: 'resultat', titre: n.titre || '', donnees: n.donnees || {}, infos_science: n.infos_science || {}, source_senorif: n.source_senorif || '' };
+      var out = edges.filter(function(e){ return e.source === n.id; });
+      if (n.type === 'etape' && out.length === 1 && edgeValeursListe(out[0]).length === 0) {
+        return { type: 'etape', titre: n.titre || 'Étape sans titre', suite: build(parId[out[0].target]), infos_science: n.infos_science || {}, source_senorif: n.source_senorif || '' };
+      }
+      var choix = {}, reponses = {};
+      out.forEach(function(e, index) {
+        var child = parId[e.target]; if (!child) return;
+        var sub = build(child);
+        var vals = edgeValeursListe(e);
+        if (!vals.length) vals = [(n.type === 'etape' ? 'Branche ' : 'Réponse ') + (index + 1)];
+        vals.forEach(function(v){ choix[v] = sub; if (edgeADesValeurs(e)) reponses[v] = e.valeurs; });
+      });
+      var res = { type: n.type || 'question', titre: n.titre || (n.type === 'etape' ? 'Étape sans titre' : 'Question sans titre'), choix: choix, infos_science: n.infos_science || {}, source_senorif: n.source_senorif || '' };
+      if (Object.keys(reponses).length) res.reponses = reponses;
+      return res;
+    }
+    return build(root);
+  }
+
   root.AtlasContrat = {
     normaliser: normaliser,
     estNeutre: estNeutre,
+    treeVersGraphe: treeVersGraphe,
+    grapheVersTree: grapheVersTree,
     esc: esc,
     valeurConnue: valeurConnue,
     validerSchema: validerSchema,
