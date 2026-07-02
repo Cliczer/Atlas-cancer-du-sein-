@@ -14,6 +14,7 @@
   var maxDepth   = 1;
   var criteresSchema = {};        // registre canonique {id: {label, type, valeurs}} (schema_criteres.json)
   var schemaBrut = {};            // schéma complet chargé, conservé pour la validation
+  var dernieresEtudesRetenues = [];  // études affichées au dernier résultat (pour la vue patiente)
   var avertissementsSchema = [];  // problèmes de chargement du contrat (persistants)
   var avertissements = [];        // problèmes détectés sur le parcours courant (recalculés à chaque résultat)
 
@@ -665,6 +666,7 @@
     var retenues = scored
       .filter(function(e) { return e.colonnes.length > 0; })
       .sort(function(a,b) { return b.colonnes.length - a.colonnes.length; });
+    dernieresEtudesRetenues = retenues.map(function(r){ return r.etude; });
 
     var h3 = document.createElement('h3');
     h3.textContent = 'Données de la littérature scientifique correspondantes';
@@ -678,6 +680,13 @@
       section.appendChild(vide);
       return;
     }
+
+    var btnVP = document.createElement('button');
+    btnVP.className = 'btn btn-primary';
+    btnVP.textContent = '👩‍⚕️ Vue patiente (chiffres simplifiés)';
+    btnVP.style.cssText = 'color:#fff;margin-bottom:18px;';
+    btnVP.addEventListener('click', ouvrirVuePatiente);
+    section.appendChild(btnVP);
 
     retenues.forEach(function(item) {
         section.appendChild(creerCarteEtude(item.etude, item.score, item.total, item.colonnes, item.mismatches));
@@ -818,6 +827,83 @@
     return card;
   }
 
+  // ─── Vue patiente : présentation simplifiée des résultats (pictogrammes "X sur 100") ───
+  function pictoGrille(valeur, couleur) {
+    var n = Math.max(0, Math.min(100, Math.round(Number(valeur) || 0)));
+    var dots = '';
+    for (var i = 0; i < 100; i++) {
+      dots += '<span style="width:11px;height:11px;border-radius:50%;display:inline-block;margin:1.5px;background:' + (i < n ? couleur : '#e5e7eb') + ';"></span>';
+    }
+    return '<div style="display:flex;flex-wrap:wrap;width:145px;flex-shrink:0;">' + dots + '</div>';
+  }
+
+  function phraseResume(c) {
+    var bras = (c.bras || []).map(function(b){ return { label: b.label || '', v: Number(b.valeur) }; })
+                             .filter(function(b){ return !isNaN(b.v); });
+    if (!bras.length) return '';
+    var unite = (!c.unite || c.unite === '%') ? ' sur 100' : (' ' + esc(c.unite));
+    if (bras.length === 1) return 'Environ <b>' + Math.round(bras[0].v) + unite + '</b> avec « ' + esc(bras[0].label) + ' ».';
+    var tri = bras.slice().sort(function(a,b){ return b.v - a.v; });
+    var best = tri[0], worst = tri[tri.length - 1];
+    return 'Environ <b>' + Math.round(best.v) + unite + '</b> avec « ' + esc(best.label) +
+           ' », contre <b>' + Math.round(worst.v) + unite + '</b> avec « ' + esc(worst.label) + ' ».';
+  }
+
+  function ouvrirVuePatiente() {
+    var ov = $('vue-patiente');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'vue-patiente'; document.body.appendChild(ov); }
+    ov.style.cssText = 'position:fixed;inset:0;z-index:200;background:#fff;overflow:auto;padding:32px 20px;';
+    var h = '<div style="max-width:840px;margin:0 auto;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:16px;">' +
+        '<h2 style="font-size:26px;font-weight:800;margin:0;">Ce que disent les études</h2>' +
+        '<button onclick="fermerVuePatiente()" style="font-size:16px;padding:10px 18px;border-radius:10px;border:none;background:#111;color:#fff;cursor:pointer;flex-shrink:0;">✕ Fermer</button>' +
+      '</div>' +
+      '<p style="color:#636e72;font-size:14px;margin:0 0 24px;">Chiffres issus de la littérature, à discuter avec votre médecin. Ils décrivent des groupes de patientes, pas une certitude individuelle.</p>';
+    if (!dernieresEtudesRetenues.length) h += '<p>Aucune étude correspondante pour ce parcours.</p>';
+    dernieresEtudesRetenues.slice(0, 8).forEach(function(etude) {
+      var comps = comparaisonsEtude(etude);
+      h += '<div style="border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;">';
+      h += '<h3 style="font-size:18px;font-weight:800;margin:0 0 4px;">' + esc(titreEtude(etude)) + '</h3>';
+      if (etude.niveau_preuve) h += '<div style="color:#636e72;font-size:13px;margin-bottom:14px;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</div>';
+      if (!comps.length) h += '<p style="color:#9aa1a8;">Pas de résultat chiffré renseigné pour cette étude.</p>';
+      comps.forEach(function(c) {
+        var estPct = !c.unite || c.unite === '%';
+        h += '<div style="margin:18px 0;">';
+        if (c.mesure) h += '<div style="font-weight:700;font-size:16px;margin-bottom:12px;">' + esc(c.mesure) + '</div>';
+        if (estPct) {
+          (c.bras || []).forEach(function(b, i) {
+            var col = PALETTE_BARS[i % PALETTE_BARS.length];
+            h += '<div style="display:flex;gap:16px;align-items:center;margin-bottom:14px;">' +
+              pictoGrille(b.valeur, col) +
+              '<div><div style="font-size:24px;font-weight:800;color:' + col + ';">' + Math.round(Number(b.valeur) || 0) + ' sur 100</div>' +
+              '<div style="font-size:15px;color:#374151;">' + esc(b.label || ('Bras ' + (i + 1))) + '</div></div>' +
+            '</div>';
+          });
+        } else {
+          var maxV = Math.max.apply(null, (c.bras || []).map(function(b){ return Number(b.valeur) || 0; }).concat([0]));
+          (c.bras || []).forEach(function(b, i) {
+            var col = PALETTE_BARS[i % PALETTE_BARS.length];
+            var w = maxV > 0 ? Math.round((Number(b.valeur) || 0) / maxV * 100) : 0;
+            h += '<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:15px;"><span>' + esc(b.label || ('Bras ' + (i + 1))) + '</span><span style="font-weight:800;">' + (Number(b.valeur) || 0) + ' ' + esc(c.unite || '') + '</span></div>' +
+              '<div style="height:14px;background:#eef2f7;border-radius:7px;overflow:hidden;"><div style="height:100%;width:' + w + '%;background:' + col + ';"></div></div></div>';
+          });
+        }
+        var ph = phraseResume(c);
+        if (ph) h += '<div style="font-size:15px;color:#1f2937;background:#f8fafc;border-radius:10px;padding:12px 16px;margin-top:6px;">' + ph + '</div>';
+        h += '</div>';
+      });
+      if (etude.lien) h += '<a href="' + esc(etude.lien) + '" target="_blank" style="font-size:13px;color:#e67e22;font-weight:600;">Ouvrir l\'article →</a>';
+      h += '</div>';
+    });
+    h += '</div>';
+    ov.innerHTML = h;
+    ov.style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+  function fermerVuePatiente() { var ov = $('vue-patiente'); if (ov) ov.style.display = 'none'; }
+
+  window.ouvrirVuePatiente = ouvrirVuePatiente;
+  window.fermerVuePatiente = fermerVuePatiente;
   window.demarrer         = demarrer;
   window.reculer          = reculer;
   window.recommencer      = recommencer;
