@@ -62,6 +62,8 @@ button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 .searchBox input{width:190px}
 
 .main{flex:1;min-height:0;display:grid;grid-template-columns:300px 1fr 330px;gap:16px;padding:16px}
+/* Plein écran : panneaux resserrés pour donner plus de place au canvas, tout reste accessible */
+body.fs-actif .main{grid-template-columns:240px 1fr 270px;gap:10px;padding:8px}
 .panel{background:var(--surface);padding:16px;border:1px solid var(--border);border-radius:var(--radius);
  box-shadow:var(--shadow);overflow:auto}
 #canvas{position:relative;overflow:scroll;cursor:grab;border:1px solid var(--border);border-radius:var(--radius);
@@ -201,7 +203,8 @@ details.listGroup[open]>summary::before{content:"▾ "}
  <span class="grpLabel">🔎 Revue</span>
  <span class="grpBtns" style="align-items:center">
   <button onclick="ouvrirCouverture()" title="Liste les réponses non reliées à un critère (trous du matching)">🎯 Couverture matching</button>
-  <button onclick="marquerArbreRevu()" title="Enregistre la date de vérification de ce protocole">✓ Marquer vérifié</button>
+  <button onclick="ouvrirRevue()" title="Revue guidée, nœud par nœud, validée à la fin">📋 Revue guidée</button>
+  <button onclick="marquerArbreRevu()" title="Marquer vérifié rapidement (sans revue détaillée)">✓ Marquer vérifié</button>
   <span id="revueStatus" style="font-size:11px;color:var(--text-muted)"></span>
  </span>
 </div>
@@ -240,6 +243,18 @@ details.listGroup[open]>summary::before{content:"▾ "}
   <p class="help" id="coverageIntro"></p>
   <div id="coverageList"></div>
   <button class="primary" style="width:100%;margin-top:18px" onclick="document.getElementById('coverageOverlay').classList.remove('show')">Fermer</button>
+ </div>
+</div>
+
+<div id="revueOverlay" class="overlay" onclick="if(event.target===this)this.classList.remove('show')">
+ <div class="modalBox" style="max-width:740px">
+  <h2 style="margin-top:0">📋 Revue guidée</h2>
+  <p class="help" id="revueIntro"></p>
+  <div id="revueList" style="max-height:55vh;overflow:auto"></div>
+  <div style="display:flex;gap:8px;margin-top:16px">
+   <button style="flex:1" onclick="document.getElementById('revueOverlay').classList.remove('show')">Fermer (progrès gardé)</button>
+   <button class="success" style="flex:1" onclick="validerRevue()">✓ Valider la revue</button>
+  </div>
  </div>
 </div>
 
@@ -449,6 +464,70 @@ function ouvrirCouverture(){
   });
  }
  document.getElementById("coverageOverlay").classList.add("show");
+}
+
+// ─── Revue guidée : parcours compact, on coche/annote au fur et à mesure ───
+function outlineNodes(){
+ let incoming=new Set(edges.map(e=>e.target));
+ let roots=nodes.filter(n=>!incoming.has(n.id)); if(!roots.length && nodes.length) roots=[nodes[0]];
+ let out=[], seen=new Set();
+ function dfs(id,depth,branchLabel){
+  if(seen.has(id)) return; seen.add(id);
+  let n=node(id); if(!n) return;
+  out.push({node:n, depth, branchLabel});
+  edges.filter(e=>e.source===id).forEach(e=>dfs(e.target, depth+1, edgeValues(e).join(" / ")));
+ }
+ roots.forEach(r=>dfs(r.id,0,""));
+ return out;
+}
+function revueKey(){ return "revue_"+((document.getElementById("protocolFilename").value||"").trim()||"sans_nom"); }
+function loadRevueDraft(){ try{ return JSON.parse(localStorage.getItem(revueKey())||"{}"); }catch(e){ return {}; } }
+function saveRevueDraft(){
+ let d={};
+ document.querySelectorAll("#revueList [data-rk]").forEach(row=>{
+  let k=row.getAttribute("data-rk");
+  d[k]={ revu: row.querySelector("input[type=checkbox]").checked, note: row.querySelector("input[type=text]").value };
+ });
+ localStorage.setItem(revueKey(), JSON.stringify(d));
+ majRevueProgress();
+}
+function majRevueProgress(){
+ let rows=document.querySelectorAll("#revueList [data-rk]");
+ let done=Array.from(rows).filter(r=>r.querySelector("input[type=checkbox]").checked).length;
+ let el=document.getElementById("revueIntro");
+ if(el) el.innerHTML="Cochez et annotez au fur et à mesure — <b>progrès sauvegardé automatiquement</b> (vous pouvez fermer et revenir). <b>"+done+"/"+rows.length+"</b> nœuds revus. La revue n'est <b>datée qu'au clic sur « Valider la revue »</b>.";
+}
+function ouvrirRevue(){
+ let list=document.getElementById("revueList"); list.innerHTML="";
+ let draft=loadRevueDraft();
+ outlineNodes().forEach(it=>{
+  let n=it.node, k=n.type+"|"+(n.titre||""), st=draft[k]||{revu:false,note:""};
+  let row=document.createElement("div"); row.setAttribute("data-rk",k);
+  row.style.cssText="display:flex;gap:8px;align-items:center;padding:5px 0;margin-left:"+(it.depth*16)+"px;border-bottom:1px solid var(--border)";
+  let cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!st.revu;
+  let dot=document.createElement("i"); dot.className="dot"; dot.style.background=nodeColor(n.type); dot.style.flexShrink="0";
+  let ttl=document.createElement("span"); ttl.style.cssText="flex:1;font-size:12.5px;"; ttl.textContent=(it.branchLabel?"["+it.branchLabel+"] ":"")+(n.titre||"(sans titre)");
+  function maj(){ ttl.style.opacity=cb.checked?".55":""; ttl.style.textDecoration=cb.checked?"line-through":""; }
+  maj();
+  let note=document.createElement("input"); note.type="text"; note.placeholder="note…"; note.value=st.note||""; note.style.cssText="width:160px;flex-shrink:0";
+  cb.onchange=function(){ maj(); saveRevueDraft(); };
+  note.oninput=saveRevueDraft;
+  row.appendChild(cb); row.appendChild(dot); row.appendChild(ttl); row.appendChild(note);
+  list.appendChild(row);
+ });
+ majRevueProgress();
+ document.getElementById("revueOverlay").classList.add("show");
+}
+function validerRevue(){
+ saveRevueDraft();
+ currentMetadata=currentMetadata||{};
+ currentMetadata.date_revue=new Date().toISOString().slice(0,10);
+ let qui=prompt("Revue validée. Vérifié par (initiales / nom) :", currentMetadata.revu_par||"");
+ if(qui!==null) currentMetadata.revu_par=qui.trim();
+ currentMetadata.revue_notes=loadRevueDraft();
+ afficherRevueStatus();
+ document.getElementById("revueOverlay").classList.remove("show");
+ setStatus("Revue validée le "+currentMetadata.date_revue+". Cliquez « Publier sur le site » pour enregistrer.", true);
 }
 
 function treeToGraph(tree){
@@ -1061,14 +1140,20 @@ function connectClick(id){
 }
 
 // MODIFICATION 2 : plein écran sur le canvas
+// Plein écran de TOUTE l'appli (et non du seul canvas) : la barre d'outils et les
+// panneaux (liste, édition) restent accessibles ; on gagne juste la place du
+// navigateur. En plein écran, le canvas s'agrandit (voir CSS .fs-actif).
 function toggleFullscreen(){
- let elem=document.getElementById("canvas");
  if(!document.fullscreenElement){
-  elem.requestFullscreen().catch(err=>alert("Erreur plein écran : "+err.message));
+  document.documentElement.requestFullscreen().catch(err=>alert("Erreur plein écran : "+err.message));
  } else {
   document.exitFullscreen();
  }
 }
+document.addEventListener("fullscreenchange",function(){
+ document.body.classList.toggle("fs-actif", !!document.fullscreenElement);
+ setTimeout(fitView, 100);
+});
 
 function fold(s){
  return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
