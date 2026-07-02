@@ -314,6 +314,74 @@
     };
   }
 
+  function idxDe(dico) {
+    if (!dico) return null;
+    if (!dico.__index) dico.__index = indexerDictionnaire(dico);
+    return dico.__index;
+  }
+
+  var OPS_NUM = ['entre', '<=', '>=', '<', '>', '='];
+
+  // Valide les contraintes typées d'une étude contre le dictionnaire. Toute
+  // référence inconnue (critère, valeur, opérateur incohérent) = ERREUR.
+  function validerContraintesEtude(nom, etude, dico) {
+    var err = [], idx = idxDe(dico);
+    var contraintes = etude && etude.contraintes;
+    if (contraintes == null) return { erreurs: [], avertissements: [] };
+    if (!Array.isArray(contraintes)) return { erreurs: ['Étude "' + nom + '" : "contraintes" doit être une liste.'], avertissements: [] };
+    if (!idx) return { erreurs: ['Dictionnaire (vocabulaire.json) absent : impossible de valider les contraintes.'], avertissements: [] };
+    contraintes.forEach(function (c, j) {
+      var loc = 'Étude "' + nom + '", contrainte #' + (j + 1);
+      if (!estObjet(c) || !c.critere) { err.push(loc + ' : critère manquant.'); return; }
+      var e = idx[c.critere];
+      if (!e) { err.push(loc + ' : critère "' + c.critere + '" inconnu du dictionnaire.'); return; }
+      if (c.op === 'dans') {
+        if (e.type && e.type !== 'categoriel') err.push(loc + ' : opérateur "dans" sur un critère non catégoriel ("' + c.critere + '").');
+        if (!Array.isArray(c.valeurs) || !c.valeurs.length) { err.push(loc + ' : "valeurs" (liste non vide) attendue.'); return; }
+        c.valeurs.forEach(function (v) { if (!e.resolve[normaliser(v)]) err.push(loc + ' : valeur "' + v + '" inconnue pour le critère "' + c.critere + '".'); });
+      } else if (c.op === 'est') {
+        if (e.type !== 'oui_non') err.push(loc + ' : opérateur "est" réservé aux critères oui/non.');
+        if (typeof c.valeur !== 'boolean') err.push(loc + ' : "valeur" booléenne (true/false) attendue.');
+      } else if (OPS_NUM.indexOf(c.op) !== -1) {
+        if (e.type !== 'numerique') err.push(loc + ' : opérateur numérique sur un critère non numérique ("' + c.critere + '").');
+        if (c.op === 'entre') { if (typeof c.min !== 'number' || typeof c.max !== 'number') err.push(loc + ' : "min" et "max" numériques attendus.'); }
+        else if (typeof c.valeur !== 'number') err.push(loc + ' : "valeur" numérique attendue.');
+      } else {
+        err.push(loc + ' : opérateur "' + c.op + '" inconnu.');
+      }
+    });
+    return { erreurs: err, avertissements: [] };
+  }
+
+  // Valide les tags de matching d'un arbre (reponses[label] = {critere:valeur},
+  // et node.critere) contre le dictionnaire. Référence inconnue = ERREUR.
+  function validerTagsProtocole(nomFichier, data, dico) {
+    var err = [], idx = idxDe(dico);
+    if (!idx) return { erreurs: [], avertissements: ['Dictionnaire absent : tags d\'arbre non validés (' + nomFichier + ').'] };
+    var tree = (data && data.tree) || data;
+    var vus = 0;
+    function verifPaire(critere, valeur, chemin) {
+      var e = idx[critere];
+      if (!e) { err.push(nomFichier + ' @' + chemin + ' : critère "' + critere + '" inconnu du dictionnaire.'); return; }
+      if (e.type === 'categoriel' && valeur !== '' && valeur != null && !e.resolve[normaliser(valeur)])
+        err.push(nomFichier + ' @' + chemin + ' : valeur "' + valeur + '" inconnue pour le critère "' + critere + '".');
+    }
+    function visiter(node, chemin) {
+      if (!estObjet(node) || ++vus > 100000) return;
+      if (node.reponses && estObjet(node.reponses)) {
+        Object.keys(node.reponses).forEach(function (label) {
+          var r = node.reponses[label];
+          if (estObjet(r)) Object.keys(r).forEach(function (crit) { verifPaire(crit, r[crit], chemin + '›' + label); });
+          else if (typeof r === 'string' && node.critere) verifPaire(node.critere, r, chemin + '›' + label);
+        });
+      }
+      if (node.choix) Object.keys(node.choix).forEach(function (k) { visiter(node.choix[k], chemin + '/' + k); });
+      if (node.suite) visiter(node.suite, chemin + '/suite');
+    }
+    visiter(tree, (tree && tree.titre) || 'racine');
+    return { erreurs: err, avertissements: [] };
+  }
+
   // ── Sérialisation arbre ⇄ graphe (éditeur d'arbres) — PURE, testable ──
   // Liste des valeurs/libellés portés par une branche. On privilégie la liste
   // explicite `valeursListe` (fidèle : un libellé peut contenir des virgules,
@@ -405,6 +473,8 @@
     valeurPatient: valeurPatient,
     calculerScore: calculerScore,
     indexerDictionnaire: indexerDictionnaire,
-    apparier: apparier
+    apparier: apparier,
+    validerContraintesEtude: validerContraintesEtude,
+    validerTagsProtocole: validerTagsProtocole
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));

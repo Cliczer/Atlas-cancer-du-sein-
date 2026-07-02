@@ -37,3 +37,5 @@ jobs:
         run: node scripts/test-serialisation.mjs
       - name: Tests du moteur d'appariement typé (v2)
         run: node scripts/test-appariement.mjs
+      - name: Tests du validateur strict (dictionnaire)
+        run: node scripts/test-validation.mjs

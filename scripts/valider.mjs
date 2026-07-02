@@ -28,10 +28,20 @@ const schema = lire('schema_criteres.json');
 if (schema.__erreurLecture) erreurs.push(schema.__erreurLecture);
 else collecter(AtlasContrat.validerSchema(schema));
 
-// 2. Base d'études
+// 1b. Dictionnaire typé v2 (vocabulaire.json)
+const dico = lire('vocabulaire.json');
+if (dico.__erreurLecture) erreurs.push(dico.__erreurLecture);
+
+// 2. Base d'études (structure + contraintes typées contre le dictionnaire)
 const base = lire('base_etudes.json');
 if (base.__erreurLecture) erreurs.push(base.__erreurLecture);
-else collecter(AtlasContrat.validerBase(base, schema));
+else {
+  collecter(AtlasContrat.validerBase(base, schema));
+  if (!dico.__erreurLecture) (base.etudes || []).forEach((e, i) => {
+    const nom = (e && (e.titre || e.reference)) || ('#' + (i + 1));
+    collecter(AtlasContrat.validerContraintesEtude(nom, e, dico));
+  });
+}
 
 // 3. Registre + protocoles
 const registre = lire('protocoles/index.json');
@@ -45,7 +55,10 @@ if (registre.__erreurLecture) {
     if (!existsSync(join(DATA, chemin))) { erreurs.push(`protocoles/index.json référence "${p.fichier}" mais le fichier est absent.`); return; }
     const data = lire(chemin);
     if (data.__erreurLecture) erreurs.push(data.__erreurLecture);
-    else collecter(AtlasContrat.validerProtocole(p.fichier, data, schema));
+    else {
+      collecter(AtlasContrat.validerProtocole(p.fichier, data, schema));
+      if (!dico.__erreurLecture) collecter(AtlasContrat.validerTagsProtocole(p.fichier, data, dico));
+    }
   });
   // Protocoles présents mais non listés dans le registre
   const listés = new Set(listes.map((p) => p.fichier));
