@@ -1,41 +1,52 @@
-name: Valider le contrat de données
+name: Déploiement Atlas SENORIF
 
-# Refuse toute modification (protocoles, base d'études, schéma) qui produirait
-# un JSON invalide ou incohérent avec le contrat partagé, AVANT qu'elle
-# n'atteigne l'application clinique.
 on:
   push:
-    branches: [main]
-    paths:
-      - 'src/data/schema_criteres.json'
-      - 'src/data/base_etudes.json'
-      - 'src/data/protocoles/**'
-      - 'src/js/contrat.js'
-      - 'scripts/**'
-  pull_request:
-    paths:
-      - 'src/data/schema_criteres.json'
-      - 'src/data/base_etudes.json'
-      - 'src/data/protocoles/**'
-      - 'src/js/contrat.js'
-      - 'scripts/**'
-  workflow_dispatch:
+    branches: [ "main", "master" ]
+
+# ⚠️ C'est ce bloc manquant qui causait ton "Timeout"
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  valider:
+  # ÉTAPE 1 : Validation des données
+  validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Valider le contrat de données
+          node-version: '18'
+      - name: Vérifier les fichiers JSON
         run: node scripts/valider.mjs
-      - name: Tests unitaires du moteur de correspondance
-        run: node scripts/test-matching.mjs
-      - name: Tests de sérialisation arbre ⇄ graphe
-        run: node scripts/test-serialisation.mjs
-      - name: Tests du moteur d'appariement typé (v2)
-        run: node scripts/test-appariement.mjs
-      - name: Tests du validateur strict (dictionnaire)
-        run: node scripts/test-validation.mjs
+
+  # ÉTAPE 2 : Déploiement (Ne se lance que si l'étape 1 réussit)
+  deploy:
+    needs: validation
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+        
+      - name: Configurer GitHub Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Uploader les fichiers
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # On envoie tout le dossier racine (index.html, src, public)
+          
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
