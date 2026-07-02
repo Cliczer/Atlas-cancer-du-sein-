@@ -14,8 +14,9 @@
   var maxDepth   = 1;
   var criteresSchema = {};        
   var schemaBrut = {};            
-  var dernieresEtudesRetenues = [];  
-  var avertissementsSchema = [];  
+  var dernieresEtudesRetenues = [];
+  var dictionnaire = null;        // vocabulaire typé v2 (moteur d'appariement)
+  var avertissementsSchema = [];
   var avertissements = [];        
 
   function $(id) { return document.getElementById(id); }
@@ -107,7 +108,6 @@
       // matching imprévisible. Toute question qui doit peser sur le matching
       // porte désormais un tag explicite (reponses/critere) dans son protocole.
     });
-    console.log('[Atlas] 👤 Profil :', JSON.stringify(profil));
     return profil;
   }
 
@@ -121,11 +121,16 @@
       tous.map(function(m){ return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
   }
 
-  function calculerScoreEtude(etude, profilPatient) {
-    if (!window.AtlasContrat) return { valeur: null, total: 0, colonnes: [], mismatches: [] };
-    return window.AtlasContrat.calculerScore(etude, profilPatient, {
-      mapping: MAPPING, numeriques: NUMERIQUES, neutres: NEUTRES, keyMapping: keyMapping
-    });
+  // Moteur v2 : appariement déterministe du profil aux contraintes typées de l'étude.
+  function apparierEtude(etude, profilPatient) {
+    if (!window.AtlasContrat || !dictionnaire) return { eligible: false, concordance: null, satisfaites: [], violees: [], indeterminees: [], indisponible: true };
+    return window.AtlasContrat.apparier(profilPatient, etude, dictionnaire, keyMapping);
+  }
+
+  // Libellé lisible d'un critère (depuis le dictionnaire), repli sur l'id.
+  function labelCritere(id) {
+    var c = dictionnaire && dictionnaire.criteres && dictionnaire.criteres[id];
+    return (c && c.label) || id;
   }
 
   function depth(node, d) {
@@ -254,6 +259,22 @@
     });
   }
 
+  function chargerDictionnaire() {
+    var v = '?_v=' + Date.now();
+    return fetch('./src/data/vocabulaire.json' + v).then(function(r) {
+      if (!r.ok) throw new Error('vocabulaire.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(d) {
+      dictionnaire = d;
+      console.log('[Atlas] ✅ Dictionnaire typé chargé (critères : ' + Object.keys((d && d.criteres) || {}).length + ').');
+    }).catch(function(err) {
+      dictionnaire = null;
+      avertissementsSchema.push('Le dictionnaire de critères (vocabulaire.json) n\'a pas pu être chargé (' +
+        err.message + '). L\'appariement des études au profil est indisponible.');
+      console.warn('[Atlas] vocabulaire.json indisponible :', err.message);
+    });
+  }
+
   function renderHomeBanner() {
     var box = $('home-banner');
     if (!box) return;
@@ -265,7 +286,7 @@
 
   function load() {
     chargerSchema().then(function() {
-      return Promise.all([chargerListeProtocoles(), chargerLitterature()]);
+      return Promise.all([chargerDictionnaire(), chargerListeProtocoles(), chargerLitterature()]);
     }).then(function() {
       var bh = $('btn-start-hero');
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
@@ -500,42 +521,67 @@
     section.innerHTML = '';
     if (!etudes || !etudes.length) return;
 
-    var scored = etudes.map(function(e) {
-      var res = calculerScoreEtude(e, profil);
-      return { etude: e, score: res.valeur, total: res.total, colonnes: res.colonnes, mismatches: res.mismatches };
+    var apparies = etudes.map(function(e) {
+      return { etude: e, m: apparierEtude(e, profil) };
     });
 
-    var retenues = scored
-      .filter(function(e) { return e.colonnes.length > 0; })
+    // Retenues = la patiente relève des critères d'inclusion (aucune contrainte
+    // violée) et au moins une contrainte concorde. Rangées par importance
+    // curateur, puis niveau de preuve, puis nombre de critères concordants.
+    var retenues = apparies
+      .filter(function(x) { return x.m.eligible && x.m.satisfaites.length > 0; })
       .sort(function(a,b) {
         var ia = Number(a.etude.importance) || 0, ib = Number(b.etude.importance) || 0;
-        return (ib - ia) || (b.colonnes.length - a.colonnes.length);
+        var na = parseFloat(a.etude.niveau_preuve) || 99, nb = parseFloat(b.etude.niveau_preuve) || 99;
+        return (ib - ia) || (na - nb) || (b.m.satisfaites.length - a.m.satisfaites.length);
       });
     dernieresEtudesRetenues = retenues.map(function(r){ return r.etude; });
 
+    // Écartées = la patiente est hors des critères d'inclusion (au moins une
+    // contrainte violée). Comptées et explicitées, jamais masquées en silence.
+    var ecartees = apparies.filter(function(x){ return !x.m.eligible && x.m.violees.length > 0; });
+
     var h3 = document.createElement('h3');
-    h3.textContent = 'Données de la littérature scientifique correspondantes';
+    h3.textContent = 'Études dont la patiente relève (critères d\'inclusion satisfaits)';
     h3.style.cssText = 'font-size:18px;font-weight:700;margin:32px 0 16px;color:var(--text);';
     section.appendChild(h3);
 
     if (retenues.length === 0) {
       var vide = document.createElement('div');
       vide.style.cssText = 'font-size:14px;color:var(--muted);padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);';
-      vide.textContent = 'Aucune étude de la littérature ne correspond à ce parcours.';
+      vide.textContent = 'Aucune étude de la base ne correspond aux critères d\'inclusion de ce profil.';
       section.appendChild(vide);
-      return;
+    } else {
+      var btnVP = document.createElement('button');
+      btnVP.className = 'btn btn-primary';
+      btnVP.textContent = '👩‍⚕️ Vue patiente (chiffres simplifiés)';
+      btnVP.style.cssText = 'color:#fff;margin-bottom:18px;';
+      btnVP.addEventListener('click', ouvrirVuePatiente);
+      section.appendChild(btnVP);
+
+      retenues.forEach(function(item) {
+        section.appendChild(creerCarteEtude(item.etude, item.m));
+      });
     }
 
-    var btnVP = document.createElement('button');
-    btnVP.className = 'btn btn-primary';
-    btnVP.textContent = '👩‍⚕️ Vue patiente (chiffres simplifiés)';
-    btnVP.style.cssText = 'color:#fff;margin-bottom:18px;';
-    btnVP.addEventListener('click', ouvrirVuePatiente);
-    section.appendChild(btnVP);
-
-    retenues.forEach(function(item) {
-        section.appendChild(creerCarteEtude(item.etude, item.score, item.total, item.colonnes, item.mismatches));
-    });
+    if (ecartees.length) {
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:13px;color:#636e72;margin-top:14px;';
+      note.innerHTML = '<em>' + ecartees.length + ' étude(s) écartée(s)</em> : la patiente est hors de leurs critères d\'inclusion. ' +
+        '<button class="btn btn-ghost" id="btn-ecartees" style="padding:4px 10px;font-size:12px;">Voir pourquoi ↓</button>' +
+        '<div id="liste-ecartees" style="display:none;margin-top:8px;"></div>';
+      section.appendChild(note);
+      var liste = note.querySelector('#liste-ecartees');
+      liste.innerHTML = ecartees.map(function(x){
+        var raisons = x.m.violees.map(function(cr){ return labelCritere(cr); }).join(', ');
+        return '<div style="padding:6px 0;border-top:1px solid #eee;"><b>' + esc(titreEtude(x.etude)) + '</b> — hors critère : ' + esc(raisons) + '</div>';
+      }).join('');
+      note.querySelector('#btn-ecartees').addEventListener('click', function(){
+        var v = liste.style.display === 'none';
+        liste.style.display = v ? 'block' : 'none';
+        this.textContent = v ? 'Masquer ↑' : 'Voir pourquoi ↓';
+      });
+    }
   }
 
   function esc(s) {
@@ -544,17 +590,12 @@
     });
   }
 
-  function badgeCorrespondance(total, nbMatch, nbMismatch) {
-    if (total === 0) {
-      return { texte: 'Critères cliniques non renseignés', cls: 'badge-neutre' };
-    }
-    if (nbMismatch === 0) {
-      return { texte: '✅ ' + nbMatch + '/' + total + ' critères concordants', cls: 'badge-ok' };
-    }
-    if (nbMatch === 0) {
-      return { texte: '❌ 0/' + total + ' critère concordant', cls: 'badge-ko' };
-    }
-    return { texte: '⚠️ ' + nbMatch + '/' + total + ' critères concordants', cls: 'badge-mixte' };
+  function badgeEligibilite(m) {
+    if (m.indisponible) return { texte: 'Appariement indisponible', cls: 'badge-neutre' };
+    var s = m.satisfaites.length, ind = m.indeterminees.length;
+    var t = '✅ ' + s + ' critère' + (s > 1 ? 's' : '') + ' d\'inclusion vérifié' + (s > 1 ? 's' : '');
+    if (ind) t += ' · ' + ind + ' à préciser';
+    return { texte: t, cls: 'badge-ok' };
   }
 
   function etoiles(n) {
@@ -605,7 +646,7 @@
   
   var PALETTE_BARS = ['#2563eb','#16a34a','#9333ea','#0891b2','#f59e0b','#e11d48','#0d9488'];
 
-  function creerCarteEtude(etude, score, total, colonnes, mismatches) {
+  function creerCarteEtude(etude, m) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
     function pct(v){ return Math.max(0, Math.min(100, Number(v) || 0)); }
@@ -625,7 +666,9 @@
           return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + captionSens(c) + barres;
         }).join('')
       : '<div style="font-size:12px; color:#9aa1a8;">Résultats chiffrés non renseignés.</div>';
-    var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
+    var corr = badgeEligibilite(m);
+    var satLabels = m.satisfaites.map(labelCritere);
+    var indLabels = m.indeterminees.map(function(cr){ return labelCritere(cr) + ' (non renseigné)'; });
     var auteurs = auteursEtude(etude);
 
     card.innerHTML =
@@ -643,8 +686,8 @@
           '<span class="badge-correspondance ' + corr.cls + '">' + corr.texte + '</span>' +
           '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin: 10px 0 0; display:block;">Voir le détail des critères ↓</button>' +
           '<div class="zone-details" style="display:none; padding-top: 10px;">' +
-            (colonnes.length > 0 ? '<div style="margin-bottom:8px;">' + chips(colonnes, 'chip-ok') + '</div>' : '') +
-            (mismatches.length > 0 ? '<div style="margin-bottom:8px;">' + chips(mismatches, 'chip-ko') + '</div>' : '') +
+            (satLabels.length > 0 ? '<div style="margin-bottom:8px;">' + chips(satLabels, 'chip-ok') + '</div>' : '') +
+            (indLabels.length > 0 ? '<div style="margin-bottom:8px;">' + chips(indLabels, 'chip-neutre') + '</div>' : '') +
             (etude.lien ? '<a href="'+esc(etude.lien)+'" target="_blank" style="font-size:13px; color:var(--orange); text-decoration:none; font-weight:600;">Ouvrir l\'article PubMed →</a>' : '') +
           '</div>' +
         '</div>' +
@@ -768,7 +811,7 @@
   window.reculer          = reculer;
   window.recommencer      = recommencer;
   window.accueil          = recommencer;
-  window.calculerScoreEtude = calculerScoreEtude;
+  window.apparierEtude = apparierEtude;
 
   load();
 }());

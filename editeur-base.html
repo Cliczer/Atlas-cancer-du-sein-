@@ -404,6 +404,9 @@ function loadData(obj){
   importance: Number(e.importance) || 0,
   date_revue: e.date_revue || "",
   revu_par: e.revu_par || "",
+  // Contraintes typées (moteur v2) : conservées telles quelles. L'UI dédiée
+  // arrivera ; en attendant on ne doit PAS les perdre à la publication.
+  contraintes: Array.isArray(e.contraintes) ? e.contraintes : undefined,
  }));
  selectedId = null;
  undoStack=[]; redoStack=[];
@@ -436,6 +439,9 @@ function exportData(){
    importance: Number(e.importance) || 0,
    date_revue: e.date_revue || "",
    revu_par: e.revu_par || "",
+   // Conserve les contraintes typées (moteur v2) si présentes, pour ne pas les
+   // écraser à la publication tant que l'UI dédiée n'existe pas.
+   ...(Array.isArray(e.contraintes) ? { contraintes: e.contraintes } : {}),
   })),
  };
 }
