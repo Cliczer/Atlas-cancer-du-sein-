@@ -133,6 +133,16 @@ base.etudes.forEach(e => {
 mkdirSync(join(ROOT, 'scripts/out'), { recursive: true });
 writeFileSync(join(ROOT, 'scripts/out/eligibilite-proposee.json'), JSON.stringify(proposition, null, 2) + '\n');
 
+// --apply : écrit les contraintes DANS la base (additif, garde criteres intact).
+if (process.argv.includes('--apply')) {
+  base.etudes.forEach((e, i) => {
+    // On ne stocke pas 'role' (dérivable du dictionnaire) pour éviter toute dérive.
+    e.contraintes = (proposition[i].contraintes || []).map(({ role, ...reste }) => reste);
+  });
+  writeFileSync(join(ROOT, 'src/data/base_etudes.json'), JSON.stringify(base, null, 4) + '\n');
+  console.log('\n✍️  --apply : contraintes écrites dans src/data/base_etudes.json (criteres conservé).\n');
+}
+
 const nb = o => Object.keys(o).length;
 const bloc = (titre, o) => {
   const cles = Object.keys(o);

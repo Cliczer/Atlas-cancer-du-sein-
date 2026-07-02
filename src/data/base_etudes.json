@@ -85,7 +85,42 @@
                     "sens": "haut"
                 }
             ],
-            "importance": 4
+            "importance": 4,
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T4a",
+                        "T3",
+                        "T4b",
+                        "T4c",
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "Groupe d'essais sur les premiers essais sur le cancer du sein. (2014). Effet de la radiothérapie après mastectomie et chirurgie axillaire sur la récidive à 10 ans et la mortalité par cancer du sein à 20 ans : méta-analyse des données individuelles de 8 135 femmes dans 22 essais randomisés. The Lancet, 383 (9935), 2127-2135",
@@ -133,7 +168,37 @@
                     "sens": "bas"
                 }
             ],
-            "importance": 2
+            "importance": 2,
+            "contraintes": [
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MT"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Secrétariat de l'Ebctcg, S., Darby, P., McGale, C., Correa, C., Taylor, R., Arriagada, M., Clarke, D., Cutter, C., Davies, M., Ewertz, J., Godwin, R., Gray, L., Pierce, T., Whelan, Y., Wang, K., Albain, S., Anderson, W., Barlow, J., Bergh, J. Bliss, J., Buyse, M., Cameron, D., Carrasco, E., Clarke, M., Coates, A., Collins, R., Costantino, J., Cuzick, J., Davidson, N., Davies, C., Davies, K., Delmestri, A., Di Leo, M., Dowsett, M., Elphinstone, P., Evans, V., Gelber, R., Gettins, L., Geyer, C., Goldhirsch, A., Godwin, J., Gray, R., Gregory, C., Hayes, D., Hill, J. Ingle, J., Jakesz, R., James, S., Kaufmann, M., Kerr, A., Mackinnon, E., McGale, P., Mchugh, T., Norton, L., Ohashi, Y., Paik, S., Pan, H.C., Pérez, E., Peto, R., Piccart, G., Pruneri, G., Raina, V., Ravdin, P., Robertson, J., Rutgers, E., Shao, Y. F., Swain, S., Taylor, C., Valagussa, G., Viale, G., Winer, E. et Wang, Y. (2011). Effet de la radiothérapie après une chirurgie mammaire conservatrice sur la récidive à 10 ans et la mortalité par cancer du sein à 15 ans : méta-analyse des données individuelles de 10 801 femmes dans 17 essais randomisés. The Lancet,",
@@ -188,7 +253,23 @@
                     "sens": "haut"
                 }
             ],
-            "importance": 5
+            "importance": 5,
+            "contraintes": [
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Donker, M., Van Tienhoven, G., Straver, M.E., Meijnen, P., Cornelis, J.H., Van De Velde, R.E., Mansel, L., Cataliotti, H., Westenberg, J.H.G., Klinkenbijl, L., Orzalesi, W.H., Bouma, H.C.J., Van Der Mijle, G.A.P., Nieuwenhuijzen, S.C., Veltkamp, L., Slaets, N.J., Duez, P.W., De Graaf, T., Van Dalen, A., Marinelli, H., Rijna, M., Snoj, N.J., Bundred, J.W.S., Merkus, Y., Belkacemi, P., Petignat, D.A.X., Schinagl, C., Coens, C.G.M. Messina, J., Bogaerts, J.T. et Rutgers, J.T. (2014). Radiothérapie ou chirurgie de l'aisselle après un ganglion sentinelle positif dans le cancer du sein (EORTC 10981-22023 AMAROS) : essai de non-infériorité randomisé, multicentrique, ouvert et de phase III. The Lancet Oncology",
@@ -237,7 +318,42 @@
                     "sens": "haut"
                 }
             ],
-            "importance": 3
+            "importance": 3,
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MT",
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "axillaire",
+                        "supraclaviculaire"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Poortmans, P.M., Collette, S., Kirkove, C., Van Limbergen, E., Budach, V., Struikmans, H., Collette, L., Fourquet, A., Maingon, P., Valli, M., De Winter, K., Marnitz, S., Barillot, I., Scandolaro, L., Vonk, E., Rodenhuis, C., Marseille, H., Weidner, N., Van Tienhoven, G., Glanzmann, C., Kuten, A., Arriagada, R., Bartelink, H. et Van, W. (2015). Irradiation mammaire interne et supraclaviculaire médiale dans le cancer du sein. The New-England journal of medecine",
@@ -286,7 +402,31 @@
                     "sens": "haut"
                 }
             ],
-            "importance": 5
+            "importance": 5,
+            "contraintes": [
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MT",
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Timothy J. Whelan, Jean-Philippe Pignol, Mark N. Levine, Jim A. Julian, Robert Mackenzie, Sameer Parpia, Wendy Shelley, Laval Grimard, Julie Bowen, Himu Lukka, Francisco Perera, Anthony Fyles, Ken Schneider, Sunil Gulavita et Carolyn Freeman, publié dans The New England Journal of Medicine",
@@ -337,7 +477,47 @@
                     "sens": "haut"
                 }
             ],
-            "importance": 3
+            "importance": 3,
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T2",
+                        "T1a",
+                        "T1b",
+                        "T1c"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.). SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF",
@@ -363,7 +543,23 @@
             ],
             "lien": null,
             "auteurs": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.).",
-            "titre": "SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF"
+            "titre": "SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF",
+            "contraintes": [
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MT"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Bernard Fisher, M.D., Carol Redmond, Sc.D., Edwin R. Fisher, M.D., Madeline Bauer, Ph.D., Norman Wolmark, M.D., D. Lawrence Wickerham, M.D., Melvin Deutsch, M.D., Eleanor Montague, M.D., Richard Margolese, M.D., and Roger Foster, M.D. (1985) Ten-Year Results of a Randomized Clinical Trial Comparing Radical Mastectomy and Total Mastectomy with or without Radiation - The New-England journal of medecine. DOI: 10.1056/NEJM198503143121102",
@@ -381,7 +577,44 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MT"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "aucune"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Veronesi, U., Paganelli, G., Viale, G. F. R. C. Path et coll. (2003). Comparaison randomisée de la biopsie des ganglions sentinelles avec la dissection axillaire de routine dans le cancer du sein. NEJM",
@@ -413,7 +646,60 @@
             ],
             "lien": null,
             "auteurs": "Veronesi, U., Paganelli, G., Viale, G. F. R. C. Path et coll. (2003).",
-            "titre": "Comparaison randomisée de la biopsie des ganglions sentinelles avec la dissection axillaire de routine dans le cancer du sein. NEJM"
+            "titre": "Comparaison randomisée de la biopsie des ganglions sentinelles avec la dissection axillaire de routine dans le cancer du sein. NEJM",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Age",
+                    "op": "entre",
+                    "min": 40,
+                    "max": 75
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "mammaire"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Chimio_rattrapage",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Hormonotherapie",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "UMBERTO VERONESI , M.D., NATALE CASCINELLI , M.D., LUIGI MARIANI , M.D., MARCO GRECO , M.D., ROBERTO SACCOZZI , M.D., ALBERTO LUINI , M.D., MARISEL AGUILAR , M.D., AND ETTORE MARUBINI , PH .D - SUIVI SUR VINGT ANS D'UNE ÉTUDE RANDOMISÉE COMPARANT LA CHIRURGIE MAMMAIRE CONSERVATRICE À LA MASTECTOMIE RADICALE POUR LE CANCER DU SEIN AU STADE PRÉCOCE. N English J Med 2002 ; 347:1227-32",
@@ -443,7 +729,49 @@
             ],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "aucune"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Chimio_rattrapage",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "Valachis A, Nearchou AD, Lind PL, Lind AP Prise en charge chirurgicale du cancer du sein chez les porteurs de mutations BRCA : revue systématique et méta-analyse. 2014. doi:10.1007/s10549-014-2890-1",
@@ -469,7 +797,40 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "Mutation",
+                    "op": "dans",
+                    "valeurs": [
+                        "BRCA_mute"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "mammaire"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Chimio_rattrapage",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "Van Sprundel TC, Schmidt MK, Rookus MA, Brohet R, van\nAsperen CJ, Rutgers EJ, Van’t Veer LJ, Tollenaar RA (2005)\nRisk reduction of contralateral breast cancer and survival after\ncontralateral prophylactic mastectomy in BRCA1 or BRCA2\nmutation carriers. Br J Cancer 93:287–292",
@@ -483,7 +844,23 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "Mutation",
+                    "op": "dans",
+                    "valeurs": [
+                        "BRCA_mute"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MT"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Le tamoxifène postopératoire pour le carcinome canalaire in situ » rédigé par Helen Staley, Iain Mccallum et Julie Bruce, publié le 16 août 2011 avec DOI : 10.1002/14651858.CD007847.pub2",
@@ -506,7 +883,79 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "Tis"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP",
+                        "MT"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "GS",
+                        "aucune"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "mammaire",
+                        "aucune"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Chimio_rattrapage",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Immunotherapie",
+                    "op": "est",
+                    "valeur": false
+                },
+                {
+                    "critere": "Hormonotherapie",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "MELVIN J. SILVERSTEIN , M.D., MICHAEL D. LAGIOS , M.D., SUSAN GROSHEN , PH .D., JAMES R. WAISMAN , M.D., BERNARD S. LEWINSKY , M.D., SILVANA MARTINO , D.O., PARVIS GAMAGAMI , M.D., AND WILLIAM J. COLBURN , M.D. - L'INFLUENCE DE LA LARGEUR DES MARGES SUR LE CONTRÔLE LOCAL DU CARCINOME CANALAIRE IN SITU DU SEIN - 1999 NEJM",
@@ -533,7 +982,49 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "Tis"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Marges",
+                    "op": ">",
+                    "valeur": 10
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "mammaire"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Merisa Piper, MD,* Anne Warren Peled, MD,* Robert D. Foster, MD,*\nDan H. Moore, PhD,Þ and Laura J. Esserman, MD, MBA (2013). Mastectomie totale épargnant la peau : une revue systématique des résultats oncologiques et des complications postopératoires. doi:10.1097/SAP.0B013E31827E5333",
@@ -546,7 +1037,16 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Merisa Piper, MD,* Anne Warren Peled, MD,* Robert D. Foster, MD,* Dan H. Moore, PhD,Þ and Laura J. Esserman, MD, MBA (2013).",
-            "titre": "Mastectomie totale épargnant la peau : une revue systématique des résultats oncologiques et des complications postopératoires. doi:10.1097/SAP.0B013E31827E5333"
+            "titre": "Mastectomie totale épargnant la peau : une revue systématique des résultats oncologiques et des complications postopératoires. doi:10.1097/SAP.0B013E31827E5333",
+            "contraintes": [
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "TSSM"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Pilewskie M, Morrow M. Gestion des ganglions axillaires après une chimiothérapie néoadjuvante : une revue. JAMA Oncologie. Publié le 1er décembre 2016 ; doi:10.1001/jamaoncol.2016.4163",
@@ -562,7 +1062,40 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T2",
+                        "T3",
+                        "T1a",
+                        "T1b",
+                        "T1c"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "GS"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "Soonmyung Paik, Gong Tang, Steven Shak, Chungyeul Kim, Joffre Baker, Wanseop Kim, Maureen Cronin, Frederick L. Baehner, Drew Watson, John Bryant, Joseph P. Costantino, Charles E. Geyer, D. Lawrence Wickerham, Norman Wolmark - Expression génique et avantages de la chimiothérapie chez les femmes atteintes d'un cancer du sein à ganglions négatifs et à récepteurs d'œstrogènes positifs » - 23 mai 2006 - DOI : 10.1200/JCO.2005.04.7985",
@@ -590,7 +1123,35 @@
             ],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "RE",
+                    "op": "dans",
+                    "valeurs": [
+                        "RE+"
+                    ]
+                },
+                {
+                    "critere": "RP",
+                    "op": "dans",
+                    "valeurs": [
+                        "RP+"
+                    ]
+                },
+                {
+                    "critere": "Hormonotherapie",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "Meena S. Moran, Stuart J. Schnitt, Armando E. Giuliano, Jay R. Harris, Seema A. Khan, Janet Horton,\nSuzanne Klimberg, Mariana Chavez-MacGregor, Gary Freedman, Nehmat Houssami, Peggy L. Johnson,\nand Monica Morrow - Society of Surgical Oncology–American Society for\nRadiation Oncology Consensus Guideline on Margins for\nBreast-Conserving Surgery With Whole-Breast Irradiation\nin Stages I and II Invasive Breast Cancer - 2014 - JCO - DOI (10.1200/JCO.2013.53.3935)",
@@ -608,7 +1169,53 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "mammaire"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "Heriberto Medina-Franco, MD,* Luis O. Vasconez, MD,† R. Jobe Fix, MD,† Martin J. Heslin, MD,* Samuel W. Beenken, MD,*\nKirby I. Bland, MD,* and Marshall M. Urist, MD - Factors Associated With Local Recurrence After Skin-Sparing Mastectomy and Immediate Breast Reconstruction for Invasive Breast Cancer - 2002 - Annals of surgery",
@@ -641,7 +1248,45 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2",
+                        "T3",
+                        "T4a",
+                        "T4b",
+                        "T4c",
+                        "T4d"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "TSSM"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_axillaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "CA"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Davide Mauri, Nicholas Pavlidis, John P. A. Ioannidis -Neoadjuvant Versus Adjuvant Systemic Treatment in Breast Cancer: A Meta-Analysis — Journal of the National Cancer Institute (2005) ; DOI — 10.1093/jnci/dji021",
@@ -656,7 +1301,26 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "(9) Avril A, Faucher A, Bussieres E, Stockle E, Durand M, Mauriac L,\net al. Results of 10 years of a randomized trial of neoadjuvant chemo-\ntherapy in breast cancers larger than 3 cm. Chirurgie 1998;123:247–56",
@@ -674,7 +1338,35 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Avril A, Faucher A, Bussieres E, Stockle E, Durand M, Mauriac L, et al.",
-            "titre": "Results of 10 years of a randomized trial of neoadjuvant chemo- therapy in breast cancers larger than 3 cm. Chirurgie 1998;123:247–56"
+            "titre": "Results of 10 years of a randomized trial of neoadjuvant chemo- therapy in breast cancers larger than 3 cm. Chirurgie 1998;123:247–56",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T2",
+                        "T3"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "(10) Mauriac L, MacGrogan G, Avril A, Durand M, Floquet A, Debled M, et al.\nNeoadjuvant chemotherapy for operable breast carcinoma larger than 3 cm:\na unicentre randomized trial with a 124-month median follow-up. Institut\nBergonie Bordeaux Groupe Sein (IBBGS). Ann Oncol 1999 ; 10 : 47– 52",
@@ -685,7 +1377,8 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Mauriac L, MacGrogan G, Avril A, Durand M, Floquet A, Debled M, et al.",
-            "titre": "Neoadjuvant chemotherapy for operable breast carcinoma larger than 3 cm: a unicentre randomized trial with a 124-month median follow-up. Institut Bergonie Bordeaux Groupe Sein (IBBGS). Ann Oncol 1999 ; 10 : 47– 52"
+            "titre": "Neoadjuvant chemotherapy for operable breast carcinoma larger than 3 cm: a unicentre randomized trial with a 124-month median follow-up. Institut Bergonie Bordeaux Groupe Sein (IBBGS). Ann Oncol 1999 ; 10 : 47– 52",
+            "contraintes": []
         },
         {
             "reference": "(11) Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA,\nSeleznev IK, et al. Primary (neoadjuvant) chemotherapy and radiotherapy\ncompared with primary radiotherapy alone in stage IIb-IIIa breast cancer.\nAnn Oncol 1994 ; 5 : 591– 5",
@@ -700,7 +1393,19 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA, Seleznev IK, et al.",
-            "titre": "Primary (neoadjuvant) chemotherapy and radiotherapy compared with primary radiotherapy alone in stage IIb-IIIa breast cancer. Ann Oncol 1994 ; 5 : 591– 5"
+            "titre": "Primary (neoadjuvant) chemotherapy and radiotherapy compared with primary radiotherapy alone in stage IIb-IIIa breast cancer. Ann Oncol 1994 ; 5 : 591– 5",
+            "contraintes": [
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "(12) Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E,\net al. Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer\n1991 ; 27 : 1668– 71",
@@ -718,7 +1423,34 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E, et al.",
-            "titre": "Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer 1991 ; 27 : 1668– 71"
+            "titre": "Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer 1991 ; 27 : 1668– 71",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T2",
+                        "T3"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "(13) Scholl SM, Fourquet A, Asselain B, Pierga JY, Vilcoq JR, Durand JC, et al.\nNeoadjuvant versus adjuvant chemotherapy in premenopausal patients with\ntumours considered too large for breast conserving surgery: preliminary re-\nsults of a randomised trial: S6. Eur J Cancer 1994 ; 30A : 645– 52",
@@ -736,7 +1468,35 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Scholl SM, Fourquet A, Asselain B, Pierga JY, Vilcoq JR, Durand JC, et al.",
-            "titre": "Neoadjuvant versus adjuvant chemotherapy in premenopausal patients with tumours considered too large for breast conserving surgery: preliminary re- sults of a randomised trial: S6. Eur J Cancer 1994 ; 30A : 645– 52"
+            "titre": "Neoadjuvant versus adjuvant chemotherapy in premenopausal patients with tumours considered too large for breast conserving surgery: preliminary re- sults of a randomised trial: S6. Eur J Cancer 1994 ; 30A : 645– 52",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T2",
+                        "T3"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "(14) Broet P, Scholl SM, de la Rochefordiere A, Fourquet A, Moreau T, De Rycke\nY, et al. Short and long-term effects on survival in breast cancer patients\ntreated by primary chemotherapy: an updated analysis of a randomized trial.\nBreast Cancer Res Treat 1999 ; 58 : 151– 6",
@@ -747,7 +1507,8 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Broet P, Scholl SM, de la Rochefordiere A, Fourquet A, Moreau T, De Rycke Y, et al.",
-            "titre": "Short and long-term effects on survival in breast cancer patients treated by primary chemotherapy: an updated analysis of a randomized trial. Breast Cancer Res Treat 1999 ; 58 : 151– 6"
+            "titre": "Short and long-term effects on survival in breast cancer patients treated by primary chemotherapy: an updated analysis of a randomized trial. Breast Cancer Res Treat 1999 ; 58 : 151– 6",
+            "contraintes": []
         },
         {
             "reference": "(15) Makris A, Powles TJ, Ashley SE, Chang J, Hickish T, Tidy VA, et al.\nA reduction in the requirements for mastectomy in a randomized trial of\nneoadjuvant chemoendocrine therapy in primary breast cancer. Ann Oncol\n1998 ; 9 : 1179– 84",
@@ -765,7 +1526,43 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Makris A, Powles TJ, Ashley SE, Chang J, Hickish T, Tidy VA, et al.",
-            "titre": "A reduction in the requirements for mastectomy in a randomized trial of neoadjuvant chemoendocrine therapy in primary breast cancer. Ann Oncol 1998 ; 9 : 1179– 84"
+            "titre": "A reduction in the requirements for mastectomy in a randomized trial of neoadjuvant chemoendocrine therapy in primary breast cancer. Ann Oncol 1998 ; 9 : 1179– 84",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T0",
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T4a",
+                        "T4b",
+                        "T4c",
+                        "T4d",
+                        "T2",
+                        "T3"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "(16)Fisher B, Bryant J, Wolmark N, Mamounas E, Brown A, Fisher ER, et al.\nEffect of preoperative chemotherapy on the outcome of women with oper-\nable breast cancer. J Clin Oncol 1998 ; 16 : 2672– 85.\n+ (17)Wolmark N, Wang J, Mamounas E, Bryant J, Fisher B. Preoperative\nchemotherapy in patients with operable breast cancer: nine-year results from\nNational Surgical Adjuvant Breast and Bowel Project B-18. J Natl Cancer\nInst Monogr 2001 ; 30 : 96– 102",
@@ -783,7 +1580,38 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Fisher B, Bryant J, Wolmark N, Mamounas E, Brown A, Fisher ER, et al.",
-            "titre": "Effect of preoperative chemotherapy on the outcome of women with oper- able breast cancer. J Clin Oncol 1998 ; 16 : 2672– 85. + (17)Wolmark N, Wang J, Mamounas E, Bryant J, Fisher B. Preoperative chemotherapy in patients with operable breast cancer: nine-year results from National Surgical Adjuvant Breast and Bowel Project B-18. J Natl Cancer Inst Monogr 2001 ; 30 : 96– 102"
+            "titre": "Effect of preoperative chemotherapy on the outcome of women with oper- able breast cancer. J Clin Oncol 1998 ; 16 : 2672– 85. + (17)Wolmark N, Wang J, Mamounas E, Bryant J, Fisher B. Preoperative chemotherapy in patients with operable breast cancer: nine-year results from National Surgical Adjuvant Breast and Bowel Project B-18. J Natl Cancer Inst Monogr 2001 ; 30 : 96– 102",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2",
+                        "T3"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "(18)Gazet JC, Ford HT, Gray R, McConkey C, Sutcliffe R, Quilliam J, et al.\nEstrogen-receptor-directed neoadjuvant therapy for breast cancer: results\nof a randomised trial using formestane and methotrexate, mitozantrone and\nmitomycin C (MMM) chemotherapy. Ann Oncol 2001 ; 12 : 685– 91",
@@ -801,7 +1629,43 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Gazet JC, Ford HT, Gray R, McConkey C, Sutcliffe R, Quilliam J, et al.",
-            "titre": "Estrogen-receptor-directed neoadjuvant therapy for breast cancer: results of a randomised trial using formestane and methotrexate, mitozantrone and mitomycin C (MMM) chemotherapy. Ann Oncol 2001 ; 12 : 685– 91"
+            "titre": "Estrogen-receptor-directed neoadjuvant therapy for breast cancer: results of a randomised trial using formestane and methotrexate, mitozantrone and mitomycin C (MMM) chemotherapy. Ann Oncol 2001 ; 12 : 685– 91",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T2",
+                        "T3",
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T4a",
+                        "T4b",
+                        "T4c",
+                        "T4d"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1",
+                        "N2"
+                    ]
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": true
+                }
+            ]
         },
         {
             "reference": "(8) van der Hage JA, van de Velde CJ, Julien JP, Tubiana-Hulin M, Vandervelden\nC, Duchateau L. Preoperative chemotherapy in primary operable breast\ncancer: results from the European Organization for Research and Treatment\nof Cancer trial 10902. J Clin Oncol 2001 ; 19 : 4224– 37",
@@ -819,7 +1683,43 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1c",
+                        "T2",
+                        "T3",
+                        "T4a",
+                        "T4b"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1"
+                    ]
+                },
+                {
+                    "critere": "Age",
+                    "op": "<=",
+                    "valeur": 50
+                },
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "(19)Danforth DN Jr, Cowan K, Altemus R, Merino M, Chow C, Berman A, et al.\nPreoperative FLAC/granulocyte-colony-stimulating factor chemotherapy\nfor stage II breast cancer: a prospective randomized trial. Ann Surg Oncol\n2003 ; 10 : 635– 44",
@@ -835,7 +1735,19 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Danforth DN Jr, Cowan K, Altemus R, Merino M, Chow C, Berman A, et al.",
-            "titre": "Preoperative FLAC/granulocyte-colony-stimulating factor chemotherapy for stage II breast cancer: a prospective randomized trial. Ann Surg Oncol 2003 ; 10 : 635– 44"
+            "titre": "Preoperative FLAC/granulocyte-colony-stimulating factor chemotherapy for stage II breast cancer: a prospective randomized trial. Ann Surg Oncol 2003 ; 10 : 635– 44",
+            "contraintes": [
+                {
+                    "critere": "Chimio_neoadjuvante",
+                    "op": "est",
+                    "valeur": true
+                },
+                {
+                    "critere": "Chimio_adjuvante",
+                    "op": "est",
+                    "valeur": false
+                }
+            ]
         },
         {
             "reference": "Peter Mallon, Jean-Guillaume Feron, Benoît Couturaud, Alfred Fitoussi, Périg Lemasurier, Thierry Guihard, Isabelle Cothier-Savay et Fabien Reyal. (s.d.). Malignité occulte du mamelon dans le cancer du sein et résultats de la mastectomie épargnant les mamelons. doi:10.1097/Prs.0B013E3182865A3C",
@@ -849,7 +1761,22 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Peter Mallon, Jean-Guillaume Feron, Benoît Couturaud, Alfred Fitoussi, Périg Lemasurier, Thierry Guihard, Isabelle Cothier-Savay et Fabien Reyal. (s.d.).",
-            "titre": "Malignité occulte du mamelon dans le cancer du sein et résultats de la mastectomie épargnant les mamelons. doi:10.1097/Prs.0B013E3182865A3C"
+            "titre": "Malignité occulte du mamelon dans le cancer du sein et résultats de la mastectomie épargnant les mamelons. doi:10.1097/Prs.0B013E3182865A3C",
+            "contraintes": [
+                {
+                    "critere": "Age",
+                    "op": "entre",
+                    "min": 41.5,
+                    "max": 52.8
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "TSSM"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Effect of Axillary Dissection vs No Axillary Dissection on 10-Year Overall Survival Among Women With Invasive Breast Cancer and Sentinel Node Metastasis: The ACOSOG Z0011 (Alliance) Randomized Clinical Trial\nArmando E Giuliano 1, Karla V Ballman 2, Linda McCall 3, Peter D Beitsch 4, Meghan B Brennan 5, Pond R Kelemen 6, David W Ollila 7, Nora M Hansen 8, Pat W Whitworth 9, Peter W Blumencranz 10, A Marilyn Leitch 11, Sukamal Saha 12, Kelly K Hunt 13, Monica Morrow 14\nAffiliations expand\t\nPMID: 28898379 PMCID: PMC5672806 DOI: 10.1001/jama.2017.11470",
@@ -878,7 +1805,49 @@
             ],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N0",
+                        "N1",
+                        "N2"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                },
+                {
+                    "critere": "Chirurgie_mammaire",
+                    "op": "dans",
+                    "valeurs": [
+                        "MP"
+                    ]
+                },
+                {
+                    "critere": "RT",
+                    "op": "dans",
+                    "valeurs": [
+                        "mammaire"
+                    ]
+                }
+            ]
         },
         {
             "reference": "Omitting Axillary Dissection in Breast Cancer with Sentinel-Node Metastases\nJana de Boniface 1, Tove Filtenborg Tvedskov 1, Lisa Rydén 1, Robert Szulkin 1, Toralf Reimer 1, Thorsten Kühn 1, Michalis Kontos 1, Oreste D Gentilini 1, Roger Olofsson Bagge 1, Malin Sund 1, Dan Lundstedt 1, Matilda Appelgren 1, Johan Ahlgren 1, Sophie Norenstedt 1, Fuat Celebioglu 1, Helena Sackey 1, Inge Scheel Andersen 1, Ute Hoyer 1, Per F Nyman 1, Eva Vikhe Patil 1, Elinore Wieslander 1, Henrik Dahl Nissen 1, Sara Alkner 1, Yvette Andersson 1, Birgitte V Offersen 1, Leif Bergkvist 1, Jan Frisell 1, Peer Christiansen 1; SENOMAC Trialists’ Group; SENOMAC Trialists' Group\nCollaborators, Affiliations expand\nPMID: 38598571 DOI: 10.1056/NEJMoa2313487",
@@ -893,7 +1862,36 @@
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
-            "titre": ""
+            "titre": "",
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c",
+                        "T2",
+                        "T3"
+                    ]
+                },
+                {
+                    "critere": "N",
+                    "op": "dans",
+                    "valeurs": [
+                        "N1",
+                        "N2",
+                        "N0"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
+                    ]
+                }
+            ]
         }
     ]
 }

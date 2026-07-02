@@ -241,6 +241,79 @@
     return { valeur: evalues === 0 ? null : Math.round((pts / evalues) * 100), total: evalues, colonnes: colonnes, mismatches: mismatches };
   }
 
+  // ── Moteur v2 : appariement par vocabulaire typé (déterministe) ──────────
+  // Indexe le dictionnaire : par critère, un résolveur token(normalisé) → ids
+  // atomiques (valeur, libellé, alias, ou groupe étendu). Construit une fois.
+  function indexerDictionnaire(dico) {
+    var idx = {};
+    var crit = (dico && dico.criteres) || {};
+    Object.keys(crit).forEach(function (cid) {
+      var def = crit[cid];
+      var entree = { type: def.type, role: def.role, resolve: {}, vrai: (def.vrai || []).map(normaliser), faux: (def.faux || []).map(normaliser) };
+      function ajoute(tok, ids) {
+        var k = normaliser(tok); if (!k) return;
+        entree.resolve[k] = (entree.resolve[k] || []).concat(ids);
+      }
+      (def.valeurs || []).forEach(function (v) {
+        ajoute(v.id, [v.id]); ajoute(v.libelle, [v.id]);
+        (v.alias || []).forEach(function (a) { ajoute(a, [v.id]); });
+      });
+      Object.keys(def.groupes || {}).forEach(function (g) { ajoute(g, def.groupes[g]); });
+      idx[cid] = entree;
+    });
+    return idx;
+  }
+
+  function estVrai(v) { var n = normaliser(v); return n === 'true' || n === 'oui' || n === '1' || n === 'vrai'; }
+
+  // Résout une valeur (patient ou contrainte) en ids atomiques. Repli : la
+  // valeur brute normalisée elle-même (permet l'égalité stricte hors dico).
+  function idsAtomiques(entree, val) {
+    if (entree) { var r = entree.resolve[normaliser(val)]; if (r) return r; }
+    return [normaliser(val)];
+  }
+
+  // Apparie un profil patient à une étude via ses contraintes typées.
+  // Retour : { eligible, concordance, satisfaites, violees, indeterminees }.
+  // eligible = aucune contrainte DÉTERMINÉE violée. Indéterminé (critère non
+  // renseigné par la patiente) ne bloque pas mais est remonté (jamais silencieux).
+  function apparier(profil, etude, dico, keyMapping) {
+    var idx = (dico && dico.__index) || indexerDictionnaire(dico || {});
+    if (dico) dico.__index = idx;
+    var contraintes = (etude && etude.contraintes) || [];
+    var sat = [], vio = [], ind = [];
+    contraintes.forEach(function (c) {
+      var entree = idx[c.critere];
+      var vP = valeurPatient(profil, c.critere, keyMapping || {});
+      if (vP === undefined || String(vP).trim() === '') { ind.push(c.critere); return; }
+      var ok;
+      if (c.op === 'dans') {
+        var ens = {};
+        (c.valeurs || []).forEach(function (v) { idsAtomiques(entree, v).forEach(function (x) { ens[x] = 1; }); });
+        ok = idsAtomiques(entree, vP).some(function (x) { return ens[x] === 1; });
+      } else if (c.op === 'est') {
+        ok = estVrai(vP) === (c.valeur === true);
+      } else {
+        var n = parseFloat(String(vP).replace(',', '.'));
+        if (isNaN(n)) { ind.push(c.critere); return; }
+        if (c.op === 'entre') ok = n >= c.min && n <= c.max;
+        else if (c.op === '<=') ok = n <= c.valeur;
+        else if (c.op === '>=') ok = n >= c.valeur;
+        else if (c.op === '<') ok = n < c.valeur;
+        else if (c.op === '>') ok = n > c.valeur;
+        else if (c.op === '=') ok = n === c.valeur;
+        else ok = false;
+      }
+      (ok ? sat : vio).push(c.critere);
+    });
+    var denom = sat.length + vio.length;
+    return {
+      eligible: vio.length === 0,
+      concordance: denom ? Math.round(sat.length / denom * 100) : null,
+      satisfaites: sat, violees: vio, indeterminees: ind
+    };
+  }
+
   // ── Sérialisation arbre ⇄ graphe (éditeur d'arbres) — PURE, testable ──
   // Liste des valeurs/libellés portés par une branche. On privilégie la liste
   // explicite `valeursListe` (fidèle : un libellé peut contenir des virgules,
@@ -330,6 +403,8 @@
     matchCategoriel: matchCategoriel,
     matchNumerique: matchNumerique,
     valeurPatient: valeurPatient,
-    calculerScore: calculerScore
+    calculerScore: calculerScore,
+    indexerDictionnaire: indexerDictionnaire,
+    apparier: apparier
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));

@@ -35,3 +35,5 @@ jobs:
         run: node scripts/test-matching.mjs
       - name: Tests de sérialisation arbre ⇄ graphe
         run: node scripts/test-serialisation.mjs
+      - name: Tests du moteur d'appariement typé (v2)
+        run: node scripts/test-appariement.mjs
