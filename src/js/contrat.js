@@ -93,6 +93,10 @@
       // Résultats chiffrés : nouveau format "comparaisons" (liste) ou ancien "comparaison" (objet).
       if (e.comparaisons != null && !Array.isArray(e.comparaisons))
         err.push('Étude "' + nom + '" : "comparaisons" doit être une liste.');
+      if (Array.isArray(e.comparaisons)) e.comparaisons.forEach(function (c, j) {
+        if (c && c.sens != null && c.sens !== '' && c.sens !== 'haut' && c.sens !== 'bas')
+          avert.push('Étude "' + nom + '", mesure #' + (j + 1) + ' : "sens" doit valoir "haut", "bas" ou être vide (reçu "' + c.sens + '").');
+      });
       if (e.comparaison != null && !estObjet(e.comparaison))
         err.push('Étude "' + nom + '" : "comparaison" doit être un objet.');
       var aDesComparaisons = (Array.isArray(e.comparaisons) && e.comparaisons.length) || estObjet(e.comparaison);

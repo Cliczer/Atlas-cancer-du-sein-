@@ -613,7 +613,7 @@
   function comparaisonsEtude(etude) {
     if (Array.isArray(etude.comparaisons)) {
       return etude.comparaisons.map(function(c) {
-        return { mesure: c.mesure || '', unite: c.unite || '', bras: brasDeComparaison(c) };
+        return { mesure: c.mesure || '', unite: c.unite || '', sens: c.sens || '', bras: brasDeComparaison(c) };
       });
     }
     var c = etude.comparaison;
@@ -645,7 +645,7 @@
             return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + affich + '</span></div>' +
               '<div class="barre-track"><div class="barre-fill" style="width:' + largeur + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
           }).join('');
-          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + barres;
+          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + captionSens(c) + barres;
         }).join('')
       : '<div style="font-size:12px; color:#9aa1a8;">Résultats chiffrés non renseignés.</div>';
     var corr = badgeCorrespondance(total, colonnes.length, mismatches.length);
@@ -705,16 +705,29 @@
     return '<div style="display:flex;flex-wrap:wrap;width:160px;flex-shrink:0;">' + femmes + '</div>';
   }
 
+  // Repère de sens clinique. Ne s'affiche QUE si le curateur l'a renseigné :
+  // affirmer une direction non validée serait dangereux (ex. laisser croire
+  // qu'une récidive élevée est « bien »). 'haut' = élevé favorable (survie),
+  // 'bas' = bas favorable (récidive, toxicité).
+  function captionSens(c) {
+    if (c.sens === 'haut') return '<div style="font-size:12px;color:#16a34a;font-weight:600;margin:2px 0 8px;">↑ Plus le chiffre est élevé, mieux c\'est.</div>';
+    if (c.sens === 'bas')  return '<div style="font-size:12px;color:#b45309;font-weight:600;margin:2px 0 8px;">↓ Plus le chiffre est bas, mieux c\'est.</div>';
+    return '';
+  }
+
   function phraseResume(c) {
     var bras = (c.bras || []).map(function(b){ return { label: b.label || '', v: Number(b.valeur) }; })
                              .filter(function(b){ return !isNaN(b.v); });
     if (!bras.length) return '';
     var unite = (!c.unite || c.unite === '%') ? ' sur 100' : (' ' + esc(c.unite));
     if (bras.length === 1) return 'Environ <b>' + Math.round(bras[0].v) + unite + '</b> avec « ' + esc(bras[0].label) + ' ».';
-    var tri = bras.slice().sort(function(a,b){ return b.v - a.v; });
-    var best = tri[0], worst = tri[tri.length - 1];
-    return 'Environ <b>' + Math.round(best.v) + unite + '</b> avec « ' + esc(best.label) +
-           ' », contre <b>' + Math.round(worst.v) + unite + '</b> avec « ' + esc(worst.label) + ' ».';
+    // Ordre d'énoncé selon le sens clinique : on cite d'abord le bras le plus
+    // favorable. Sans sens renseigné, on n'exprime aucun jugement (ordre par
+    // valeur décroissante, purement factuel).
+    var tri = bras.slice().sort(function(a,b){ return c.sens === 'bas' ? a.v - b.v : b.v - a.v; });
+    var prem = tri[0], dern = tri[tri.length - 1];
+    return 'Environ <b>' + Math.round(prem.v) + unite + '</b> avec « ' + esc(prem.label) +
+           ' », contre <b>' + Math.round(dern.v) + unite + '</b> avec « ' + esc(dern.label) + ' ».';
   }
 
   function ouvrirVuePatiente() {
@@ -739,6 +752,7 @@
         var estPct = !c.unite || c.unite === '%';
         h += '<div style="margin:18px 0;">';
         if (c.mesure) h += '<div style="font-weight:700;font-size:16px;margin-bottom:12px;">' + esc(c.mesure) + '</div>';
+        h += captionSens(c);
         if (estPct) {
           (c.bras || []).forEach(function(b, i) {
             var col = PALETTE_BARS[i % PALETTE_BARS.length];
