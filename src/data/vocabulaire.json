@@ -1,0 +1,165 @@
+{
+  "version": 2,
+  "_description": "Dictionnaire de critères TYPÉ et contrôlé — la source de vérité unique du lien arbre ↔ études. Chaque critère est une variable typée ; chaque valeur catégorielle a un id STABLE, un libellé d'affichage et des alias d'écriture (même valeur, orthographes différentes). Les 'groupes' sont des valeurs générales (ex. T1 = {T1a,T1b,T1c}) : une étude peut contraindre au niveau du groupe, une patiente au niveau atomique. Le matching = appartenance à un ensemble (catégoriel) ou test d'intervalle (numérique). Aucune comparaison de texte libre. Fichier NON encore lu par l'application (transition sans casse) ; il alimente d'abord la migration et la validation.",
+
+  "roles": {
+    "eligibilite": "Décrit la PATIENTE incluse (stade, biologie). Comparé au profil issu de l'arbre.",
+    "intervention": "Décrit ce que l'étude a ÉVALUÉ (chirurgie, RT, chimio). Comparé au traitement proposé par l'arbre, s'il est renseigné."
+  },
+
+  "criteres": {
+    "Type": {
+      "label": "Type de carcinome", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "in_situ",    "libelle": "In situ",    "alias": ["in situ", "CCIS", "Tis"] },
+        { "id": "infiltrant", "libelle": "Infiltrant", "alias": ["Infiltrant", "Infilitrant", "invasif", "infiltrante"] }
+      ]
+    },
+
+    "T": {
+      "label": "Taille tumorale (T)", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "T0",  "libelle": "T0",  "alias": ["pT0", "cT0"] },
+        { "id": "Tis", "libelle": "Tis (in situ)", "alias": ["pTis", "cTis"] },
+        { "id": "T1a", "libelle": "T1a", "alias": ["pT1a", "cT1a"] },
+        { "id": "T1b", "libelle": "T1b", "alias": ["pT1b", "cT1b"] },
+        { "id": "T1c", "libelle": "T1c", "alias": ["pT1c", "cT1c"] },
+        { "id": "T2",  "libelle": "T2",  "alias": ["pT2", "cT2"] },
+        { "id": "T3",  "libelle": "T3",  "alias": ["pT3", "cT3"] },
+        { "id": "T4a", "libelle": "T4a", "alias": ["pT4a", "cT4a"] },
+        { "id": "T4b", "libelle": "T4b", "alias": ["pT4b", "cT4b"] },
+        { "id": "T4c", "libelle": "T4c", "alias": ["pT4c", "cT4c"] },
+        { "id": "T4d", "libelle": "T4d (inflammatoire)", "alias": ["pT4d", "cT4d"] }
+      ],
+      "groupes": {
+        "T1": ["T1a", "T1b", "T1c"],
+        "T4": ["T4a", "T4b", "T4c", "T4d"]
+      }
+    },
+
+    "N": {
+      "label": "Statut ganglionnaire (N)", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "N0", "libelle": "N0", "alias": ["pN0", "cN0"] },
+        { "id": "N1", "libelle": "N1", "alias": ["pN1", "cN1", "N1a", "N1b", "N1c", "N1mi", "N1b1"] },
+        { "id": "N2", "libelle": "N2", "alias": ["pN2", "cN2", "N2a", "N2b"] },
+        { "id": "N3", "libelle": "N3", "alias": ["pN3", "cN3", "N3a", "N3b", "N3c"] }
+      ],
+      "groupes": {
+        "N+":    ["N1", "N2", "N3"],
+        "pN+":   ["N1", "N2", "N3"],
+        "pN1-2": ["N1", "N2"],
+        "pN1-3": ["N1", "N2", "N3"]
+      }
+    },
+
+    "M": {
+      "label": "Métastases (M)", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "M0", "libelle": "M0", "alias": ["pM0", "cM0"] },
+        { "id": "M1", "libelle": "M1", "alias": ["pM1", "cM1", "M+"] }
+      ]
+    },
+
+    "RE": {
+      "label": "Récepteurs estrogènes (RE)", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "RE+", "libelle": "RE positif", "alias": ["Positif", "positif", "RH+", "élevés", "eleves"] },
+        { "id": "RE-", "libelle": "RE négatif", "alias": ["Négatif", "negatif", "Negatif", "RH-"] }
+      ]
+    },
+
+    "RP": {
+      "label": "Récepteurs progestérone (RP)", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "RP+", "libelle": "RP positif", "alias": ["Positif", "positif", "élevés"] },
+        { "id": "RP-", "libelle": "RP négatif", "alias": ["Négatif", "negatif", "Negatif"] }
+      ]
+    },
+
+    "HER2": {
+      "label": "Statut HER2", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "HER2+", "libelle": "HER2 positif", "alias": ["Positif", "positif", "3+", "amplifié"] },
+        { "id": "HER2-", "libelle": "HER2 négatif", "alias": ["Négatif", "negatif", "Negatif", "0", "1+"] }
+      ]
+    },
+
+    "Mutation": {
+      "label": "Mutation constitutionnelle", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "BRCA_mute",    "libelle": "BRCA muté",    "alias": ["BRCA muté", "BRCA1", "BRCA2", "Mutation", "muté", "mutée"] },
+        { "id": "BRCA_sauvage", "libelle": "BRCA sauvage", "alias": ["BRCA sauvage", "sauvage", "wild-type", "non muté"] }
+      ]
+    },
+
+    "Menopause": {
+      "label": "Statut ménopausique", "role": "eligibilite", "type": "categoriel",
+      "valeurs": [
+        { "id": "pre",  "libelle": "Non ménopausée",  "alias": ["0", "pré-ménopausée", "non ménopausée", "préménopausée"] },
+        { "id": "post", "libelle": "Ménopausée",      "alias": ["1", "post-ménopausée", "ménopausée", "postménopausée"] }
+      ]
+    },
+
+    "Age":    { "label": "Âge",             "role": "eligibilite", "type": "numerique", "unite": "ans" },
+    "Ki67":   { "label": "Ki67",            "role": "eligibilite", "type": "numerique", "unite": "%" },
+    "Marges": { "label": "Marges d'exérèse", "role": "eligibilite", "type": "numerique", "unite": "mm" },
+
+    "Chirurgie_mammaire": {
+      "label": "Chirurgie mammaire", "role": "intervention", "type": "categoriel",
+      "valeurs": [
+        { "id": "MP",    "libelle": "Mastectomie partielle (conservatrice)", "alias": ["MP", "tumorectomie", "conservateur", "conservatrice"] },
+        { "id": "MT",    "libelle": "Mastectomie totale", "alias": ["MT", "M radicale", "mastectomie"] },
+        { "id": "TSSM",  "libelle": "Mastectomie avec conservation de l'étui cutané", "alias": ["TSSM"] }
+      ]
+    },
+
+    "Chirurgie_axillaire": {
+      "label": "Chirurgie axillaire", "role": "intervention", "type": "categoriel",
+      "valeurs": [
+        { "id": "GS", "libelle": "Ganglion sentinelle", "alias": ["GS", "ganglion sentinelle"] },
+        { "id": "CA", "libelle": "Curage axillaire", "alias": ["CA", "curage"] },
+        { "id": "aucune", "libelle": "Aucune", "alias": ["non", "Non", "abstention"] }
+      ]
+    },
+
+    "RT": {
+      "label": "Radiothérapie", "role": "intervention", "type": "categoriel",
+      "valeurs": [
+        { "id": "mammaire",        "libelle": "RT mammaire", "alias": ["mammaire", "sein"] },
+        { "id": "paroi",           "libelle": "RT pariétale", "alias": ["paroi", "pariétale"] },
+        { "id": "axillaire",       "libelle": "RT axillaire", "alias": ["axillaire"] },
+        { "id": "supraclaviculaire","libelle": "RT sus-claviculaire", "alias": ["supraclaviculaire", "sus-claviculaire"] },
+        { "id": "aucune",          "libelle": "Pas de RT", "alias": ["non", "Non", "abstention"] }
+      ]
+    },
+
+    "Chimio_adjuvante": {
+      "label": "Chimiothérapie adjuvante", "role": "intervention", "type": "oui_non",
+      "_note": "Le détail du protocole (ex. FAC, FEC) est une annotation libre, non utilisée pour le matching."
+    },
+    "Chimio_neoadjuvante": {
+      "label": "Chimiothérapie néoadjuvante", "role": "intervention", "type": "oui_non"
+    },
+    "Hormonotherapie": {
+      "label": "Hormonothérapie", "role": "intervention", "type": "oui_non"
+    },
+    "Immunotherapie": {
+      "label": "Immunothérapie", "role": "intervention", "type": "oui_non"
+    }
+  },
+
+  "correspondance_anciennes_cles": {
+    "_note": "Anciennes clés de la base → clé du vocabulaire v2. Utilisé par la migration.",
+    "CTadj": "Chimio_adjuvante",
+    "CNA": "Chimio_neoadjuvante",
+    "CT_rattrapage": "Chimio_rattrapage",
+    "Hormonotherapie": "Hormonotherapie",
+    "Immunotherapie": "Immunotherapie",
+    "Ménopause %": "Menopause",
+    "Marges et autres paramètres": "Marges",
+    "Marges (mm)": "Marges",
+    "Ki67 (%)": "Ki67",
+    "Autre_intervention": "Autre_intervention"
+  }
+}
