@@ -290,7 +290,11 @@
       return r.json();
     }).then(function(data) {
       var arbreProtocole = data.tree || data;
-      tree = construirePrelude(arbreProtocole);
+      // Prélude clinique (T/N/M/RE/RP/Âge) ajouté par défaut. Un protocole peut
+      // le désactiver (prelude_clinique:false) quand il est hors sujet (ex.
+      // « Diagnostic et biopsie », où l'on ne connaît pas encore ces stades).
+      var avecPrelude = !(data && data.prelude_clinique === false);
+      tree = avecPrelude ? construirePrelude(arbreProtocole) : arbreProtocole;
       maxDepth = depth(tree, 1) || 1;
 
       if (bh) bh.textContent = 'Commencer l\'évaluation →';

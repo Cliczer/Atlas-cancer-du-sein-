@@ -3,6 +3,7 @@
     "titre": "Protocoles Diagnostic et Biopsie SENORIF",
     "date_maj": "2026-06-29"
   },
+  "prelude_clinique": false,
   "tree": {
     "type": "question",
     "titre": "Quel type de lésion mammaire faut-il caractériser ?",

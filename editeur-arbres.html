@@ -221,6 +221,15 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </div>
 
 <div class="grp">
+ <span class="grpLabel">⚙️ Parcours</span>
+ <span class="grpBtns" style="align-items:center">
+  <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer" title="Ajoute au début du parcours les questions de stade clinique (T, N, M, RE, RP, Âge) communes. À décocher pour un protocole où ces stades ne sont pas encore connus (ex. Diagnostic et biopsie).">
+   <input type="checkbox" id="preludeChk" checked> Prélude clinique (T/N/M/RE/RP/Âge)
+  </label>
+ </span>
+</div>
+
+<div class="grp">
  <span class="grpLabel">💾 Enregistrer <span class="hint" style="text-transform:none;font-weight:500">(nom de fichier dans <code>protocoles/</code>)</span></span>
  <span class="grpBtns" style="align-items:center">
   <input id="protocolFilename" placeholder="ex. diagnostic_biopsie.json" style="width:200px">
@@ -444,6 +453,9 @@ function resultTitleFromData(t){
 function loadProtocolFile(data, filename){
  currentMetadata = (data && data.tree) ? (data.metadata || {}) : {};
  document.getElementById("protocolFilename").value = filename || "";
+ // Prélude clinique : activé par défaut, désactivé si le protocole le demande.
+ let chk=document.getElementById("preludeChk");
+ if(chk) chk.checked = !(data && data.prelude_clinique === false);
  treeToGraph((data && data.tree) || data);
  afficherRevueStatus();
  modifie=false; // fraîchement chargé : rien à publier
@@ -1232,7 +1244,12 @@ function currentExportFilename(){
 function buildExportPayload(){
  let metadata = Object.assign({titre:"", date_maj:""}, currentMetadata||{});
  metadata.date_maj = new Date().toISOString().slice(0,10);
- return {metadata: metadata, tree: graphToTree()};
+ let chk=document.getElementById("preludeChk");
+ // On n'écrit le drapeau que lorsqu'il désactive le prélude ; l'absence = activé
+ // (comportement par défaut), ce qui garde les protocoles existants inchangés.
+ let payload = {metadata: metadata, tree: graphToTree()};
+ if(chk && !chk.checked) payload.prelude_clinique = false;
+ return payload;
 }
 
 function downloadTree(filename){
