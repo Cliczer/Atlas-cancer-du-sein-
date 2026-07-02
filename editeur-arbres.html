@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Éditeur arbre JSON SENORIF</title>
+<title>Éditeur d'arbre de décision</title>
 <script src="contrat.js?v=1"></script>
 <script src="publier.js?v=1"></script>
 <style>
@@ -88,7 +88,7 @@ h3 .hint{font-size:11px;color:var(--text-muted);font-weight:500}
 .node.selected{outline:3px solid var(--warning);outline-offset:2px;transform:scale(1.04);z-index:50;height:auto;min-height:112px;overflow:visible}
 .type{font-size:9.5px;font-weight:800;color:rgba(15,23,42,.5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em}
 .title{font-weight:700;font-size:13px;line-height:1.3;color:var(--text);white-space:pre-wrap;overflow-wrap:break-word;
- display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+ display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .node:hover .title,.node.selected .title{-webkit-line-clamp:unset;overflow:visible}
 .small{font-size:10.5px;color:var(--text-muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -119,6 +119,9 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);margin:0 0 14px;
  padding-bottom:14px;border-bottom:1px solid var(--border)}
 .legend span{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.legend .filtre{cursor:pointer;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface-alt);transition:background .1s,border-color .1s}
+.legend .filtre:hover{background:#eef2ff}
+.legend .filtre.actif{background:#2563eb;border-color:#2563eb;color:#fff}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 3px rgba(15,23,42,.05)}
 
 #editEmpty{color:var(--text-muted);font-size:13px;padding:26px 12px;text-align:center;
@@ -162,7 +165,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </nav>
 <header>
 <div class="headerTop">
- <span class="brand">Éditeur arbre JSON SENORIF</span>
+ <span class="brand">Éditeur d'arbre de décision</span>
  <div style="display:flex;gap:8px">
   <button class="ghost" onclick="toggleFullscreen()">⤢ Plein écran</button>
   <button class="ghost" onclick="toggleHelp()">❓ Aide</button>
@@ -172,31 +175,25 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div class="toolbar">
 
 <div class="grp">
- <span class="grpLabel">📂 Charger un arbre</span>
+ <span class="grpLabel">📂 Charger</span>
  <span class="grpBtns" style="align-items:center">
-  <select id="protocolSelect" style="width:230px" onchange="loadSelectedProtocol()" title="Charge un protocole actuellement publié sur le site">
-   <option value="">↻ Version en ligne — choisir un protocole…</option>
+  <select id="protocolSelect" style="width:250px" onchange="loadSelectedProtocol()" title="Charge un protocole actuellement publié sur le site">
+   <option value="">↻ Charger la version actuelle — choisir…</option>
   </select>
   <span style="font-size:11px;color:var(--text-muted)">ou</span>
-  <button onclick="document.getElementById('fileInput').click()" title="Charge un fichier JSON depuis votre ordinateur">Un fichier (JSON)</button>
+  <button onclick="document.getElementById('fileInput').click()" title="Importer un fichier JSON depuis votre ordinateur">📁 Importer un fichier</button>
  </span>
 </div>
 
 <div class="grp">
  <span class="grpLabel">✏️ Éditeur</span>
- <span class="grpBtns">
+ <span class="grpBtns" style="align-items:center">
+  <button id="undoBtn" onclick="undo()" title="Annuler (Ctrl+Z)" style="font-size:16px;line-height:1">↶</button>
+  <button id="redoBtn" onclick="redo()" title="Rétablir (Ctrl+Maj+Z)" style="font-size:16px;line-height:1">↷</button>
   <button onclick="addQuestion()">+ Question</button>
   <button onclick="addEtape()">+ Étape</button>
   <button onclick="addResult()">+ Recommandation</button>
   <button onclick="toggleConnect()">Relier deux nœuds</button>
- </span>
-</div>
-
-<div class="grp">
- <span class="grpLabel">🕓 Historique</span>
- <span class="grpBtns">
-  <button id="undoBtn" onclick="undo()" title="Ctrl+Z">↶ Annuler</button>
-  <button id="redoBtn" onclick="redo()" title="Ctrl+Maj+Z">↷ Rétablir</button>
  </span>
 </div>
 
@@ -268,13 +265,14 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div class="panel">
 <div id="loadStatus" class="notice">Chargement du registre des protocoles…</div>
 
-<div class="legend">
- <span><i class="dot" style="background:#2563eb"></i> Question</span>
- <span><i class="dot" style="background:#0891b2"></i> Étape</span>
- <span><i class="dot" style="background:#16a34a"></i> Recommandation</span>
+<div class="legend" id="typeFilter">
+ <span class="filtre actif" data-type="tout" onclick="setListFilter('tout')">Tout</span>
+ <span class="filtre" data-type="question" onclick="setListFilter('question')"><i class="dot" style="background:#2563eb"></i> Questions</span>
+ <span class="filtre" data-type="etape" onclick="setListFilter('etape')"><i class="dot" style="background:#0891b2"></i> Étapes</span>
+ <span class="filtre" data-type="resultat" onclick="setListFilter('resultat')"><i class="dot" style="background:#16a34a"></i> Recommandations</span>
 </div>
 
-<h3>Parcours <span class="hint">(cliquez pour voir les réponses/suites)</span></h3>
+<h3 id="listTitre">Tous les nœuds <span class="hint">(cliquez une pastille pour filtrer)</span></h3>
 <div id="list"></div>
 </div>
 
@@ -629,7 +627,7 @@ function render(){
 
 function fitFontSize(text){
  let len=(text||"").length;
- return len>140 ? "10px" : len>90 ? "11px" : len>55 ? "12px" : "13px";
+ return len>150 ? "12px" : len>90 ? "12.5px" : len>55 ? "13px" : "14px";
 }
 
 function renderNode(n){
@@ -788,9 +786,34 @@ function buildQuestionRow(n){
  return det;
 }
 
+// Ligne simple (feuille) pour une recommandation : titre cliquable, pas de branches.
+function buildLeafRow(n){
+ let row=document.createElement("div");
+ row.className="listRow"+(selectedNode===n.id?" sel":"");
+ row.style.borderLeftColor=nodeColor(n.type);
+ row.textContent=n.titre||"(sans titre)";
+ row.onclick=function(){ selectedNode=n.id; selectedEdge=null; centerOnNode(n.id); render(); };
+ return row;
+}
+
+let listFilter="tout";
+function setListFilter(t){
+ listFilter=t;
+ document.querySelectorAll("#typeFilter .filtre").forEach(el=>el.classList.toggle("actif", el.dataset.type===t));
+ let titres={tout:"Tous les nœuds", question:"Questions", etape:"Étapes", resultat:"Recommandations"};
+ let h=document.getElementById("listTitre");
+ if(h) h.innerHTML=(titres[t]||"Nœuds")+' <span class="hint">(cliquez une pastille pour filtrer)</span>';
+ renderList();
+}
+
 function renderList(){
  let list=document.getElementById("list"); list.innerHTML="";
- nodes.filter(n=>n.type!=="resultat").forEach(n=>list.appendChild(buildQuestionRow(n)));
+ let items=nodes.filter(n=> listFilter==="tout" ? true : n.type===listFilter);
+ if(!items.length){
+  let vide=document.createElement("div"); vide.className="listRow"; vide.style.opacity=".6";
+  vide.textContent="(aucun nœud de ce type)"; list.appendChild(vide); return;
+ }
+ items.forEach(n=> list.appendChild(n.type==="resultat" ? buildLeafRow(n) : buildQuestionRow(n)));
 }
 
 function renderEditor(){
