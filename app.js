@@ -541,7 +541,7 @@
 
     var sourceDiv = document.createElement('div');
     sourceDiv.className = 'recommendation-box';
-    sourceDiv.innerHTML = '<span class="recommendation-label">✅ Recommandation</span><span class="recommendation-text">' + (node.titre || 'Orientation thérapeutique validée') + '</span>';
+    sourceDiv.innerHTML = '<span class="recommendation-label">✅ Recommandation</span><span class="recommendation-text">' + esc(node.titre || 'Orientation thérapeutique validée') + '</span>';
     grid.appendChild(sourceDiv);
 
     var entries = Object.keys(donnees).map(function(k) {
