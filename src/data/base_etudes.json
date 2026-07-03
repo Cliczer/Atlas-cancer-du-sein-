@@ -426,23 +426,30 @@
                 "Chirurgie_mammaire": "MT",
                 "Chirurgie_axillaire": "CA"
             },
-            "comparaison": {
-                "avec": {
-                    "valeur": 39.2,
-                    "unite": "LR à 20A"
-                },
-                "sans": {
-                    "valeur": 14.3,
-                    "unite": "LR à 20A"
-                }
-            },
             "traitements_evalues": [
                 "RT"
             ],
             "lien": null,
             "auteurs": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.).",
             "titre": "SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF",
-            "contraintes": []
+            "contraintes": [],
+            "comparaisons": [
+                {
+                    "mesure": "LR à 20A",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 39.2
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 14.3
+                        }
+                    ]
+                }
+            ]
         },
         {
             "reference": "Bernard Fisher, M.D., Carol Redmond, Sc.D., Edwin R. Fisher, M.D., Madeline Bauer, Ph.D., Norman Wolmark, M.D., D. Lawrence Wickerham, M.D., Melvin Deutsch, M.D., Eleanor Montague, M.D., Richard Margolese, M.D., and Roger Foster, M.D. (1985) Ten-Year Results of a Randomized Clinical Trial Comparing Radical Mastectomy and Total Mastectomy with or without Radiation - The New-England journal of medecine. DOI: 10.1056/NEJM198503143121102",
@@ -456,7 +463,6 @@
                 "RT": "non",
                 "Autre_intervention": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -493,16 +499,6 @@
                 "CTadj": "Oui, Non",
                 "Hormonotherapie": "Oui"
             },
-            "comparaison": {
-                "avec": {
-                    "valeur": 1.6,
-                    "unite": "Evénements associés au cancer du sein"
-                },
-                "sans": {
-                    "valeur": 1,
-                    "unite": "Evénements associés au cancer du sein"
-                }
-            },
             "traitements_evalues": [
                 "Chirurgie_axillaire"
             ],
@@ -532,6 +528,23 @@
                     "min": 40,
                     "max": 75
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "Evénements associés au cancer du sein",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 1.6
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 1
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -546,16 +559,6 @@
                 "CNA": "Non",
                 "CT_rattrapage": "Non",
                 "CTadj": "Oui, Non"
-            },
-            "comparaison": {
-                "avec": {
-                    "valeur": 0.2,
-                    "unite": "Taux de recidive locale annuel"
-                },
-                "sans": {
-                    "valeur": 0.6,
-                    "unite": "Taux de recidive locale annuel"
-                }
             },
             "traitements_evalues": [
                 "Chirurgie_mammaire"
@@ -580,6 +583,23 @@
                         "M0"
                     ]
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "Taux de recidive locale annuel",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 0.2
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 0.6
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -593,16 +613,6 @@
                 "CNA": "Non",
                 "CT_rattrapage": "Non"
             },
-            "comparaison": {
-                "avec": {
-                    "valeur": 17.3,
-                    "unite": "IBR"
-                },
-                "sans": {
-                    "valeur": 11,
-                    "unite": "IBR"
-                }
-            },
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -615,6 +625,23 @@
                         "BRCA_mute"
                     ]
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "IBR",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 17.3
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 11
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -625,7 +652,6 @@
                 "Mutation": "BRCA1, BRCA2",
                 "Chirurgie_mammaire": "MT"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -657,7 +683,6 @@
                 "Immunotherapie": "Non",
                 "Hormonotherapie": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -698,16 +723,6 @@
                 "Chirurgie_mammaire": "MP",
                 "RT": "mammaire"
             },
-            "comparaison": {
-                "avec": {
-                    "valeur": 1.1,
-                    "unite": "RR"
-                },
-                "sans": {
-                    "valeur": 1.5,
-                    "unite": "RR"
-                }
-            },
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -739,6 +754,23 @@
                     "op": ">",
                     "valeur": 10
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "RR",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 1.1
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 1.5
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -748,7 +780,6 @@
             "criteres": {
                 "Chirurgie_mammaire": "TSSM"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Merisa Piper, MD,* Anne Warren Peled, MD,* Robert D. Foster, MD,* Dan H. Moore, PhD,Þ and Laura J. Esserman, MD, MBA (2013).",
@@ -765,7 +796,6 @@
                 "Chirurgie_axillaire": "GS",
                 "CNA": "Oui"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -803,16 +833,6 @@
                 "Hormonotherapie": "Tamoxifène",
                 "Autre_intervention": "Non"
             },
-            "comparaison": {
-                "avec": {
-                    "valeur": 87.8,
-                    "unite": "Distant-DFS à 10 A"
-                },
-                "sans": {
-                    "valeur": 92.2,
-                    "unite": "Distant-DFS à 10 A"
-                }
-            },
             "traitements_evalues": [
                 "CTadj"
             ],
@@ -841,6 +861,23 @@
                         "RP+"
                     ]
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "Distant-DFS à 10 A",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 87.8
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 92.2
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -855,7 +892,6 @@
                 "RT": "mammaire",
                 "CNA": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -906,16 +942,6 @@
                 "CTadj": "Oui, Non",
                 "Hormonotherapie": "Non, Oui"
             },
-            "comparaison": {
-                "avec": {
-                    "valeur": 88,
-                    "unite": "OS à 5A"
-                },
-                "sans": {
-                    "valeur": 96.5,
-                    "unite": "OS à 5A"
-                }
-            },
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -943,6 +969,23 @@
                         "M0"
                     ]
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "OS à 5A",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 88
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 96.5
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -954,7 +997,6 @@
                 "CNA": "Oui",
                 "CTadj": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -981,7 +1023,6 @@
                 "CNA": "Oui, \"EVM = epirubicin, vincristine, and methotrexate\", \"ETV = mitomycin, thiothepa, and vindesine\"",
                 "CTadj": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Avril A, Faucher A, Bussieres E, Stockle E, Durand M, Mauriac L, et al.",
@@ -1010,7 +1051,6 @@
             "objectif": "",
             "niveau_preuve": null,
             "criteres": {},
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Mauriac L, MacGrogan G, Avril A, Durand M, Floquet A, Debled M, et al.",
@@ -1026,7 +1066,6 @@
                 "CNA": "Oui, \"TMF = thiotepa, methotrexate, and fluorouracil\"",
                 "CTadj": "Oui, \"TMF = thiotepa, methotrexate, and fluorouracil\""
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA, Seleznev IK, et al.",
@@ -1045,7 +1084,6 @@
                 "CNA": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\"",
                 "CTadj": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\""
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E, et al.",
@@ -1080,7 +1118,6 @@
                 "CNA": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\"",
                 "CTadj": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Scholl SM, Fourquet A, Asselain B, Pierga JY, Vilcoq JR, Durand JC, et al.",
@@ -1109,7 +1146,6 @@
             "objectif": "",
             "niveau_preuve": null,
             "criteres": {},
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Broet P, Scholl SM, de la Rochefordiere A, Fourquet A, Moreau T, De Rycke Y, et al.",
@@ -1128,7 +1164,6 @@
                 "CNA": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\"",
                 "CTadj": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\""
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Makris A, Powles TJ, Ashley SE, Chang J, Hickish T, Tidy VA, et al.",
@@ -1172,7 +1207,6 @@
                 "CNA": "Oui, AC = doxorubicin and cyclophosphamide",
                 "CTadj": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Fisher B, Bryant J, Wolmark N, Mamounas E, Brown A, Fisher ER, et al.",
@@ -1211,7 +1245,6 @@
                 "CNA": "Oui, Gsr = goserelin, Frm = formestane, \"MM = mitoxantrone, mitomycin, and methotrexate\"",
                 "CTadj": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\", Gsr = goserelin, Frm = formestane"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Gazet JC, Ford HT, Gray R, McConkey C, Sutcliffe R, Quilliam J, et al.",
@@ -1255,7 +1288,6 @@
                 "CNA": "Oui, \"FEC = fluorouracil, epirubicin, and cyclophosphamide\"",
                 "CTadj": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",
@@ -1297,7 +1329,6 @@
                 "CNA": "Oui, \"FLAC/G-CSF = fluorouracil, leucovorin, doxorubicin, cyclophosphamide, and granulocyte colony-stimulating factor support\"",
                 "CTadj": "Non"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Danforth DN Jr, Cowan K, Altemus R, Merino M, Chow C, Berman A, et al.",
@@ -1312,7 +1343,6 @@
                 "Age": "41,5-52,8",
                 "Chirurgie_mammaire": "TSSM"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "Peter Mallon, Jean-Guillaume Feron, Benoît Couturaud, Alfred Fitoussi, Périg Lemasurier, Thierry Guihard, Isabelle Cothier-Savay et Fabien Reyal. (s.d.).",
@@ -1337,16 +1367,6 @@
                 "Age": "-1",
                 "Chirurgie_mammaire": "MP",
                 "RT": "mammaire"
-            },
-            "comparaison": {
-                "avec": {
-                    "valeur": 83.6,
-                    "unite": "OS à 10A"
-                },
-                "sans": {
-                    "valeur": 86.3,
-                    "unite": "OS à 10A"
-                }
             },
             "traitements_evalues": [
                 "Chirurgie_axillaire"
@@ -1381,6 +1401,23 @@
                         "M0"
                     ]
                 }
+            ],
+            "comparaisons": [
+                {
+                    "mesure": "OS à 10A",
+                    "unite": "",
+                    "sens": "",
+                    "bras": [
+                        {
+                            "label": "Avec",
+                            "valeur": 83.6
+                        },
+                        {
+                            "label": "Sans",
+                            "valeur": 86.3
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -1392,7 +1429,6 @@
                 "N": "pN1-2, cN0",
                 "M": "M0"
             },
-            "comparaison": null,
             "traitements_evalues": [],
             "lien": null,
             "auteurs": "",

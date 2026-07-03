@@ -564,30 +564,12 @@
     return (etude.auteurs && etude.auteurs.trim()) || '';
   }
 
-  function brasDeComparaison(c) {
-    if (Array.isArray(c.bras)) {
-      return c.bras.map(function(b){ return { label: b.label || '', valeur: b.valeur }; });
-    }
-    var bras = [];
-    if (c.standard !== undefined) bras.push({ label: 'Standard', valeur: c.standard });
-    if (c.controle !== undefined) bras.push({ label: 'Contrôle', valeur: c.controle });
-    return bras;
-  }
-  
   function comparaisonsEtude(etude) {
-    if (Array.isArray(etude.comparaisons)) {
-      return etude.comparaisons.map(function(c) {
-        return { mesure: c.mesure || '', unite: c.unite || '', sens: c.sens || '', bras: brasDeComparaison(c) };
-      });
-    }
-    var c = etude.comparaison;
-    if (c && (c.avec || c.sans)) {
-      var bras = [];
-      if (c.avec) bras.push({ label: 'Standard', valeur: c.avec.valeur });
-      if (c.sans) bras.push({ label: 'Contrôle', valeur: c.sans.valeur });
-      return [{ mesure: (c.avec && c.avec.unite) || (c.sans && c.sans.unite) || '', unite: '', bras: bras }];
-    }
-    return [];
+    if (!Array.isArray(etude.comparaisons)) return [];
+    return etude.comparaisons.map(function(c) {
+      var bras = Array.isArray(c.bras) ? c.bras.map(function(b){ return { label: b.label || '', valeur: b.valeur }; }) : [];
+      return { mesure: c.mesure || '', unite: c.unite || '', sens: c.sens || '', bras: bras };
+    });
   }
   
   var PALETTE_BARS = ['#2563eb','#16a34a','#9333ea','#0891b2','#f59e0b','#e11d48','#0d9488'];
