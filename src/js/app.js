@@ -1,8 +1,9 @@
 /*
  * Atlas Pronostics — app.js
- * Version Bibliothèque Multi-arbres
  */
 
+
+/*
 (function () {
   'use strict';
 
