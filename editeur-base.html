@@ -165,7 +165,6 @@ label{font-size:11.5px;font-weight:800;color:var(--text-muted);text-transform:up
  <span class="grpLabel">🔎 Revue</span>
  <span class="grpBtns">
   <button id="btnRevue" onclick="toggleRevue()" title="Afficher l'état de vérification de chaque étude">Mode revue</button>
-  <button onclick="ouvrirCouverture()" title="Repère les valeurs de critères que le matching ne reconnaîtra pas">🎯 Couverture</button>
  </span>
 </div>
 
@@ -993,7 +992,7 @@ document.getElementById("fileInput").addEventListener("change", function(ev){
 // (étude sans titre, sans comparaison…) sont signalés mais n'empêchent pas l'export.
 function validerAvantExport(){
  if(!window.AtlasContrat) return true;
- let res=window.AtlasContrat.validerBase(exportData(), criteresSchema ? {criteres:criteresSchema} : {});
+ let res=window.AtlasContrat.validerBase(exportData());
  if(!res.erreurs.length && !res.avertissements.length) return true;
  let msg="";
  if(res.erreurs.length){
@@ -1042,14 +1041,6 @@ function loadLocal(){
 
 // Contrat partagé : vocabulaire canonique des critères, lu depuis le dépôt Atlas.
 // Alimente la liste des critères et les suggestions de valeurs (datalist) du formulaire.
-let schemaComplet={}; // schéma entier (criteres + valeurs_synonymes) pour la couverture
-function loadSchemaCriteres(){
- return fetch(ATLAS_REPO_RAW_BASE+"schema_criteres.json?_v="+Date.now())
-  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-  .then(s=>{ schemaComplet=s||{}; criteresSchema=(s && s.criteres)||{}; })
-  .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; schemaComplet={}; });
-}
-
 // Dictionnaire typé v2 : alimente le constructeur de critères d'inclusion.
 let vocab = null;
 function loadVocabulaire(){
@@ -1161,42 +1152,6 @@ function contraintesPropres(){
  }).map(c=>Object.assign({}, c));
 }
 
-// Vérificateur de couverture (base d'études) : valeurs de critères hors vocabulaire
-// (le matching ne les reconnaîtra pas) + études sans aucun critère ni résultat.
-function ouvrirCouverture(){
- let box=document.getElementById("coverageList"), intro=document.getElementById("coverageIntro");
- box.innerHTML="";
- if(!window.AtlasContrat || !Object.keys(criteresSchema).length){
-  intro.textContent="Contrat de critères non chargé — impossible de vérifier le vocabulaire.";
-  document.getElementById("coverageOverlay").classList.add("show"); return;
- }
- let problemes=[]; // {id, label, detail}
- etudes.forEach(e=>{
-  let nom=(e.titre&&e.titre.trim())||(e.reference&&e.reference!=="-1"?e.reference:"(sans référence)");
-  Object.keys(e.criteres||{}).forEach(k=>{
-   let v=e.criteres[k];
-   if(window.AtlasContrat.estNeutre(v, schemaComplet)) return; // -1/nc… : neutre, normal
-   if(!criteresSchema[k]) return; // critère hors schéma : autorisé (critère libre)
-   // valeur catégorielle non reconnue par le vocabulaire ?
-   let tokens=String(v).split(",").map(x=>x.trim()).filter(Boolean);
-   let inconnus=tokens.filter(t=>!window.AtlasContrat.valeurConnue(k, t, schemaComplet));
-   if(inconnus.length) problemes.push({id:e._id, label:nom, detail:"critère « "+k+" » : valeur(s) hors vocabulaire → "+inconnus.join(", ")});
-  });
- });
- intro.innerHTML = problemes.length
-  ? "<b>"+problemes.length+"</b> valeur(s) de critère que le matching ne reconnaîtra pas (fautes de frappe ou vocabulaire à ajouter au schéma). Cliquez pour corriger l'étude :"
-  : "✅ Toutes les valeurs de critères sont reconnues par le vocabulaire du schéma.";
- problemes.forEach(p=>{
-  let row=document.createElement("div");
-  row.className="listRow";
-  row.style.cssText="padding:8px 10px;margin:4px 0;border-radius:8px;cursor:pointer;border-left:4px solid var(--warning);background:var(--surface-alt)";
-  row.innerHTML="<b>"+p.label.slice(0,70)+"</b><div style='color:var(--text-muted);font-size:11px'>"+p.detail+"</div>";
-  row.onclick=function(){ document.getElementById("coverageOverlay").classList.remove("show"); selectEtude(p.id); };
-  box.appendChild(row);
- });
- document.getElementById("coverageOverlay").classList.add("show");
-}
-
 function reloadRealData(){
  setStatus("Chargement de base_etudes.json…", false);
  fetch(ATLAS_REPO_RAW_BASE+"base_etudes.json?_v="+Date.now())
@@ -1212,7 +1167,7 @@ function reloadRealData(){
   });
 }
 
-Promise.all([loadSchemaCriteres(), loadVocabulaire()]).then(reloadRealData);
+loadVocabulaire().then(reloadRealData);
 </script>
 </body>
 </html>

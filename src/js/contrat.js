@@ -37,44 +37,6 @@
 
   function estObjet(x) { return x && typeof x === 'object' && !Array.isArray(x); }
 
-  // ── Validation du schéma lui-même ────────────────────────────────────────
-  function validerSchema(schema) {
-    var err = [];
-    if (!estObjet(schema)) return { ok: false, erreurs: ['schema_criteres.json : racine JSON invalide (objet attendu).'] };
-    if (!estObjet(schema.criteres)) err.push('schema_criteres.json : clé "criteres" manquante ou invalide.');
-    if (!estObjet(schema.valeurs_synonymes)) err.push('schema_criteres.json : clé "valeurs_synonymes" manquante ou invalide.');
-    if (!Array.isArray(schema.criteres_numeriques)) err.push('schema_criteres.json : clé "criteres_numeriques" manquante ou invalide.');
-    if (estObjet(schema.criteres)) {
-      Object.keys(schema.criteres).forEach(function (id) {
-        var def = schema.criteres[id];
-        if (!estObjet(def)) { err.push('Critère "' + id + '" : définition invalide.'); return; }
-        if (def.type !== 'categoriel' && def.type !== 'numerique')
-          err.push('Critère "' + id + '" : "type" doit être "categoriel" ou "numerique".');
-        if (def.type === 'categoriel' && !Array.isArray(def.valeurs))
-          err.push('Critère "' + id + '" (catégoriel) : "valeurs" (liste) manquante.');
-      });
-    }
-    return { ok: err.length === 0, erreurs: err };
-  }
-
-  // Un critère catégoriel connaît-il cette valeur ? (valeur canonique OU synonyme,
-  // insensible à la casse et aux accents non gérés — comparaison brute normalisée).
-  function valeurConnue(critereId, valeur, schema) {
-    var def = schema.criteres && schema.criteres[critereId];
-    if (!def || def.type === 'numerique') return true;
-    var nv = normaliser(valeur);
-    if (Array.isArray(def.valeurs) && def.valeurs.map(normaliser).indexOf(nv) !== -1) return true;
-    // tolérance : la valeur est une clé/synonyme connu du dictionnaire global
-    var syn = schema.valeurs_synonymes || {};
-    if (Object.prototype.hasOwnProperty.call(syn, valeur)) return true;
-    var cles = Object.keys(syn);
-    for (var i = 0; i < cles.length; i++) {
-      if (normaliser(cles[i]) === nv) return true;
-      if (syn[cles[i]].map(normaliser).indexOf(nv) !== -1) return true;
-    }
-    return false;
-  }
-
   // ── Validation de la base d'études ───────────────────────────────────────
   function validerBase(base, schema) {
     var err = [], avert = [];
@@ -108,8 +70,10 @@
     return { ok: err.length === 0, erreurs: err, avertissements: avert };
   }
 
-  // ── Validation d'un arbre de protocole ───────────────────────────────────
-  function validerProtocole(nomFichier, data, schema) {
+  // ── Validation STRUCTURELLE d'un arbre de protocole ───────────────────────
+  // (Les tags de critères sont validés séparément contre le dictionnaire par
+  // validerTagsProtocole.)
+  function validerProtocole(nomFichier, data) {
     var err = [], avert = [];
     if (!estObjet(data)) return { ok: false, erreurs: [nomFichier + ' : racine JSON invalide.'], avertissements: [] };
     var tree = data.tree || data;
@@ -120,24 +84,6 @@
       if (!estObjet(node) || ++vus > MAX) return;
       if (TYPES_NŒUDS.indexOf(node.type) === -1)
         err.push(nomFichier + ' @' + chemin + ' : type de nœud inconnu "' + node.type + '".');
-
-      // Tags de critères : reponses[label] = { critere: valeur, ... } (multi-critères),
-      // ou ancien format critere + reponses[label] = "valeur".
-      function verifierCritereValeur(crit, val) {
-        var def = schema && schema.criteres && schema.criteres[crit];
-        if (!def) { err.push(nomFichier + ' @' + chemin + ' : critère "' + crit + '" absent du schéma.'); return; }
-        if (def.type !== 'numerique' && val != null && String(val).trim() !== '' && !valeurConnue(crit, val, schema))
-          avert.push(nomFichier + ' @' + chemin + ' : réponse "' + val + '" hors vocabulaire du critère "' + crit + '".');
-      }
-      if (estObjet(node.reponses)) {
-        Object.keys(node.reponses).forEach(function (label) {
-          var rep = node.reponses[label];
-          if (estObjet(rep)) Object.keys(rep).forEach(function (crit) { verifierCritereValeur(crit, rep[crit]); });
-          else if (node.critere) verifierCritereValeur(node.critere, rep);
-        });
-      } else if (node.critere && !(schema && schema.criteres && schema.criteres[node.critere])) {
-        err.push(nomFichier + ' @' + chemin + ' : critère "' + node.critere + '" absent du schéma.');
-      }
 
       if (node.type === 'resultat') {
         if (!node.titre || !String(node.titre).trim())
@@ -413,8 +359,6 @@
     treeVersGraphe: treeVersGraphe,
     grapheVersTree: grapheVersTree,
     esc: esc,
-    valeurConnue: valeurConnue,
-    validerSchema: validerSchema,
     validerBase: validerBase,
     validerProtocole: validerProtocole,
     valeurPatient: valeurPatient,

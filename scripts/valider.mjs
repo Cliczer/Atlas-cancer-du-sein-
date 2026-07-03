@@ -23,12 +23,7 @@ function lire(p) {
 let erreurs = [], avert = [];
 function collecter(res) { if (res.erreurs) erreurs.push(...res.erreurs); if (res.avertissements) avert.push(...res.avertissements); }
 
-// 1. Schéma
-const schema = lire('schema_criteres.json');
-if (schema.__erreurLecture) erreurs.push(schema.__erreurLecture);
-else collecter(AtlasContrat.validerSchema(schema));
-
-// 1b. Dictionnaire typé v2 (vocabulaire.json)
+// 1. Dictionnaire typé (vocabulaire.json) — la seule source de vocabulaire
 const dico = lire('vocabulaire.json');
 if (dico.__erreurLecture) erreurs.push(dico.__erreurLecture);
 
@@ -36,7 +31,7 @@ if (dico.__erreurLecture) erreurs.push(dico.__erreurLecture);
 const base = lire('base_etudes.json');
 if (base.__erreurLecture) erreurs.push(base.__erreurLecture);
 else {
-  collecter(AtlasContrat.validerBase(base, schema));
+  collecter(AtlasContrat.validerBase(base));
   if (!dico.__erreurLecture) (base.etudes || []).forEach((e, i) => {
     const nom = (e && (e.titre || e.reference)) || ('#' + (i + 1));
     collecter(AtlasContrat.validerContraintesEtude(nom, e, dico));
@@ -56,7 +51,7 @@ if (registre.__erreurLecture) {
     const data = lire(chemin);
     if (data.__erreurLecture) erreurs.push(data.__erreurLecture);
     else {
-      collecter(AtlasContrat.validerProtocole(p.fichier, data, schema));
+      collecter(AtlasContrat.validerProtocole(p.fichier, data));
       if (!dico.__erreurLecture) collecter(AtlasContrat.validerTagsProtocole(p.fichier, data, dico));
     }
   });

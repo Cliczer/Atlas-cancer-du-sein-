@@ -1329,15 +1329,6 @@ function loadAllProtocols(){
 }
 
 // Contrat partagé : vocabulaire canonique des critères, lu depuis le dépôt Atlas.
-// Sert à proposer aux médecins des menus déroulants « Critère » et « Valeur canonique »
-// pour relier une question/réponse au vocabulaire des études, sans toucher au code.
-let schemaComplet={}; // schéma entier (criteres + valeurs_synonymes) pour la validation
-function loadSchemaCriteres(){
- return fetch(ATLAS_REPO_RAW_BASE+"schema_criteres.json?_v="+Date.now())
-  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-  .then(s=>{ schemaComplet=s||{}; criteresSchema=(s && s.criteres)||{}; })
-  .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; schemaComplet={}; });
-}
 
 // Dictionnaire typé v2 : alimente les menus « critère » et « valeur » des branches.
 let vocab=null, vocabIdx=null;
@@ -1368,7 +1359,7 @@ function validerAvantExport(){
  if(!window.AtlasContrat) return true;
  let nom=currentExportFilename();
  let payload=buildExportPayload();
- let res=window.AtlasContrat.validerProtocole(nom, payload, schemaComplet);
+ let res=window.AtlasContrat.validerProtocole(nom, payload);
  // Contrôle strict des tags contre le dictionnaire typé (même règle qu'en CI).
  if(vocab && window.AtlasContrat.validerTagsProtocole){
   let rt=window.AtlasContrat.validerTagsProtocole(nom, payload, vocab);
@@ -1442,7 +1433,7 @@ function centerOnEdge(id){
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 
 setStatus("Chargement du registre des protocoles…", false);
-Promise.all([loadSchemaCriteres(), loadVocabulaire()]);
+loadVocabulaire();
 loadRegistry().then(()=>{
  setStatus("Registre chargé : choisissez un protocole ci-dessus, ou importez un fichier depuis l'ordinateur.", true);
  return loadAllProtocols();
