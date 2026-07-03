@@ -218,14 +218,29 @@
     var sat = [], vio = [], ind = [];
     contraintes.forEach(function (c) {
       var entree = idx[c.critere];
+      // Les critères d'INTERVENTION décrivent ce que l'étude a évalué, pas qui
+      // est éligible. Le profil (issu de l'arbre) ne contient pas de traitement
+      // planifié → on ne les fait PAS entrer dans l'éligibilité.
+      if (entree && entree.role === 'intervention') return;
       var vP = valeurPatient(profil, c.critere, keyMapping || {});
       if (vP === undefined || String(vP).trim() === '') { ind.push(c.critere); return; }
-      var ok;
       if (c.op === 'dans') {
+        // Sémantique ensembliste PRUDENTE. La valeur patiente peut être un
+        // groupe (ex. « N+ » = {N1,N2,N3}). Satisfaite seulement si TOUTES les
+        // valeurs possibles de la patiente sont incluses ; si le groupe déborde
+        // partiellement de l'ensemble autorisé → INDÉTERMINÉ (on ne peut pas
+        // conclure), jamais un faux positif.
         var ens = {};
         (c.valeurs || []).forEach(function (v) { idsAtomiques(entree, v).forEach(function (x) { ens[x] = 1; }); });
-        ok = idsAtomiques(entree, vP).some(function (x) { return ens[x] === 1; });
-      } else if (c.op === 'est') {
+        var P = idsAtomiques(entree, vP);
+        var dedans = P.filter(function (x) { return ens[x] === 1; }).length;
+        if (dedans === P.length) sat.push(c.critere);
+        else if (dedans === 0) vio.push(c.critere);
+        else ind.push(c.critere);
+        return;
+      }
+      var ok;
+      if (c.op === 'est') {
         ok = estVrai(vP) === (c.valeur === true);
       } else {
         var n = parseFloat(String(vP).replace(',', '.'));

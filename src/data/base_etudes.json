@@ -83,18 +83,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -159,20 +147,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MT"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
                 }
             ]
         },
@@ -236,13 +210,6 @@
                     "op": "dans",
                     "valeurs": [
                         "M0"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
                     ]
                 }
             ]
@@ -312,22 +279,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MT",
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "axillaire",
-                        "supraclaviculaire"
-                    ]
                 }
             ]
         },
@@ -385,21 +336,6 @@
                     "op": "dans",
                     "valeurs": [
                         "M0"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MT",
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
                     ]
                 }
             ]
@@ -478,20 +414,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
                 }
             ]
         },
@@ -520,22 +442,7 @@
             "lien": null,
             "auteurs": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.).",
             "titre": "SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF",
-            "contraintes": [
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MT"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
-                }
-            ]
+            "contraintes": []
         },
         {
             "reference": "Bernard Fisher, M.D., Carol Redmond, Sc.D., Edwin R. Fisher, M.D., Madeline Bauer, Ph.D., Norman Wolmark, M.D., D. Lawrence Wickerham, M.D., Melvin Deutsch, M.D., Eleanor Montague, M.D., Richard Margolese, M.D., and Roger Foster, M.D. (1985) Ten-Year Results of a Randomized Clinical Trial Comparing Radical Mastectomy and Total Mastectomy with or without Radiation - The New-England journal of medecine. DOI: 10.1056/NEJM198503143121102",
@@ -567,27 +474,6 @@
                     "op": "dans",
                     "valeurs": [
                         "M0"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MT"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "aucune"
                     ]
                 }
             ]
@@ -645,35 +531,6 @@
                     "op": "entre",
                     "min": 40,
                     "max": 75
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "mammaire"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Chimio_rattrapage",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Hormonotherapie",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -722,30 +579,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "aucune"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Chimio_rattrapage",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -781,30 +614,6 @@
                     "valeurs": [
                         "BRCA_mute"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "mammaire"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Chimio_rattrapage",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -827,13 +636,6 @@
                     "op": "dans",
                     "valeurs": [
                         "BRCA_mute"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MT"
                     ]
                 }
             ]
@@ -881,55 +683,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP",
-                        "MT"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "GS",
-                        "aucune"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "mammaire",
-                        "aucune"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Chimio_rattrapage",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Immunotherapie",
-                    "op": "est",
-                    "valeur": false
-                },
-                {
-                    "critere": "Hormonotherapie",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -985,20 +738,6 @@
                     "critere": "Marges",
                     "op": ">",
                     "valeur": 10
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "mammaire"
-                    ]
                 }
             ]
         },
@@ -1014,15 +753,7 @@
             "lien": null,
             "auteurs": "Merisa Piper, MD,* Anne Warren Peled, MD,* Robert D. Foster, MD,* Dan H. Moore, PhD,Þ and Laura J. Esserman, MD, MBA (2013).",
             "titre": "Mastectomie totale épargnant la peau : une revue systématique des résultats oncologiques et des complications postopératoires. doi:10.1097/SAP.0B013E31827E5333",
-            "contraintes": [
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "TSSM"
-                    ]
-                }
-            ]
+            "contraintes": []
         },
         {
             "reference": "Pilewskie M, Morrow M. Gestion des ganglions axillaires après une chimiothérapie néoadjuvante : une revue. JAMA Oncologie. Publié le 1er décembre 2016 ; doi:10.1001/jamaoncol.2016.4163",
@@ -1058,18 +789,6 @@
                         "N0",
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "GS"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -1121,11 +840,6 @@
                     "valeurs": [
                         "RP+"
                     ]
-                },
-                {
-                    "critere": "Hormonotherapie",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -1171,25 +885,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "mammaire"
-                    ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -1247,20 +942,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "TSSM"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_axillaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "CA"
-                    ]
                 }
             ]
         },
@@ -1285,16 +966,6 @@
                     "valeurs": [
                         "M0"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -1331,16 +1002,6 @@
                         "N0",
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -1370,18 +1031,7 @@
             "lien": null,
             "auteurs": "Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA, Seleznev IK, et al.",
             "titre": "Primary (neoadjuvant) chemotherapy and radiotherapy compared with primary radiotherapy alone in stage IIb-IIIa breast cancer. Ann Oncol 1994 ; 5 : 591– 5",
-            "contraintes": [
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": true
-                }
-            ]
+            "contraintes": []
         },
         {
             "reference": "(12) Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E,\net al. Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer\n1991 ; 27 : 1668– 71",
@@ -1415,16 +1065,6 @@
                     "valeurs": [
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -1461,16 +1101,6 @@
                         "N0",
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -1527,16 +1157,6 @@
                         "N0",
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -1576,16 +1196,6 @@
                         "N0",
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -1630,16 +1240,6 @@
                         "N1",
                         "N2"
                     ]
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": true
                 }
             ]
         },
@@ -1684,16 +1284,6 @@
                     "critere": "Age",
                     "op": "<=",
                     "valeur": 50
-                },
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
                 }
             ]
         },
@@ -1712,18 +1302,7 @@
             "lien": null,
             "auteurs": "Danforth DN Jr, Cowan K, Altemus R, Merino M, Chow C, Berman A, et al.",
             "titre": "Preoperative FLAC/granulocyte-colony-stimulating factor chemotherapy for stage II breast cancer: a prospective randomized trial. Ann Surg Oncol 2003 ; 10 : 635– 44",
-            "contraintes": [
-                {
-                    "critere": "Chimio_neoadjuvante",
-                    "op": "est",
-                    "valeur": true
-                },
-                {
-                    "critere": "Chimio_adjuvante",
-                    "op": "est",
-                    "valeur": false
-                }
-            ]
+            "contraintes": []
         },
         {
             "reference": "Peter Mallon, Jean-Guillaume Feron, Benoît Couturaud, Alfred Fitoussi, Périg Lemasurier, Thierry Guihard, Isabelle Cothier-Savay et Fabien Reyal. (s.d.). Malignité occulte du mamelon dans le cancer du sein et résultats de la mastectomie épargnant les mamelons. doi:10.1097/Prs.0B013E3182865A3C",
@@ -1744,13 +1323,6 @@
                     "op": "entre",
                     "min": 41.5,
                     "max": 52.8
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "TSSM"
-                    ]
                 }
             ]
         },
@@ -1807,20 +1379,6 @@
                     "op": "dans",
                     "valeurs": [
                         "M0"
-                    ]
-                },
-                {
-                    "critere": "Chirurgie_mammaire",
-                    "op": "dans",
-                    "valeurs": [
-                        "MP"
-                    ]
-                },
-                {
-                    "critere": "RT",
-                    "op": "dans",
-                    "valeurs": [
-                        "mammaire"
                     ]
                 }
             ]

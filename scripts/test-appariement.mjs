@@ -30,6 +30,21 @@ t('T dans {T1} (groupe) : patiente T1b → satisfaite',
 t('N+ (groupe) : patiente N1 → satisfaite',
   app({ N: 'N1' }, [{ critere: 'N', op: 'dans', valeurs: ['N+'] }]).eligible === true);
 
+// 2b. Sémantique ensembliste prudente : valeur patiente = GROUPE
+t('patiente N+ (groupe) vs étude {N1 seul} → INDÉTERMINÉ (pas de faux positif)',
+  app({ N: 'N+' }, [{ critere: 'N', op: 'dans', valeurs: ['N1'] }]).indeterminees.length === 1);
+t('patiente N+ (groupe) vs étude {N1 seul} → NON satisfaite',
+  app({ N: 'N+' }, [{ critere: 'N', op: 'dans', valeurs: ['N1'] }]).satisfaites.length === 0);
+t('patiente N+ (groupe) vs étude {N+} (couvre tout) → satisfaite',
+  app({ N: 'N+' }, [{ critere: 'N', op: 'dans', valeurs: ['N+'] }]).satisfaites.length === 1);
+t('patiente N+ (groupe) vs étude {N0 seul} → violée',
+  app({ N: 'N+' }, [{ critere: 'N', op: 'dans', valeurs: ['N0'] }]).violees.length === 1);
+
+// 2c. Critère d'INTERVENTION : ignoré pour l'éligibilité (pas dans le profil)
+var ri = app({ T: 'T2' }, [{ critere: 'Chirurgie_axillaire', op: 'dans', valeurs: ['CA'] }]);
+t('contrainte intervention → ni satisfaite, ni violée, ni indéterminée',
+  ri.satisfaites.length === 0 && ri.violees.length === 0 && ri.indeterminees.length === 0);
+
 // 3. Alias + casse (le bug de l'ancien moteur)
 t('RE dans {RE+} : patiente "positif" (alias, minuscule) → satisfaite',
   app({ RE: 'positif' }, [{ critere: 'RE', op: 'dans', valeurs: ['RE+'] }]).satisfaites.length === 1);
@@ -46,9 +61,9 @@ t('Age entre 40-75 : patiente 50 → satisfaite',
 t('Age entre 40-75 : patiente 80 → violée',
   app({ Age: 80 }, [{ critere: 'Age', op: 'entre', min: 40, max: 75 }]).eligible === false);
 
-// 5. Oui/Non (intervention)
-t('Chimio_neoadjuvante est true : patiente "Oui" → satisfaite',
-  app({ Chimio_neoadjuvante: 'Oui' }, [{ critere: 'Chimio_neoadjuvante', op: 'est', valeur: true }]).satisfaites.length === 1);
+// 5. Oui/Non (intervention) : ignoré pour l'éligibilité, même si le profil le porte
+t('Chimio_neoadjuvante (intervention) → ignorée, jamais satisfaite',
+  app({ Chimio_neoadjuvante: 'Oui' }, [{ critere: 'Chimio_neoadjuvante', op: 'est', valeur: true }]).satisfaites.length === 0);
 
 // 6. Indéterminé (critère non renseigné par la patiente) : ne bloque pas, remonté
 var r = app({ T: 'T2' }, [{ critere: 'N', op: 'dans', valeurs: ['N0'] }]);

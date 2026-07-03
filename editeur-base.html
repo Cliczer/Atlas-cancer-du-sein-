@@ -1081,7 +1081,9 @@ function renderContraintesRows(){
   row.style.cssText="display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;padding:8px;margin-bottom:6px;background:var(--surface-alt)";
   // sélecteur de critère
   let sel=document.createElement("select"); sel.id="ctrCrit"+i; sel.style.minWidth="190px";
-  Object.keys(crits).forEach(k=>{ let o=document.createElement("option"); o.value=k; o.textContent=(crits[k].label||k)+(crits[k].role==="intervention"?" (traitement)":""); if(k===c.critere)o.selected=true; sel.appendChild(o); });
+  // Seuls les critères d'ÉLIGIBILITÉ pèsent sur le matching (les interventions
+  // décrivent le traitement étudié, pas qui est éligible → hors de ce constructeur).
+  Object.keys(crits).filter(k=>crits[k].role!=="intervention").forEach(k=>{ let o=document.createElement("option"); o.value=k; o.textContent=(crits[k].label||k); if(k===c.critere)o.selected=true; sel.appendChild(o); });
   sel.onchange=()=>{ syncContraintesFromDOM(); let def=crits[sel.value]||{}; let c2=editContraintes[i]; c2.critere=sel.value; c2.op = def.type==="numerique"?">=":(def.type==="oui_non"?"est":"dans"); delete c2.valeurs; delete c2.valeur; delete c2.min; delete c2.max; renderContraintesRows(); };
   row.appendChild(sel);
   let def=crits[c.critere]||{};
@@ -1139,8 +1141,10 @@ function syncContraintesFromDOM(){
 
 function addContrainteRow(){
  syncContraintesFromDOM();
- let cids=Object.keys(vocabCriteres()); if(!cids.length){ alert("Dictionnaire non chargé."); return; }
- let cid=cids[0], def=vocabCriteres()[cid];
+ let crits=vocabCriteres();
+ let cids=Object.keys(crits).filter(k=>crits[k].role!=="intervention");
+ if(!cids.length){ alert("Dictionnaire non chargé."); return; }
+ let cid=cids[0], def=crits[cid];
  let c={critere:cid, op: def.type==="numerique"?">=":(def.type==="oui_non"?"est":"dans")};
  if(def.type==="numerique") c.valeur=null; else if(def.type==="oui_non") c.valeur=true; else c.valeurs=[];
  editContraintes.push(c); renderContraintesRows();
