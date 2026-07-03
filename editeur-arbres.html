@@ -909,25 +909,33 @@ let editEdgeCriteres=[];
 function renderEdgeCriteresRows(){
  let box=document.getElementById("edgeCriteresList"); if(!box) return;
  box.innerHTML="";
+ let crits=vocCriteres();
+ let source=Object.keys(crits).length?crits:criteresSchema; // dico v2, repli schéma
  editEdgeCriteres.forEach((row,i)=>{
   let line=document.createElement("div"); line.className="valRow";
   let sel=document.createElement("select"); sel.id="ecCrit"+i; sel.style.flex="1";
   let o0=document.createElement("option"); o0.value=""; o0.textContent="— Critère —"; sel.appendChild(o0);
-  Object.keys(criteresSchema).forEach(id=>{ let o=document.createElement("option"); o.value=id; o.textContent=(criteresSchema[id].label||id)+" ("+id+")"; sel.appendChild(o); });
-  if(row.critere && !criteresSchema[row.critere]){ let o=document.createElement("option"); o.value=row.critere; o.textContent=row.critere+" (hors schéma)"; sel.appendChild(o); }
+  Object.keys(source).forEach(id=>{ let o=document.createElement("option"); o.value=id; o.textContent=(source[id].label||id); sel.appendChild(o); });
+  if(row.critere && !source[row.critere]){ let o=document.createElement("option"); o.value=row.critere; o.textContent=row.critere+" (hors dictionnaire)"; sel.appendChild(o); }
   sel.value=row.critere||"";
   sel.onchange=function(){ syncEdgeCriteresFromDOM(); renderEdgeCriteresRows(); };
-  let inp=document.createElement("input"); inp.id="ecVal"+i; inp.style.flex="1"; inp.placeholder="Valeur"; inp.value=row.valeur||"";
-  let def=criteresSchema[row.critere];
-  if(def && def.type==="categoriel" && Array.isArray(def.valeurs) && def.valeurs.length){
-   inp.setAttribute("list","ecList"+i);
-   let dl=document.createElement("datalist"); dl.id="ecList"+i;
-   def.valeurs.forEach(v=>{ let o=document.createElement("option"); o.value=v; dl.appendChild(o); });
-   line.appendChild(dl);
+  let def=crits[row.critere];
+  let champ;
+  if(def && def.type==="categoriel"){
+   // Menu déroulant des valeurs du dictionnaire (id stocké), valeur résolue.
+   champ=document.createElement("select"); champ.id="ecVal"+i; champ.style.flex="1";
+   let ov=document.createElement("option"); ov.value=""; ov.textContent="— Valeur —"; champ.appendChild(ov);
+   let idResolu=vocResoudreId(row.critere, row.valeur);
+   let vus={};
+   vocOptions(row.critere).forEach(o=>{ vus[o.value]=1; let e=document.createElement("option"); e.value=o.value; e.textContent=o.label; if(o.value===idResolu)e.selected=true; champ.appendChild(e); });
+   if(row.valeur && !vus[idResolu]){ let e=document.createElement("option"); e.value=row.valeur; e.textContent=row.valeur+" (hors dictionnaire)"; e.selected=true; champ.appendChild(e); }
+  } else {
+   // Numérique / oui-non / hors dico : saisie libre (ex. plage 40-75, seuil).
+   champ=document.createElement("input"); champ.id="ecVal"+i; champ.style.flex="1"; champ.placeholder="Valeur"; champ.value=row.valeur||"";
   }
   let rm=document.createElement("button"); rm.className="danger"; rm.textContent="✕"; rm.title="Retirer ce critère";
   rm.onclick=function(){ syncEdgeCriteresFromDOM(); editEdgeCriteres.splice(i,1); renderEdgeCriteresRows(); };
-  line.appendChild(sel); line.appendChild(inp); line.appendChild(rm);
+  line.appendChild(sel); line.appendChild(champ); line.appendChild(rm);
   box.appendChild(line);
  });
 }
@@ -1331,12 +1339,41 @@ function loadSchemaCriteres(){
   .catch(err=>{ console.warn("schema_criteres.json non chargé :", err.message); criteresSchema={}; schemaComplet={}; });
 }
 
+// Dictionnaire typé v2 : alimente les menus « critère » et « valeur » des branches.
+let vocab=null, vocabIdx=null;
+function loadVocabulaire(){
+ return fetch(ATLAS_REPO_RAW_BASE+"vocabulaire.json?_v="+Date.now())
+  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(v=>{ vocab=v||null; vocabIdx=(vocab&&window.AtlasContrat)?window.AtlasContrat.indexerDictionnaire(vocab):null; })
+  .catch(err=>{ console.warn("vocabulaire.json non chargé :", err.message); vocab=null; vocabIdx=null; });
+}
+function vocCriteres(){ return (vocab&&vocab.criteres)||{}; }
+// Options de valeur d'un critère catégoriel : valeurs atomiques (libellé) + groupes.
+function vocOptions(cid){
+ let def=vocCriteres()[cid]; if(!def) return [];
+ let out=(def.valeurs||[]).map(v=>({value:v.id, label:v.libelle||v.id}));
+ Object.keys(def.groupes||{}).forEach(g=>out.push({value:g, label:g+" (groupe)"}));
+ return out;
+}
+// Résout une valeur stockée (id, libellé ou alias) vers l'id atomique du dico.
+function vocResoudreId(cid, val){
+ if(!vocabIdx || !vocabIdx[cid]) return val;
+ let r=vocabIdx[cid].resolve[String(val==null?"":val).toLowerCase().trim()];
+ return (r && r.length===1) ? r[0] : val;
+}
+
 // Validation avant export : tags de critères inconnus, réponses hors vocabulaire,
 // recommandations sans titre, questions sans réponse… sont signalés visiblement.
 function validerAvantExport(){
  if(!window.AtlasContrat) return true;
  let nom=currentExportFilename();
- let res=window.AtlasContrat.validerProtocole(nom, buildExportPayload(), schemaComplet);
+ let payload=buildExportPayload();
+ let res=window.AtlasContrat.validerProtocole(nom, payload, schemaComplet);
+ // Contrôle strict des tags contre le dictionnaire typé (même règle qu'en CI).
+ if(vocab && window.AtlasContrat.validerTagsProtocole){
+  let rt=window.AtlasContrat.validerTagsProtocole(nom, payload, vocab);
+  res={erreurs:res.erreurs.concat(rt.erreurs||[]), avertissements:res.avertissements.concat(rt.avertissements||[])};
+ }
  if(!res.erreurs.length && !res.avertissements.length) return true;
  let msg="";
  if(res.erreurs.length) msg+="❌ "+res.erreurs.length+" ERREUR(S) :\n"+res.erreurs.slice(0,8).map(m=>"• "+m).join("\n")+(res.erreurs.length>8?"\n…":"")+"\n\n";
@@ -1405,7 +1442,7 @@ function centerOnEdge(id){
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 
 setStatus("Chargement du registre des protocoles…", false);
-loadSchemaCriteres();
+Promise.all([loadSchemaCriteres(), loadVocabulaire()]);
 loadRegistry().then(()=>{
  setStatus("Registre chargé : choisissez un protocole ci-dessus, ou importez un fichier depuis l'ordinateur.", true);
  return loadAllProtocols();
