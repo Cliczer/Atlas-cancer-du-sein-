@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "mode_demo": true,
+  "_mode_demo_aide": "true = bannière « données de test non validées » affichée sur l'application. Passez à false UNIQUEMENT quand les données ont été validées cliniquement.",
   "_description": "Dictionnaire de critères TYPÉ et contrôlé — la source de vérité unique du lien arbre ↔ études. Chaque critère est une variable typée ; chaque valeur catégorielle a un id STABLE, un libellé d'affichage et des alias d'écriture (même valeur, orthographes différentes). Les 'groupes' sont des valeurs générales (ex. T1 = {T1a,T1b,T1c}) : une étude peut contraindre au niveau du groupe, une patiente au niveau atomique. Le matching = appartenance à un ensemble (catégoriel) ou test d'intervalle (numérique). Aucune comparaison de texte libre. Fichier NON encore lu par l'application (transition sans casse) ; il alimente d'abord la migration et la validation.",
 
   "roles": {

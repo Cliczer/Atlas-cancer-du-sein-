@@ -11,8 +11,7 @@
   var current    = null;
   var history    = [];
   var maxDepth   = 1;
-  var criteresSchema = {};        
-  var schemaBrut = {};            
+  var dicoIdx = null;             // index du dictionnaire (résolveur de valeurs)
   var dernieresEtudesRetenues = [];
   var dictionnaire = null;        // vocabulaire typé v2 (moteur d'appariement)
   var avertissementsSchema = [];
@@ -25,18 +24,18 @@
     return String(v).toLowerCase().trim();
   }
 
+  // Avertit si un tag d'arbre référence un critère/valeur hors dictionnaire
+  // (vocabulaire.json). Source de vérité unique : plus de schema_criteres.json.
   function validerTag(critere, valeur) {
-    var def = criteresSchema[critere];
-    if (!def) {
-      avertissements.push('Question reliée à un critère inconnu du schéma : « ' + critere +
-        ' ». Corrigez le critère dans l\'éditeur d\'arbres, ou ajoutez-le à schema_criteres.json.');
+    var e = dicoIdx && dicoIdx[critere];
+    if (!e) {
+      avertissements.push('Question reliée à un critère inconnu du dictionnaire : « ' + critere +
+        ' ». Corrigez le critère dans l\'éditeur d\'arbres, ou ajoutez-le à vocabulaire.json.');
       return;
     }
-    if (def.type === 'numerique') return; 
-    if (Array.isArray(def.valeurs) && def.valeurs.length &&
-        def.valeurs.map(normaliser).indexOf(normaliser(valeur)) === -1) {
-      avertissements.push('Réponse « ' + valeur + ' » non prévue pour le critère « ' + critere +
-        ' » (valeurs attendues : ' + def.valeurs.join(', ') + ').');
+    if (e.type !== 'categoriel') return;
+    if (valeur != null && String(valeur).trim() !== '' && !e.resolve[normaliser(valeur)]) {
+      avertissements.push('Réponse « ' + valeur + ' » non reconnue pour le critère « ' + critere + ' » (hors dictionnaire).');
     }
   }
 
@@ -161,7 +160,7 @@
         etudes = base.etudes || [];
       }
       if (window.AtlasContrat) {
-        var res = window.AtlasContrat.validerBase({ etudes: etudes }, schemaBrut);
+        var res = window.AtlasContrat.validerBase({ etudes: etudes });
         if (res.erreurs.length) {
           avertissementsSchema.push('La base d\'études contient ' + res.erreurs.length +
             ' erreur(s) de format — certaines études peuvent ne pas s\'afficher correctement.');
@@ -176,35 +175,6 @@
     });
   }
 
-  function chargerSchema() {
-    var v = '?_v=' + Date.now();
-    return fetch('./src/data/schema_criteres.json' + v).then(function(r) {
-      if (!r.ok) throw new Error('schema_criteres.json HTTP ' + r.status);
-      return r.json();
-    }).then(function(schema) {
-      if (schema && schema.criteres && typeof schema.criteres === 'object') {
-        criteresSchema = schema.criteres;
-      }
-      schemaBrut = schema || {};
-      if (schema && schema.mode_demo === false) {
-        var bn = $('demo-banner'); if (bn) bn.style.display = 'none';
-      }
-      if (window.AtlasContrat) {
-        var res = window.AtlasContrat.validerSchema(schema);
-        if (!res.ok) {
-          avertissementsSchema.push('Le contrat de données (schema_criteres.json) est mal formé : ' + res.erreurs[0]);
-          res.erreurs.forEach(function(m){ console.error('[Atlas] schema :', m); });
-        }
-      }
-      console.log('[Atlas] ✅ Schéma de critères chargé (critères canoniques : ' +
-        Object.keys(criteresSchema).length + ').');
-    }).catch(function(err) {
-      avertissementsSchema.push('Le contrat de données (schema_criteres.json) n\'a pas pu être chargé (' +
-        err.message + '). Le moteur de correspondance utilise sa configuration de secours intégrée.');
-      console.warn('[Atlas] schema_criteres.json indisponible — configuration de secours intégrée utilisée :', err.message);
-    });
-  }
-
   function chargerDictionnaire() {
     var v = '?_v=' + Date.now();
     return fetch('./src/data/vocabulaire.json' + v).then(function(r) {
@@ -212,9 +182,13 @@
       return r.json();
     }).then(function(d) {
       dictionnaire = d;
+      dicoIdx = window.AtlasContrat ? window.AtlasContrat.indexerDictionnaire(d) : null;
+      if (d && d.mode_demo === false) {
+        var bn = $('demo-banner'); if (bn) bn.style.display = 'none';
+      }
       console.log('[Atlas] ✅ Dictionnaire typé chargé (critères : ' + Object.keys((d && d.criteres) || {}).length + ').');
     }).catch(function(err) {
-      dictionnaire = null;
+      dictionnaire = null; dicoIdx = null;
       avertissementsSchema.push('Le dictionnaire de critères (vocabulaire.json) n\'a pas pu être chargé (' +
         err.message + '). L\'appariement des études au profil est indisponible.');
       console.warn('[Atlas] vocabulaire.json indisponible :', err.message);
@@ -231,9 +205,7 @@
   }
 
   function load() {
-    chargerSchema().then(function() {
-      return Promise.all([chargerDictionnaire(), chargerListeProtocoles(), chargerLitterature()]);
-    }).then(function() {
+    Promise.all([chargerDictionnaire(), chargerListeProtocoles(), chargerLitterature()]).then(function() {
       var bh = $('btn-start-hero');
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
       renderHomeBanner();
