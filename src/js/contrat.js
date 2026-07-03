@@ -222,25 +222,7 @@
 
   // Score d'une étude vs un profil patient. cfg = {mapping, numeriques, neutres, keyMapping}.
   // Les critères neutres (l'étude ne s'est pas prononcée) sont ignorés (ni score, ni concordance).
-  function calculerScore(etude, profil, cfg) {
-    cfg = cfg || {};
-    var mapping = cfg.mapping || {}, numeriques = cfg.numeriques || [], keyMapping = cfg.keyMapping || {};
-    var schemaN = { valeurs_neutres: cfg.neutres };
-    var criteres = etude.criteres || {};
-    var pts = 0, evalues = 0, colonnes = [], mismatches = [];
-    Object.keys(criteres).forEach(function(nom) {
-      var vE = criteres[nom];
-      if (estNeutre(vE, schemaN)) return;
-      var vP = valeurPatient(profil, nom, keyMapping);
-      if (vP === undefined || String(vP).trim() === '') return;
-      evalues++;
-      var s = numeriques.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE, mapping);
-      pts += s;
-      if (s > 0) colonnes.push(nom); else mismatches.push(nom);
-    });
-    return { valeur: evalues === 0 ? null : Math.round((pts / evalues) * 100), total: evalues, colonnes: colonnes, mismatches: mismatches };
-  }
-
+  
   // ── Moteur v2 : appariement par vocabulaire typé (déterministe) ──────────
   // Indexe le dictionnaire : par critère, un résolveur token(normalisé) → ids
   // atomiques (valeur, libellé, alias, ou groupe étendu). Construit une fois.
