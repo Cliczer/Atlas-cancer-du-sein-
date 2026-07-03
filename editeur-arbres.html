@@ -207,6 +207,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
   <button onclick="addEtape()">+ Étape</button>
   <button onclick="addResult()">+ Recommandation</button>
   <button onclick="toggleConnect()">Relier deux nœuds</button>
+  <button class="danger" onclick="viderArbre()" title="Efface tout l'arbre en cours d'édition (annulable avec ↩). Ne touche pas au site.">🗑 Vider l'arbre</button>
  </span>
 </div>
 
@@ -235,6 +236,7 @@ details.listGroup[open]>summary::before{content:"▾ "}
   <input id="protocolFilename" placeholder="ex. diagnostic_biopsie.json" style="width:200px">
   <button class="success" onclick="publierArbre()">Publier sur le site</button>
   <button class="primary" onclick="exportJSON()">Télécharger JSON</button>
+  <button class="danger" onclick="supprimerProtocoleActuel()" title="Retire définitivement ce protocole du site (fichier + menu)">🗑 Supprimer du site</button>
   <button onclick="AtlasPublish.demanderToken()" title="Changer le jeton GitHub enregistré">Jeton…</button>
  </span>
 </div>
@@ -1291,6 +1293,42 @@ function publierArbre(){
   })
   .then(()=>{ modifie=false; setStatus("✅ Publié sur le site : "+filename+". La mise à jour sera visible dans ~1 minute.", true); })
   .catch(err=>{ setStatus("❌ Publication impossible : "+err.message, false); alert("Publication impossible : "+err.message); });
+}
+
+// Vide entièrement l'arbre en cours d'édition (local, annulable). Ne touche pas au site.
+function viderArbre(){
+ if(!nodes.length && !edges.length) return;
+ if(!confirm("Vider entièrement l'arbre en cours d'édition ?\n\nL'arbre publié sur le site n'est PAS affecté. C'est annulable avec la flèche ↩.")) return;
+ pushHistory();
+ nodes=[]; edges=[]; selectedNode=null; selectedEdge=null; modifie=true;
+ render();
+ setStatus("Arbre vidé. (↩ pour annuler)", true);
+}
+
+// Supprime DÉFINITIVEMENT un protocole du site : fichier + entrée du registre.
+function supprimerProtocoleActuel(){
+ let filename=(document.getElementById("protocolFilename").value||"").trim();
+ if(!filename){ alert("Choisis d'abord un protocole dans « Version en ligne (du site) ». Pour seulement effacer l'éditeur, utilise « Vider l'arbre »."); return; }
+ if(!protocolesRegistry.some(p=>p.fichier===filename)){
+  alert("« "+filename+" » n'est pas un protocole publié sur le site.\nPour vider l'éditeur, utilise « 🗑 Vider l'arbre »."); return;
+ }
+ if(!window.AtlasPublish){ alert("Module de publication indisponible."); return; }
+ if(!confirm("SUPPRIMER DÉFINITIVEMENT le protocole « "+filename+" » du site ?\n\nIl sera retiré du dépôt et du menu. Les autres protocoles ne sont pas touchés.\nAction irréversible (hors historique Git).")) return;
+ setStatus("Suppression de "+filename+"…", false);
+ AtlasPublish.supprimer(ATLAS_DATA_REPO_BASE+"protocoles/"+filename, "Suppression du protocole "+filename+" via l'éditeur")
+  .then(()=>{
+   let nouveau=protocolesRegistry.filter(p=>p.fichier!==filename);
+   return AtlasPublish.publier(ATLAS_DATA_REPO_BASE+"protocoles/index.json", JSON.stringify({protocoles:nouveau}, null, 2), "Retrait de "+filename+" du registre")
+    .then(()=>{ protocolesRegistry=nouveau; populateProtocolSelect(); });
+  })
+  .then(()=>{
+   nodes=[]; edges=[]; selectedNode=null; selectedEdge=null; modifie=false;
+   document.getElementById("protocolFilename").value="";
+   let sel=document.getElementById("protocolSelect"); if(sel) sel.value="";
+   render();
+   setStatus("✅ Protocole « "+filename+" » supprimé du site.", true);
+  })
+  .catch(err=>{ setStatus("❌ Suppression impossible : "+err.message, false); alert("Suppression impossible : "+err.message); });
 }
 function saveLocal(){localStorage.setItem("arbre_senorif_editor",JSON.stringify({nodes,edges,currentMetadata,filename:document.getElementById("protocolFilename").value}));alert("Sauvegardé")}
 function loadLocal(){

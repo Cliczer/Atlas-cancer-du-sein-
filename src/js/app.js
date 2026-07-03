@@ -257,9 +257,18 @@
   }
 
   function reculer() {
-    if (!history.length) return;
-    var prev = history.pop();
-    current  = prev.node;
+    // Les nœuds « étape » sont transparents : render() les traverse et
+    // re-descend aussitôt. Revenir « sur » une étape rebondirait donc vers
+    // l'avant → on saute les étapes pour retomber sur la vraie question
+    // précédente (celle que la patiente a réellement vue).
+    var cible = null;
+    while (history.length) {
+      var h = history[history.length - 1];
+      if (h.node && h.node.type !== 'etape') { cible = history.pop(); break; }
+      history.pop();
+    }
+    if (!cible) return;
+    current = cible.node;
     render(current);
   }
 

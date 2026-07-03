@@ -77,8 +77,23 @@
     });
   }
 
+  // Supprime un fichier du dépôt (ex. retirer un protocole du site).
+  function supprimer(filePath, message) {
+    if (!getToken() && !demanderToken()) return Promise.reject(new Error('Suppression annulée : aucun jeton fourni.'));
+    return getSha(filePath).then(function (sha) {
+      if (!sha) return true; // déjà absent
+      return api('DELETE', 'contents/' + filePath, { message: message || ('Suppression de ' + filePath), sha: sha, branch: BRANCH })
+        .then(function (res) {
+          if (res.status === 401 || res.status === 403) { effacerToken(); throw new Error('Jeton refusé (HTTP ' + res.status + ').'); }
+          if (res.status !== 200) return res.text().then(function (t) { throw new Error('Suppression échouée (HTTP ' + res.status + ') ' + t.slice(0, 200)); });
+          return true;
+        });
+    });
+  }
+
   window.AtlasPublish = {
     publier: publier,
+    supprimer: supprimer,
     getToken: getToken,
     demanderToken: demanderToken,
     effacerToken: effacerToken,
