@@ -8,7 +8,6 @@
 
   var tree       = null;
   var etudes     = [];
-  var keyMapping = {};
   var current    = null;
   var history    = [];
   var maxDepth   = 1;
@@ -20,12 +19,6 @@
   var avertissements = [];        
 
   function $(id) { return document.getElementById(id); }
-
-  var NUMERIQUES_DEFAUT = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
-  var NEUTRES_DEFAUT = ['nc','-1','-1.0','nan','','n/a','nr'];
-
-  var NUMERIQUES = NUMERIQUES_DEFAUT;
-  var NEUTRES    = NEUTRES_DEFAUT;
 
   function normaliser(v) {
     if (v === null || v === undefined) return '';
@@ -89,7 +82,7 @@
   // Moteur v2 : appariement déterministe du profil aux contraintes typées de l'étude.
   function apparierEtude(etude, profilPatient) {
     if (!window.AtlasContrat || !dictionnaire) return { eligible: false, concordance: null, satisfaites: [], violees: [], indeterminees: [], indisponible: true };
-    return window.AtlasContrat.apparier(profilPatient, etude, dictionnaire, keyMapping);
+    return window.AtlasContrat.apparier(profilPatient, etude, dictionnaire);
   }
 
   // Libellé lisible d'un critère (depuis le dictionnaire), repli sur l'id.
@@ -164,10 +157,8 @@
     }).then(function(base) {
       if (Array.isArray(base)) {
         etudes     = base;
-        keyMapping = {};
       } else if (base && base.etudes) {
         etudes     = base.etudes  || [];
-        keyMapping = base.mapping || {};
       }
       if (window.AtlasContrat) {
         var res = window.AtlasContrat.validerBase({ etudes: etudes }, schemaBrut);
@@ -192,16 +183,9 @@
       return r.json();
     }).then(function(schema) {
       if (schema && schema.valeurs_synonymes && typeof schema.valeurs_synonymes === 'object') {
-        MAPPING = schema.valeurs_synonymes;
-      }
-      if (schema && Array.isArray(schema.criteres_numeriques)) {
-        NUMERIQUES = schema.criteres_numeriques;
       }
       if (schema && schema.criteres && typeof schema.criteres === 'object') {
         criteresSchema = schema.criteres;
-      }
-      if (schema && Array.isArray(schema.valeurs_neutres)) {
-        NEUTRES = schema.valeurs_neutres.map(normaliser);
       }
       schemaBrut = schema || {};
       if (schema && schema.mode_demo === false) {
@@ -214,9 +198,7 @@
           res.erreurs.forEach(function(m){ console.error('[Atlas] schema :', m); });
         }
       }
-      console.log('[Atlas] ✅ Schéma de critères chargé (critères canoniques : ' +
-        Object.keys(criteresSchema).length + ', synonymes : ' +
-        Object.keys(MAPPING).length + ', critères numériques : ' + NUMERIQUES.length + ').');
+     console.log('[Atlas] ✅ Schéma de critères chargé (critères canoniques : ' + Object.keys(criteresSchema).length + ').');
     }).catch(function(err) {
       avertissementsSchema.push('Le contrat de données (schema_criteres.json) n\'a pas pu être chargé (' +
         err.message + '). Le moteur de correspondance utilise sa configuration de secours intégrée.');
