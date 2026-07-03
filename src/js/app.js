@@ -21,44 +21,9 @@
 
   function $(id) { return document.getElementById(id); }
 
-  var MAPPING_DEFAUT = {
-    'HER2+':       ['Positif','HER2+','positif','1'],
-    'HER2-':       ['Négatif','HER2-','négatif','0','Negatif'],
-    'RE+':         ['Positif','RE+','positif','élevés','eleves'],
-    'RE-':         ['Négatif','RE-','négatif','0'],
-    'élevés':      ['Positif','positif','élevés','RE+','RP+'],
-    'RP-':         ['Négatif','RP-','négatif','0'],
-    'T1a':         ['T1','T1a','T1, T2','T1, T2, T3','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'T1b':         ['T1','T1b','T1, T2','T1, T2, T3','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'T1c':         ['T1','T1c','T1, T2','T1, T2, T3','T1, T2, T3, T4'],
-    'T2':          ['T2','T1, T2','T2, T3','T1, T2, T3','T4a, T3, T4b, T4c, T1, T2'],
-    'T3':          ['T3','T2, T3','T1, T2, T3','T2, T3, T4'],
-    'T4':          ['T4','T4d','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'T4a':         ['T4','T4a','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'T4b':         ['T4','T4b','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'T4c':         ['T4','T4c','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'T4d':         ['T4','T4d','T1, T2, T3, T4','T4a, T3, T4b, T4c, T1, T2'],
-    'Tis':         ['Tis','in situ','CCIS'],
-    'N0':          ['N0','pN0','cN0','N0, N1','N2, N3, N0, N1'],
-    'N+':          ['N+','pN+','pN1','pN1-2','pN1-3','pN4+','N1','N2','N0, N1','N2, N3, N0, N1'],
-    'Infiltrant':  ['Infiltrant','Infilitrant','invasif'],
-    'Infilitrant': ['Infiltrant','Infilitrant','invasif'],
-    'in situ':     ['in situ','Tis','CCIS'],
-    '0':           ['0','pré-ménopausée','non ménopausée','0.0'],
-    '1':           ['1','ménopausée','post-ménopausée','1.0'],
-    'Radiothérapie':   ['Radiothérapie','RT','radiotherapie'],
-    'Chimiothérapie':  ['Chimiothérapie','CT','CTadj','chimiotherapie'],
-    'Hormonothérapie': ['Hormonothérapie','Tamoxifène','tamoxifene'],
-    'Trastuzumab':     ['Trastuzumab','Herceptin','anti-HER2'],
-    'RCP':             ['RCP','rcp'],
-    'Mutation':        ['BRCA1','BRCA2'],
-    'BRCA muté':       ['BRCA1','BRCA2'],
-  };
-
   var NUMERIQUES_DEFAUT = ['Ki67 (%)','ki67','Age','age','Marges (mm)','Marges et autres paramètres'];
   var NEUTRES_DEFAUT = ['nc','-1','-1.0','nan','','n/a','nr'];
 
-  var MAPPING    = MAPPING_DEFAUT;
   var NUMERIQUES = NUMERIQUES_DEFAUT;
   var NEUTRES    = NEUTRES_DEFAUT;
 
