@@ -155,53 +155,7 @@
     return { ok: err.length === 0, erreurs: err, avertissements: avert };
   }
 
-  // ── Moteur de correspondance (matching) — logique PURE, testable ──
-  // Un critère patient (vP) vs un critère d'étude (vE). Catégoriel : égalité
-  // normalisée, synonymes (mapping) dans les deux sens, ou appartenance à une
-  // liste "a, b, c". Renvoie 1 (concorde) ou 0.
-  function matchCategoriel(vP, vE, mapping) {
-    mapping = mapping || {};
-    var nP = normaliser(vP), nE = normaliser(vE);
-    if (nP === nE) return 1;
-    if (mapping[vP] && mapping[vP].map(normaliser).indexOf(nE) !== -1) return 1;
-    if (mapping[vE] && mapping[vE].map(normaliser).indexOf(nP) !== -1) return 1;
-    if (nE.indexOf(',') !== -1) {
-      var parties = nE.split(',').map(function(p){ return p.trim(); });
-      var eqP = mapping[vP] ? mapping[vP].map(normaliser) : [];
-      for (var i = 0; i < parties.length; i++) {
-        if (parties[i] === nP || eqP.indexOf(parties[i]) !== -1) return 1;
-      }
-    }
-    return 0;
-  }
-
-  // Critère d'étude au format valeur exacte, plage "10-50" ou comparaison
-  // "<2","<=2",">2",">=2". Concordance stricte, pas de "match partiel".
-  function matchNumerique(vP, vE) {
-    var nP = normaliser(vP), nE = normaliser(vE);
-    if (nP === nE) return 1;
-    var numP = parseFloat(nP.replace(',', '.'));
-    if (isNaN(numP)) return 0;
-    var plage = nE.match(/^(-?\d+(?:[.,]\d+)?)\s*-\s*(-?\d+(?:[.,]\d+)?)$/);
-    if (plage) {
-      var lo = parseFloat(plage[1].replace(',', '.')), hi = parseFloat(plage[2].replace(',', '.'));
-      return (numP >= lo && numP <= hi) ? 1 : 0;
-    }
-    var cmp = nE.match(/^(<=|>=|<|>)\s*(-?\d+(?:[.,]\d+)?)$/);
-    if (cmp) {
-      var seuil = parseFloat(cmp[2].replace(',', '.'));
-      switch (cmp[1]) {
-        case '<':  return numP <  seuil ? 1 : 0;
-        case '<=': return numP <= seuil ? 1 : 0;
-        case '>':  return numP >  seuil ? 1 : 0;
-        case '>=': return numP >= seuil ? 1 : 0;
-      }
-    }
-    var numE = parseFloat(nE.replace(/[^0-9.-]/g, ''));
-    if (!isNaN(numE) && numP === numE) return 1;
-    return 0;
-  }
-
+  // ── Accès au profil patient ───────────────────────────────────────────────
   // Valeur du patient pour un critère : accès direct, via alias (keyMapping),
   // sinon comparaison de clés normalisées.
   function valeurPatient(profil, nomCritere, keyMapping) {
@@ -220,26 +174,6 @@
     return undefined;
   }
 
-  // Score d'une étude vs un profil patient. cfg = {mapping, numeriques, neutres, keyMapping}.
-  // Les critères neutres (l'étude ne s'est pas prononcée) sont ignorés (ni score, ni concordance).
-  function calculerScore(etude, profil, cfg) {
-    cfg = cfg || {};
-    var mapping = cfg.mapping || {}, numeriques = cfg.numeriques || [], keyMapping = cfg.keyMapping || {};
-    var schemaN = { valeurs_neutres: cfg.neutres };
-    var criteres = etude.criteres || {};
-    var pts = 0, evalues = 0, colonnes = [], mismatches = [];
-    Object.keys(criteres).forEach(function(nom) {
-      var vE = criteres[nom];
-      if (estNeutre(vE, schemaN)) return;
-      var vP = valeurPatient(profil, nom, keyMapping);
-      if (vP === undefined || String(vP).trim() === '') return;
-      evalues++;
-      var s = numeriques.indexOf(nom) !== -1 ? matchNumerique(vP, vE) : matchCategoriel(vP, vE, mapping);
-      pts += s;
-      if (s > 0) colonnes.push(nom); else mismatches.push(nom);
-    });
-    return { valeur: evalues === 0 ? null : Math.round((pts / evalues) * 100), total: evalues, colonnes: colonnes, mismatches: mismatches };
-  }
 
   // ── Moteur v2 : appariement par vocabulaire typé (déterministe) ──────────
   // Indexe le dictionnaire : par critère, un résolveur token(normalisé) → ids
@@ -468,10 +402,7 @@
     validerSchema: validerSchema,
     validerBase: validerBase,
     validerProtocole: validerProtocole,
-    matchCategoriel: matchCategoriel,
-    matchNumerique: matchNumerique,
     valeurPatient: valeurPatient,
-    calculerScore: calculerScore,
     indexerDictionnaire: indexerDictionnaire,
     apparier: apparier,
     validerContraintesEtude: validerContraintesEtude,

@@ -1,28 +1,4 @@
 {
-    "mapping": {
-        "Mutation": [
-            "Mutation constitutionnelle BRCA 1 ou 2 ?",
-            "Quel est le statut mutationnel BRCA ?"
-        ],
-        "T": [
-            "Stade tumoral (T)"
-        ],
-        "N": [
-            "Statut ganglionnaire (N)"
-        ],
-        "M": [
-            "Statut métastatique (M)"
-        ],
-        "RE": [
-            "Statut RE (récepteurs des œstrogènes)"
-        ],
-        "RP": [
-            "Statut RP (récepteurs de la progestérone)"
-        ],
-        "Age": [
-            "Âge de la patiente (années)"
-        ]
-    },
     "etudes": [
         {
             "reference": "Huang, E.H., Tucker, S.L., Strom, E.A., Mcneese, M.D., Kuerer, H.M., Buzdar, A.U., Valero, V., Perkins, G.H., Schechter, N.R., Hunt, K.K., Sahin, A.A., Hortobagyi, G.N., & Buchholz, T.A. (s.d.). La radiothérapie post-mastectomie améliore le contrôle local-régional et la survie de certaines patientes atteintes d'un cancer du sein localement avancé traitées par chimiothérapie néoadjuvante et mastectomie",
