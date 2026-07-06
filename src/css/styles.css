@@ -200,3 +200,8 @@
 .repliable.ouvert .repliable-txt { -webkit-line-clamp: unset; }
 .repliable-btn { background: none; border: none; padding: 2px 0; margin: 0; font-size: 11px; font-weight: 600; color: var(--orange, #e67e22); cursor: pointer; }
 .repliable-btn:hover { text-decoration: underline; }
+
+/* Puces de filtre des résultats (par mesure/famille) */
+.filtre-chip { font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 99px; border: 1px solid var(--border, #e5e7eb); background: #fff; color: #374151; cursor: pointer; }
+.filtre-chip:hover { background: #f3f4f6; }
+.filtre-chip.actif { background: var(--orange, #e67e22); border-color: var(--orange, #e67e22); color: #fff; }

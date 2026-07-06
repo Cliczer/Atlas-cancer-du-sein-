@@ -13,6 +13,8 @@
   var maxDepth   = 1;
   var dicoIdx = null;             // index du dictionnaire (résolveur de valeurs)
   var dernieresEtudesRetenues = [];
+  var dernierProfil = null;       // profil courant (pour re-render au changement de filtre)
+  var filtreMesure = null;        // famille de mesure filtrée (null = toutes)
   var dictionnaire = null;        // vocabulaire typé v2 (moteur d'appariement)
   var avertissementsSchema = [];
   var avertissements = [];        
@@ -445,6 +447,7 @@
 
   function renderEtudes(profil) {
     var section = $('etudes-section'); if (!section) return;
+    dernierProfil = profil;
     section.innerHTML = '';
     if (!etudes || !etudes.length) return;
 
@@ -462,7 +465,13 @@
         var na = parseFloat(a.etude.niveau_preuve) || 99, nb = parseFloat(b.etude.niveau_preuve) || 99;
         return (ib - ia) || (na - nb) || (b.m.satisfaites.length - a.m.satisfaites.length);
       });
-    dernieresEtudesRetenues = retenues.map(function(r){ return r.etude; });
+    // Quand un filtre de mesure est actif, on n'affiche que les études qui ont
+    // effectivement cette mesure (les autres n'apporteraient rien).
+    var affichees = retenues.filter(function(item){
+      if (!filtreMesure) return true;
+      return comparaisonsEtude(item.etude).some(function(c){ return familleDe(c) === filtreMesure; });
+    });
+    dernieresEtudesRetenues = affichees.map(function(r){ return r.etude; });
 
     // Écartées = la patiente est hors des critères d'inclusion (au moins une
     // contrainte violée). Comptées et explicitées, jamais masquées en silence.
@@ -486,7 +495,27 @@
       btnVP.addEventListener('click', ouvrirVuePatiente);
       section.appendChild(btnVP);
 
-      retenues.forEach(function(item) {
+      // Filtre par mesure : familles distinctes présentes dans les études retenues.
+      var familles = [];
+      retenues.forEach(function(item){ comparaisonsEtude(item.etude).forEach(function(c){ var f = familleDe(c); if (f && familles.indexOf(f) === -1) familles.push(f); }); });
+      if (filtreMesure && familles.indexOf(filtreMesure) === -1) filtreMesure = null;
+      if (familles.length > 1) {
+        var barre = document.createElement('div');
+        barre.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:16px;';
+        barre.innerHTML = '<span style="font-size:12px;color:#636e72;font-weight:600;margin-right:4px;">Filtrer les résultats :</span>';
+        var faireChip = function(nom, val){
+          var b = document.createElement('button');
+          b.className = 'filtre-chip' + (filtreMesure === val ? ' actif' : '');
+          b.textContent = nom;
+          b.addEventListener('click', function(){ filtreMesure = val; renderEtudes(dernierProfil); });
+          barre.appendChild(b);
+        };
+        faireChip('Toutes', null);
+        familles.forEach(function(f){ faireChip(f, f); });
+        section.appendChild(barre);
+      }
+
+      affichees.forEach(function(item) {
         section.appendChild(creerCarteEtude(item.etude, item.m));
       });
       configurerRepliables(section);
@@ -549,25 +578,92 @@
   
   var PALETTE_BARS = ['#2563eb','#16a34a','#9333ea','#0891b2','#f59e0b','#e11d48','#0d9488'];
 
+  // Décompose une mesure en { famille, temps }. Utilise les champs explicites
+  // famille/temps s'ils existent, sinon les DÉDUIT du libellé ("Survie globale
+  // à 5 ans" → famille "Survie globale", temps 5). Permet le graphe temporel et
+  // le filtre sans re-saisir les données existantes.
+  function analyserMesure(c) {
+    var fam = c.famille, t = (c.temps != null ? Number(c.temps) : null);
+    if (t == null) { var mt = String(c.mesure || '').match(/(\d+(?:[.,]\d+)?)\s*ans?/i); if (mt) t = parseFloat(mt[1].replace(',', '.')); }
+    if (!fam) {
+      fam = String(c.mesure || '')
+        .replace(/\s*à\s+\d+(?:[.,]\d+)?\s*ans?/gi, '')   // "… à 5 ans"
+        .replace(/\s*\d+(?:[.,]\d+)?\s*ans?/gi, '')         // "… 5 ans"
+        .replace(/\s+/g, ' ').trim() || String(c.mesure || 'Mesure');
+    }
+    return { famille: fam, temps: t };
+  }
+  function familleDe(c) { return analyserMesure(c).famille; }
+
+  function renduBarresMesure(c) {
+    function pct(v){ return Math.max(0, Math.min(100, Number(v) || 0)); }
+    var estPct = !c.unite || c.unite === '%';
+    var vals = (c.bras || []).map(function(b){ return Number(b.valeur) || 0; });
+    var maxV = Math.max.apply(null, vals.concat([0]));
+    var barres = (c.bras || []).map(function(b, i){
+      var raw = Number(b.valeur) || 0;
+      var largeur = estPct ? pct(raw) : (maxV > 0 ? Math.round(raw / maxV * 100) : 0);
+      var affich = estPct ? (pct(raw) + '%') : (raw + (c.unite ? (' ' + esc(c.unite)) : ''));
+      return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + affich + '</span></div>' +
+        '<div class="barre-track"><div class="barre-fill" style="width:' + largeur + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
+    }).join('');
+    return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + barres;
+  }
+
+  // Mini-graphe d'évolution (points connectés) pour une famille de mesures à
+  // plusieurs temps (ex. Survie globale à 5 et 10 ans), une courbe par bras.
+  function renduGrapheTemps(famille, mesures) {
+    var series = {}, temps = [], ordreBras = [];
+    mesures.forEach(function(mm){
+      var t = mm._temps; if (t == null) return;
+      if (temps.indexOf(t) === -1) temps.push(t);
+      (mm.bras || []).forEach(function(b){
+        var lab = b.label || '?', v = Number(b.valeur); if (isNaN(v)) return;
+        if (!series[lab]) { series[lab] = []; ordreBras.push(lab); }
+        series[lab].push({ t: t, v: v });
+      });
+    });
+    temps.sort(function(a,b){ return a-b; });
+    if (ordreBras.length === 0 || temps.length < 2) return null;
+    var W = 260, H = 150, padL = 16, padR = 10, padT = 12, padB = 22, maxV = 100;
+    var tmin = temps[0], tmax = temps[temps.length-1];
+    function X(t){ return padL + (tmax===tmin ? 0 : (t-tmin)/(tmax-tmin)) * (W-padL-padR); }
+    function Y(v){ return padT + (1 - Math.max(0,Math.min(maxV,v))/maxV) * (H-padT-padB); }
+    var svg = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" style="overflow:visible;">';
+    [0,50,100].forEach(function(g){ var y = Y(g); svg += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W-padR) + '" y2="' + y + '" stroke="#eef2f7"/><text x="0" y="' + (y+3) + '" font-size="8" fill="#9aa1a8">' + g + '</text>'; });
+    temps.forEach(function(t){ svg += '<text x="' + X(t) + '" y="' + (H-6) + '" font-size="9" fill="#636e72" text-anchor="middle">' + t + ' ans</text>'; });
+    ordreBras.forEach(function(lab, i){
+      var col = PALETTE_BARS[i % PALETTE_BARS.length];
+      var pts = series[lab].slice().sort(function(a,b){ return a.t-b.t; });
+      svg += '<polyline points="' + pts.map(function(p){ return X(p.t)+','+Y(p.v); }).join(' ') + '" fill="none" stroke="' + col + '" stroke-width="2"/>';
+      pts.forEach(function(p){ svg += '<circle cx="' + X(p.t) + '" cy="' + Y(p.v) + '" r="3" fill="' + col + '"/><text x="' + X(p.t) + '" y="' + (Y(p.v)-6) + '" font-size="9" fill="' + col + '" text-anchor="middle" font-weight="700">' + Math.round(p.v) + '</text>'; });
+    });
+    svg += '</svg>';
+    var leg = ordreBras.map(function(lab, i){ return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;margin-right:8px;"><span style="width:9px;height:9px;border-radius:2px;background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';display:inline-block;"></span>' + esc(lab) + '</span>'; }).join('');
+    return '<div style="font-size:11px;font-weight:700;color:#374151;margin:14px 0 4px;">' + esc(famille) + ' — évolution</div>' + svg + '<div style="margin-top:4px;line-height:1.6;">' + leg + '</div>';
+  }
+
+  // Rend les résultats chiffrés d'une étude : filtre par famille, regroupe, et
+  // affiche un graphe temporel si une famille a ≥2 temps (sinon des barres).
+  function renduResultats(comps) {
+    comps = comps.filter(function(c){ return !filtreMesure || familleDe(c) === filtreMesure; });
+    if (!comps.length) return '<div style="font-size:12px; color:#9aa1a8;">Aucun résultat pour ce filtre.</div>';
+    var groupes = {}, ordre = [];
+    comps.forEach(function(c){ var a = analyserMesure(c); c._temps = a.temps; if (!groupes[a.famille]) { groupes[a.famille] = []; ordre.push(a.famille); } groupes[a.famille].push(c); });
+    return ordre.map(function(fam){
+      var ms = groupes[fam];
+      var tousPct = ms.every(function(c){ return !c.unite || c.unite === '%'; });
+      var tempsDist = {}; ms.forEach(function(c){ if (c._temps != null) tempsDist[c._temps] = 1; });
+      if (tousPct && Object.keys(tempsDist).length >= 2) { var g = renduGrapheTemps(fam, ms); if (g) return g; }
+      return ms.map(renduBarresMesure).join('');
+    }).join('');
+  }
+
   function creerCarteEtude(etude, m) {
     var card = document.createElement('div');
     card.style.cssText = 'background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.02);';
-    function pct(v){ return Math.max(0, Math.min(100, Number(v) || 0)); }
     var comps = comparaisonsEtude(etude);
-    var barsHtml = comps.length
-      ? comps.map(function(c){
-          var estPct = !c.unite || c.unite === '%';
-          var vals = (c.bras || []).map(function(b){ return Number(b.valeur) || 0; });
-          var maxV = Math.max.apply(null, vals.concat([0]));
-          var barres = (c.bras || []).map(function(b, i){
-            var raw = Number(b.valeur) || 0;
-            var largeur = estPct ? pct(raw) : (maxV > 0 ? Math.round(raw / maxV * 100) : 0);
-            var affich = estPct ? (pct(raw) + '%') : (raw + (c.unite ? (' ' + esc(c.unite)) : ''));
-            return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + affich + '</span></div>' +
-              '<div class="barre-track"><div class="barre-fill" style="width:' + largeur + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
-          }).join('');
-          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + barres;
-        }).join('')
+    var barsHtml = comps.length ? renduResultats(comps)
       : '<div style="font-size:12px; color:#9aa1a8;">Résultats chiffrés non renseignés.</div>';
     var corr = badgeEligibilite(m);
     var satLabels = m.satisfaites.map(labelCritere);
@@ -670,7 +766,7 @@
       '<p style="color:#636e72;font-size:14px;margin:0 0 24px;">Chiffres issus de la littérature, à discuter avec votre médecin. Ils décrivent des groupes de patientes, pas une certitude individuelle.</p>';
     if (!dernieresEtudesRetenues.length) h += '<p>Aucune étude correspondante pour ce parcours.</p>';
     dernieresEtudesRetenues.slice(0, 8).forEach(function(etude) {
-      var comps = comparaisonsEtude(etude);
+      var comps = comparaisonsEtude(etude).filter(function(c){ return !filtreMesure || familleDe(c) === filtreMesure; });
       h += '<div style="border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;">';
       h += '<h3 style="font-size:18px;font-weight:800;margin:0 0 4px;">' + esc(titreEtude(etude)) + '</h3>';
       if (etude.niveau_preuve) h += '<div style="color:#636e72;font-size:13px;margin-bottom:14px;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</div>';
