@@ -29,8 +29,7 @@
                             "label": "Sans RT",
                             "valeur": 71
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 },
                 {
                     "mesure": "Survie globale à 10 ans",
@@ -43,8 +42,7 @@
                             "label": "Sans RT",
                             "valeur": 52
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 },
                 {
                     "mesure": "Contrôle loco-régional à 10 ans",
@@ -57,8 +55,7 @@
                             "label": "Sans RT",
                             "valeur": 74
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 }
             ],
             "importance": 4,
@@ -114,8 +111,7 @@
                             "label": "Pas de RT",
                             "valeur": 23
                         }
-                    ],
-                    "sens": "bas"
+                    ]
                 },
                 {
                     "mesure": "Mortalité spécifique à 20 ans",
@@ -128,8 +124,7 @@
                             "label": "Pas de RT",
                             "valeur": 35
                         }
-                    ],
-                    "sens": "bas"
+                    ]
                 }
             ],
             "importance": 2,
@@ -181,8 +176,7 @@
                             "label": "RT seule",
                             "valeur": 73
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 },
                 {
                     "mesure": "Survie globale à 10 ans",
@@ -199,8 +193,7 @@
                             "label": "RT seule",
                             "valeur": 61
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 }
             ],
             "importance": 5,
@@ -243,8 +236,7 @@
                             "label": "Chimio adjuvante",
                             "valeur": 19
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 },
                 {
                     "mesure": "Conservation mammaire",
@@ -257,8 +249,7 @@
                             "label": "Chimio adjuvante",
                             "valeur": 41
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 }
             ],
             "importance": 3,
@@ -311,8 +302,7 @@
                             "label": "Chimio seule",
                             "valeur": 75
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 },
                 {
                     "mesure": "Survie sans récidive à 5 ans",
@@ -325,8 +315,7 @@
                             "label": "Chimio seule",
                             "valeur": 67
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 }
             ],
             "importance": 5,
@@ -371,8 +360,7 @@
                             "label": "Chimio standard",
                             "valeur": 59
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 },
                 {
                     "mesure": "Survie sans progression",
@@ -385,8 +373,7 @@
                             "label": "Chimio standard",
                             "valeur": 40
                         }
-                    ],
-                    "sens": "haut"
+                    ]
                 }
             ],
             "importance": 3,
@@ -437,7 +424,6 @@
                 {
                     "mesure": "LR à 20A",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -533,7 +519,6 @@
                 {
                     "mesure": "Evénements associés au cancer du sein",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -588,7 +573,6 @@
                 {
                     "mesure": "Taux de recidive locale annuel",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -630,7 +614,6 @@
                 {
                     "mesure": "IBR",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -759,7 +742,6 @@
                 {
                     "mesure": "RR",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -866,7 +848,6 @@
                 {
                     "mesure": "Distant-DFS à 10 A",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -974,7 +955,6 @@
                 {
                     "mesure": "OS à 5A",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",
@@ -1406,7 +1386,6 @@
                 {
                     "mesure": "OS à 10A",
                     "unite": "",
-                    "sens": "",
                     "bras": [
                         {
                             "label": "Avec",

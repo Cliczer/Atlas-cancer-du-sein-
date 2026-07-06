@@ -382,7 +382,7 @@ function brasDe(c){
 }
 function loadComparaisons(e){
  if(Array.isArray(e.comparaisons)){
-  return e.comparaisons.map(c=>{ let bras=brasDe(c); if(!bras.length) bras=[{label:"",valeur:""}]; return {mesure:(c.mesure||"")||"", unite:(c.unite||""), sens:(c.sens||""), bras}; });
+  return e.comparaisons.map(c=>{ let bras=brasDe(c); if(!bras.length) bras=[{label:"",valeur:""}]; return {mesure:(c.mesure||"")||"", unite:(c.unite||""), temps:(c.temps!=null?c.temps:""), famille:(c.famille||""), bras}; });
  }
  let c=e.comparaison;
  if(c && (c.avec || c.sans)){
@@ -434,14 +434,18 @@ function exportData(){
    traitements_evalues: e.traitements_evalues.slice(),
    criteres: Object.assign({}, e.criteres),
    comparaisons: (e.comparaisons||[])
-     .map(c=>({
-       mesure: (c.mesure||"").trim(),
-       unite: (c.unite||"").trim(),
-       sens: (c.sens||"").trim(),
-       bras: (c.bras||[])
-         .filter(b=>String(b.label||"").trim()!=="" || String(b.valeur||"").trim()!=="")
-         .map(b=>({ label: (b.label||"").trim(), valeur: numOrString(b.valeur) }))
-     }))
+     .map(c=>{
+       let o={
+         mesure: (c.mesure||"").trim(),
+         unite: (c.unite||"").trim(),
+         bras: (c.bras||[])
+           .filter(b=>String(b.label||"").trim()!=="" || String(b.valeur||"").trim()!=="")
+           .map(b=>({ label: (b.label||"").trim(), valeur: numOrString(b.valeur) }))
+       };
+       if(String(c.famille||"").trim()) o.famille=String(c.famille).trim();
+       if(c.temps!=="" && c.temps!=null && !isNaN(Number(c.temps))) o.temps=Number(c.temps);
+       return o;
+     })
      .filter(c=>c.mesure!=="" || c.bras.length),
    outcomes: Object.assign({}, e.outcomes),
    importance: Number(e.importance) || 0,
@@ -695,16 +699,16 @@ function renderComparaisonsRows(){
   let u=document.createElement("input");
   u.id="cmpUnite"+i; u.placeholder="unité (% par défaut)"; u.value=row.unite||""; u.style.maxWidth="120px";
   u.title="Unité affichée : % (défaut), mois, ans, points… Pour une unité autre que %, les barres sont mises à l'échelle relative.";
-  let sens=document.createElement("select");
-  sens.id="cmpSens"+i; sens.style.maxWidth="220px";
-  sens.title="Sens clinique : indique si un chiffre élevé est plutôt favorable (ex. survie) ou défavorable (ex. récidive, toxicité). Sert à afficher un repère « plus c'est haut/bas, mieux c'est » côté patiente. Laissez « non précisé » si ce n'est pas pertinent.";
-  [["","Sens : non précisé"],["haut","↑ élevé = mieux (survie…)"],["bas","↓ bas = mieux (récidive, toxicité…)"]].forEach(([v,t])=>{
-   let o=document.createElement("option"); o.value=v; o.textContent=t; if((row.sens||"")===v) o.selected=true; sens.appendChild(o);
-  });
+  let tmp=document.createElement("input");
+  tmp.id="cmpTemps"+i; tmp.type="number"; tmp.placeholder="temps (ans)"; tmp.value=(row.temps!=null?row.temps:""); tmp.style.maxWidth="100px";
+  tmp.title="Temps de la mesure en années (ex. 5, 10). Sert à tracer le graphe d'évolution. Auto-détecté depuis le libellé si vide (« … à 5 ans »).";
+  let fam=document.createElement("input");
+  fam.id="cmpFam"+i; fam.placeholder="famille (auto si vide)"; fam.value=row.famille||""; fam.style.maxWidth="160px";
+  fam.title="Regroupe les mesures d'un même indicateur à différents temps (ex. « Survie globale » pour 5 et 10 ans). Auto-déduit du libellé si vide.";
   let rmM=document.createElement("button");
   rmM.className="small danger"; rmM.textContent="✕ mesure"; rmM.title="Retirer cette mesure";
   rmM.onclick=()=>removeComparaisonRow(i);
-  top.appendChild(m); top.appendChild(u); top.appendChild(sens); top.appendChild(rmM); block.appendChild(top);
+  top.appendChild(m); top.appendChild(u); top.appendChild(tmp); top.appendChild(fam); top.appendChild(rmM); block.appendChild(top);
 
   let brasWrap=document.createElement("div"); brasWrap.style.marginTop="6px";
   row.bras.forEach((b,j)=>{
@@ -730,7 +734,8 @@ function syncComparaisonsDraftFromDOM(){
  editComparaisons.forEach((row,i)=>{
   let m=document.getElementById("cmpMesure"+i); if(m) row.mesure=m.value;
   let u=document.getElementById("cmpUnite"+i); if(u) row.unite=u.value;
-  let s=document.getElementById("cmpSens"+i); if(s) row.sens=s.value;
+  let tp=document.getElementById("cmpTemps"+i); if(tp) row.temps=tp.value;
+  let fm=document.getElementById("cmpFam"+i); if(fm) row.famille=fm.value;
   row.bras.forEach((b,j)=>{
    let lab=document.getElementById("cmpBrasLabel"+i+"_"+j), val=document.getElementById("cmpBrasVal"+i+"_"+j);
    if(lab) b.label=lab.value;
@@ -807,14 +812,18 @@ function applyEtudeEdits(){
  e.lien = document.getElementById("editLien").value.trim();
  syncComparaisonsDraftFromDOM();
  e.comparaisons = editComparaisons
-   .map(c=>({
-     mesure:(c.mesure||"").trim(),
-     unite:(c.unite||"").trim(),
-     sens:(c.sens||"").trim(),
-     bras:(c.bras||[])
-       .map(b=>({label:(b.label||"").trim(), valeur:(b.valeur||"").trim()}))
-       .filter(b=>b.label!=="" || b.valeur!=="")
-   }))
+   .map(c=>{
+     let o={
+       mesure:(c.mesure||"").trim(),
+       unite:(c.unite||"").trim(),
+       bras:(c.bras||[])
+         .map(b=>({label:(b.label||"").trim(), valeur:(b.valeur||"").trim()}))
+         .filter(b=>b.label!=="" || b.valeur!=="")
+     };
+     if(String(c.famille||"").trim()) o.famille=String(c.famille).trim();
+     if(c.temps!=="" && c.temps!=null && !isNaN(Number(c.temps))) o.temps=Number(c.temps);
+     return o;
+   })
    .filter(c=>c.mesure!=="" || c.bras.length);
  e.contraintes = contraintesPropres();
  e.traitements_evalues = formTraitementsFields.filter((t,i)=>document.getElementById("trait"+i).checked);
