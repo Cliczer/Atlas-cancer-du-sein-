@@ -489,6 +489,7 @@
       retenues.forEach(function(item) {
         section.appendChild(creerCarteEtude(item.etude, item.m));
       });
+      configurerRepliables(section);
     }
 
     if (ecartees.length) {
@@ -523,13 +524,6 @@
     var t = '✅ ' + s + ' critère' + (s > 1 ? 's' : '') + ' d\'inclusion vérifié' + (s > 1 ? 's' : '');
     if (ind) t += ' · ' + ind + ' à préciser';
     return { texte: t, cls: 'badge-ok' };
-  }
-
-  function etoiles(n) {
-    n = Math.max(0, Math.min(5, Number(n) || 0));
-    if (!n) return '';
-    return '<span title="Importance ' + n + '/5" style="color:#f59e0b;font-size:14px;letter-spacing:1px;">' +
-      Array(n + 1).join('★') + '<span style="color:#d1d5db;">' + Array(6 - n).join('★') + '</span></span>';
   }
 
   function chips(noms, cls) {
@@ -572,7 +566,7 @@
             return '<div class="barre-header" style="margin-top:' + (i ? 8 : 0) + 'px; margin-bottom:4px;"><span>' + esc(b.label || ('Bras ' + (i+1))) + '</span><span>' + affich + '</span></div>' +
               '<div class="barre-track"><div class="barre-fill" style="width:' + largeur + '%; background:' + PALETTE_BARS[i % PALETTE_BARS.length] + ';"></div></div>';
           }).join('');
-          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + captionSens(c) + barres;
+          return (c.mesure ? '<div style="font-size:11px; font-weight:700; color:#374151; margin:14px 0 6px;">' + esc(c.mesure) + '</div>' : '') + barres;
         }).join('')
       : '<div style="font-size:12px; color:#9aa1a8;">Résultats chiffrés non renseignés.</div>';
     var corr = badgeEligibilite(m);
@@ -583,15 +577,14 @@
     card.innerHTML =
       '<div class="etude-flex" style="display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">' +
         '<div style="flex:1;">' +
-          '<h4 style="margin:0 0 4px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + esc(titreEtude(etude)) + '</h4>' +
-          (auteurs ? '<div style="font-size:12px; color:#9aa1a8; margin-bottom:10px;">' + esc(auteurs) + '</div>' : '<div style="margin-bottom:10px;"></div>') +
+          '<div class="repliable"><h4 class="repliable-txt" data-lignes="2" style="margin:0 0 4px 0; font-size:15px; color:#1a1a1a; font-weight:700;">' + esc(titreEtude(etude)) + '</h4><button class="repliable-btn" type="button">déplier ▾</button></div>' +
+          (auteurs ? '<div class="repliable" style="margin-bottom:10px;"><div class="repliable-txt" data-lignes="1" style="font-size:12px; color:#9aa1a8;">' + esc(auteurs) + '</div><button class="repliable-btn" type="button">déplier ▾</button></div>' : '<div style="margin-bottom:10px;"></div>') +
           (etude.niveau_preuve || etude.objectif ?
             '<div style="font-size:12px; color:#636e72; margin-bottom:10px;">' +
               (etude.niveau_preuve ? '<span style="font-weight:700;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</span>' : '') +
               (etude.niveau_preuve && etude.objectif ? ' — ' : '') +
               (etude.objectif ? esc(etude.objectif) : '') +
             '</div>' : '') +
-          (etude.importance ? '<div style="margin-bottom:8px;">' + etoiles(etude.importance) + '</div>' : '') +
           '<span class="badge-correspondance ' + corr.cls + '">' + corr.texte + '</span>' +
           '<button class="btn btn-ghost btn-toggle" style="padding: 6px 12px; font-size: 12px; margin: 10px 0 0; display:block;">Voir le détail des critères ↓</button>' +
           '<div class="zone-details" style="display:none; padding-top: 10px;">' +
@@ -621,9 +614,24 @@
   }
 
   function iconeFemme(couleur) {
-    return '<svg width="13" height="18" viewBox="0 0 24 30" style="margin:1px;flex-shrink:0;" aria-hidden="true">' +
-      '<circle cx="12" cy="5" r="4.2" fill="' + couleur + '"/>' +
-      '<path d="M12 10 L18 27 H6 Z" fill="' + couleur + '"/></svg>';
+    // Silhouette féminine reconnaissable (tête + robe évasée + jambes).
+    return '<svg width="12" height="19" viewBox="0 0 20 32" fill="' + couleur + '" style="margin:1.5px;flex-shrink:0;" aria-hidden="true">' +
+      '<circle cx="10" cy="5" r="4.3"/>' +
+      '<path d="M10 10c-2.4 0-3.6 1.4-4.3 3.6L3 21h3l.8-2.4V30h2.3v-7.5h1.8V30h2.3V18.6L14 21h3l-2.7-7.4C13.6 11.4 12.4 10 10 10z"/>' +
+      '</svg>';
+  }
+  // Replie/déplie les blocs de texte longs (titre, auteurs). Masque le bouton
+  // quand le texte tient déjà sur les lignes autorisées (pas de débordement).
+  function configurerRepliables(root) {
+    root.querySelectorAll('.repliable').forEach(function(r) {
+      var txt = r.querySelector('.repliable-txt'), btn = r.querySelector('.repliable-btn');
+      if (!txt || !btn) return;
+      if (txt.scrollHeight <= txt.clientHeight + 2) { btn.style.display = 'none'; return; }
+      btn.addEventListener('click', function() {
+        var ouvert = r.classList.toggle('ouvert');
+        btn.textContent = ouvert ? 'replier ▴' : 'déplier ▾';
+      });
+    });
   }
   function pictoGrille(valeur, couleur) {
     var n = Math.max(0, Math.min(100, Math.round(Number(valeur) || 0)));
@@ -634,15 +642,6 @@
     return '<div style="display:flex;flex-wrap:wrap;width:160px;flex-shrink:0;">' + femmes + '</div>';
   }
 
-  // Repère de sens clinique. Ne s'affiche QUE si le curateur l'a renseigné :
-  // affirmer une direction non validée serait dangereux (ex. laisser croire
-  // qu'une récidive élevée est « bien »). 'haut' = élevé favorable (survie),
-  // 'bas' = bas favorable (récidive, toxicité).
-  function captionSens(c) {
-    if (c.sens === 'haut') return '<div style="font-size:12px;color:#16a34a;font-weight:600;margin:2px 0 8px;">↑ Plus le chiffre est élevé, mieux c\'est.</div>';
-    if (c.sens === 'bas')  return '<div style="font-size:12px;color:#b45309;font-weight:600;margin:2px 0 8px;">↓ Plus le chiffre est bas, mieux c\'est.</div>';
-    return '';
-  }
 
   function phraseResume(c) {
     var bras = (c.bras || []).map(function(b){ return { label: b.label || '', v: Number(b.valeur) }; })
@@ -674,14 +673,12 @@
       var comps = comparaisonsEtude(etude);
       h += '<div style="border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;">';
       h += '<h3 style="font-size:18px;font-weight:800;margin:0 0 4px;">' + esc(titreEtude(etude)) + '</h3>';
-      if (etude.importance) h += '<div style="margin-bottom:6px;">' + etoiles(etude.importance) + '</div>';
       if (etude.niveau_preuve) h += '<div style="color:#636e72;font-size:13px;margin-bottom:14px;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</div>';
       if (!comps.length) h += '<p style="color:#9aa1a8;">Pas de résultat chiffré renseigné pour cette étude.</p>';
       comps.forEach(function(c) {
         var estPct = !c.unite || c.unite === '%';
         h += '<div style="margin:18px 0;">';
         if (c.mesure) h += '<div style="font-weight:700;font-size:16px;margin-bottom:12px;">' + esc(c.mesure) + '</div>';
-        h += captionSens(c);
         if (estPct) {
           (c.bras || []).forEach(function(b, i) {
             var col = PALETTE_BARS[i % PALETTE_BARS.length];

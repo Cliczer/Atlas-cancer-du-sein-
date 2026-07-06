@@ -195,6 +195,8 @@ details.listGroup[open]>summary::before{content:"▾ "}
   </select>
   <span style="font-size:12px;color:var(--text-muted);font-weight:700">OU</span>
   <button onclick="document.getElementById('fileInput').click()" title="Importer un fichier JSON depuis votre ordinateur">📁 Importer un fichier JSON</button>
+  <span style="font-size:12px;color:var(--text-muted);font-weight:700">OU</span>
+  <button class="success" onclick="nouvelArbre()" title="Crée un nouvel arbre vierge qui s'ajoutera au menu du site à la publication">➕ Nouvel arbre</button>
  </span>
 </div>
 
@@ -224,9 +226,10 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div class="grp">
  <span class="grpLabel">⚙️ Parcours</span>
  <span class="grpBtns" style="align-items:center">
-  <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer" title="Ajoute au début du parcours les questions de stade clinique (T, N, M, RE, RP, Âge) communes. À décocher pour un protocole où ces stades ne sont pas encore connus (ex. Diagnostic et biopsie).">
-   <input type="checkbox" id="preludeChk" checked> Prélude clinique (T/N/M/RE/RP/Âge)
+  <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer" title="Ajoute au début du parcours les questions de stade clinique communes. À décocher pour un protocole où ces stades ne sont pas encore connus (ex. Diagnostic et biopsie).">
+   <input type="checkbox" id="preludeChk" checked> Prélude clinique
   </label>
+  <button onclick="ouvrirPrelude()" title="Voir les questions du prélude clinique commun">👁 Voir le prélude</button>
  </span>
 </div>
 
@@ -1293,6 +1296,33 @@ function publierArbre(){
   })
   .then(()=>{ modifie=false; setStatus("✅ Publié sur le site : "+filename+". La mise à jour sera visible dans ~1 minute.", true); })
   .catch(err=>{ setStatus("❌ Publication impossible : "+err.message, false); alert("Publication impossible : "+err.message); });
+}
+
+// Crée un nouvel arbre vierge qui s'ajoutera au menu du site à la publication.
+function nouvelArbre(){
+ if(!confirmerPerteModifs()) return;
+ let nom=prompt("Nom du nouvel arbre (tel qu'il apparaîtra dans le menu du site) :","Nouveau protocole");
+ if(nom===null) return; nom=(nom||"").trim(); if(!nom){ alert("Nom vide — annulé."); return; }
+ let fichier=nom.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,50)||"protocole";
+ fichier+=".json";
+ pushHistory();
+ nodes=[]; edges=[]; selectedNode=null; selectedEdge=null;
+ currentMetadata={titre:nom};
+ let n={id:uid("n"),type:"question",titre:"Première question",donnees:{},infos_science:{},source_senorif:"",x:0,y:0};
+ nodes.push(n); selectedNode=n.id;
+ document.getElementById("protocolFilename").value=fichier;
+ modifie=true; autoLayout(); render();
+ setStatus("Nouvel arbre « "+nom+" ». Construis-le, puis « Publier sur le site » l'ajoutera au menu (fichier "+fichier+").", true);
+}
+
+// Affiche clairement le prélude clinique commun (aujourd'hui défini dans app.js).
+function ouvrirPrelude(){
+ alert("PRÉLUDE CLINIQUE — commun à tous les protocoles où la case est cochée.\n\n"+
+  "Ces questions sont posées AVANT ton arbre, dans cet ordre :\n\n"+
+  "1. Stade tumoral (T)\n2. Statut ganglionnaire (N)\n3. Statut métastatique (M)\n"+
+  "4. Récepteurs estrogènes (RE)\n5. Récepteurs progestérone (RP)\n6. Âge de la patiente\n\n"+
+  "Leurs réponses alimentent le matching avec les études.\n"+
+  "Décoche « Prélude clinique » pour le désactiver sur ce protocole (ex. Diagnostic et biopsie).");
 }
 
 // Vide entièrement l'arbre en cours d'édition (local, annulable). Ne touche pas au site.
