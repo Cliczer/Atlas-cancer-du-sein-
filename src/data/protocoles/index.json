@@ -1,9 +1,24 @@
 {
   "protocoles": [
-    { "id": "diagnostic_biopsie",   "nom": "Diagnostic et Biopsie",                 "fichier": "diagnostic_biopsie.json" },
-    { "id": "situ_infiltrant",      "nom": "Carcinomes In Situ et Infiltrants",     "fichier": "situ_infiltrant.json" },
-    { "id": "traitement_neoadjuvant", "nom": "Traitement Néoadjuvant",              "fichier": "traitement_neoadjuvant.json" },
-    { "id": "chirurgie_axillaire",  "nom": "Chirurgie Axillaire",                   "fichier": "chirurgie_axillaire.json" },
-    { "id": "radiotherapie_avance", "nom": "Radiothérapie et Cancer Avancé",        "fichier": "radiotherapie_avance.json" }
+    {
+      "id": "situ_infiltrant",
+      "nom": "Carcinomes In Situ et Infiltrants",
+      "fichier": "situ_infiltrant.json"
+    },
+    {
+      "id": "traitement_neoadjuvant",
+      "nom": "Traitement Néoadjuvant",
+      "fichier": "traitement_neoadjuvant.json"
+    },
+    {
+      "id": "chirurgie_axillaire",
+      "nom": "Chirurgie Axillaire",
+      "fichier": "chirurgie_axillaire.json"
+    },
+    {
+      "id": "radiotherapie_avance",
+      "nom": "Radiothérapie et Cancer Avancé",
+      "fichier": "radiotherapie_avance.json"
+    }
   ]
 }
