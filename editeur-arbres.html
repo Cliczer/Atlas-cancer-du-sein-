@@ -1315,14 +1315,21 @@ function nouvelArbre(){
  setStatus("Nouvel arbre « "+nom+" ». Construis-le, puis « Publier sur le site » l'ajoutera au menu (fichier "+fichier+").", true);
 }
 
-// Affiche clairement le prélude clinique commun (aujourd'hui défini dans app.js).
+// Affiche le prélude clinique commun, lu depuis src/data/prelude.json (data-driven).
 function ouvrirPrelude(){
- alert("PRÉLUDE CLINIQUE — commun à tous les protocoles où la case est cochée.\n\n"+
-  "Ces questions sont posées AVANT ton arbre, dans cet ordre :\n\n"+
-  "1. Stade tumoral (T)\n2. Statut ganglionnaire (N)\n3. Statut métastatique (M)\n"+
-  "4. Récepteurs estrogènes (RE)\n5. Récepteurs progestérone (RP)\n6. Âge de la patiente\n\n"+
-  "Leurs réponses alimentent le matching avec les études.\n"+
-  "Décoche « Prélude clinique » pour le désactiver sur ce protocole (ex. Diagnostic et biopsie).");
+ fetch(ATLAS_DATA_REPO_BASE+"prelude.json?_v="+Date.now())
+  .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(p=>{
+   let qs=(p&&p.questions)||[];
+   let lignes=qs.map((q,i)=>{
+    let vals=q.type==="numerique" ? "(valeur numérique)" : (q.options||[]).map(o=>o.choix+" → "+o.reponse).join(", ");
+    return (i+1)+". "+q.titre+"  [critère "+q.critere+"]\n     "+vals;
+   }).join("\n\n");
+   alert("PRÉLUDE CLINIQUE — commun aux protocoles où la case est cochée.\n"+
+     "Défini dans src/data/prelude.json (modifiable sans toucher au code).\n\n"+
+     lignes+"\n\nDécoche « Prélude clinique » pour le désactiver sur ce protocole.");
+  })
+  .catch(err=>alert("Impossible de lire le prélude (prelude.json) : "+err.message));
 }
 
 // Vide entièrement l'arbre en cours d'édition (local, annulable). Ne touche pas au site.

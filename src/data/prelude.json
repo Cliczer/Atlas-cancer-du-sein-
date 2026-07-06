@@ -1,0 +1,34 @@
+{
+  "_description": "Prélude clinique commun ajouté au début des protocoles où la case « Prélude clinique » est cochée. Séquence de questions posées dans l'ordre ; chaque réponse pose un tag canonique (critere + reponse) qui alimente le matching. Modifiable ici (ou via l'éditeur d'arbres) sans toucher au code.",
+  "questions": [
+    { "type": "question", "titre": "Stade tumoral (T)", "critere": "T", "options": [
+      { "choix": "Tis", "reponse": "Tis" },
+      { "choix": "T1a", "reponse": "T1a" },
+      { "choix": "T1b", "reponse": "T1b" },
+      { "choix": "T1c", "reponse": "T1c" },
+      { "choix": "T2", "reponse": "T2" },
+      { "choix": "T3", "reponse": "T3" },
+      { "choix": "T4a", "reponse": "T4a" },
+      { "choix": "T4b", "reponse": "T4b" },
+      { "choix": "T4c", "reponse": "T4c" },
+      { "choix": "T4d", "reponse": "T4d" }
+    ] },
+    { "type": "question", "titre": "Statut ganglionnaire (N)", "critere": "N", "options": [
+      { "choix": "N0", "reponse": "N0" },
+      { "choix": "N+", "reponse": "N+" }
+    ] },
+    { "type": "question", "titre": "Statut métastatique (M)", "critere": "M", "options": [
+      { "choix": "M0", "reponse": "M0" },
+      { "choix": "M1", "reponse": "M1" }
+    ] },
+    { "type": "question", "titre": "Statut RE (récepteurs des œstrogènes)", "critere": "RE", "options": [
+      { "choix": "Positif", "reponse": "RE+" },
+      { "choix": "Négatif", "reponse": "RE-" }
+    ] },
+    { "type": "question", "titre": "Statut RP (récepteurs de la progestérone)", "critere": "RP", "options": [
+      { "choix": "Positif", "reponse": "RP+" },
+      { "choix": "Négatif", "reponse": "RP-" }
+    ] },
+    { "type": "numerique", "titre": "Âge de la patiente (années)", "critere": "Age" }
+  ]
+}

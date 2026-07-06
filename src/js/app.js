@@ -16,6 +16,7 @@
   var dernierProfil = null;       // profil courant (pour re-render au changement de filtre)
   var filtreMesure = null;        // famille de mesure filtrée (null = toutes)
   var dictionnaire = null;        // vocabulaire typé v2 (moteur d'appariement)
+  var preludeConfig = null;       // prélude clinique (src/data/prelude.json)
   var avertissementsSchema = [];
   var avertissements = [];        
 
@@ -104,28 +105,26 @@
     return max;
   }
 
+  // Prélude clinique : construit depuis src/data/prelude.json (data-driven).
+  // Repli minimal intégré si le fichier n'a pas pu être chargé.
+  var PRELUDE_DEFAUT = { questions: [
+    { type: 'question', titre: 'Statut ganglionnaire (N)', critere: 'N', options: [ { choix: 'N0', reponse: 'N0' }, { choix: 'N+', reponse: 'N+' } ] },
+    { type: 'numerique', titre: 'Âge de la patiente (années)', critere: 'Age' }
+  ] };
+
+  function questionPrelude(q, suivant) {
+    if (q.type === 'numerique') return { type: 'numerique', titre: q.titre, critere: q.critere, suite: suivant };
+    var choix = {}, reponses = {};
+    (q.options || []).forEach(function(o){ choix[o.choix] = suivant; if (o.reponse != null) reponses[o.choix] = o.reponse; });
+    return { type: 'question', titre: q.titre, critere: q.critere, choix: choix, reponses: reponses };
+  }
+
   function construirePrelude(suite) {
-    var qAge = { type: 'numerique', titre: 'Âge de la patiente (années)', critere: 'Age', suite: suite };
-    var qRP  = { type: 'question', titre: 'Statut RP (récepteurs de la progestérone)', critere: 'RP',
-                 choix: { 'Positif': qAge, 'Négatif': qAge }, reponses: { 'Positif': 'RP+', 'Négatif': 'RP-' } };
-    var qRE  = { type: 'question', titre: 'Statut RE (récepteurs des œstrogènes)', critere: 'RE',
-                 choix: { 'Positif': qRP, 'Négatif': qRP }, reponses: { 'Positif': 'RE+', 'Négatif': 'RE-' } };
-    var qM   = { type: 'question', titre: 'Statut métastatique (M)', critere: 'M',
-                 choix: { 'M0': qRE, 'M1': qRE }, reponses: { 'M0': 'M0', 'M1': 'M1' } };
-    var qN   = { type: 'question', titre: 'Statut ganglionnaire (N)', critere: 'N',
-                 choix: { 'N0': qM, 'N+': qM }, reponses: { 'N0': 'N0', 'N+': 'N+' } };
-    var qT   = {
-      type: 'question', titre: 'Stade tumoral (T)', critere: 'T',
-      choix: {
-        'Tis':  qN, 'T1a': qN, 'T1b': qN, 'T1c': qN, 'T2': qN,
-        'T3':   qN, 'T4a': qN, 'T4b': qN, 'T4c': qN, 'T4d': qN
-      },
-      reponses: {
-        'Tis': 'Tis', 'T1a': 'T1a', 'T1b': 'T1b', 'T1c': 'T1c', 'T2': 'T2',
-        'T3': 'T3', 'T4a': 'T4a', 'T4b': 'T4b', 'T4c': 'T4c', 'T4d': 'T4d'
-      }
-    };
-    return qT;
+    var qs = (preludeConfig && Array.isArray(preludeConfig.questions) && preludeConfig.questions.length)
+      ? preludeConfig.questions : PRELUDE_DEFAUT.questions;
+    var courant = suite;
+    for (var i = qs.length - 1; i >= 0; i--) courant = questionPrelude(qs[i], courant);
+    return courant;
   }
 
   function chargerListeProtocoles() {
@@ -197,6 +196,20 @@
     });
   }
 
+  function chargerPrelude() {
+    var v = '?_v=' + Date.now();
+    return fetch('./src/data/prelude.json' + v).then(function(r) {
+      if (!r.ok) throw new Error('prelude.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(p) {
+      preludeConfig = p;
+      console.log('[Atlas] ✅ Prélude clinique chargé (' + ((p && p.questions) || []).length + ' questions).');
+    }).catch(function(err) {
+      preludeConfig = null;
+      console.warn('[Atlas] prelude.json indisponible — prélude de secours utilisé :', err.message);
+    });
+  }
+
   function renderHomeBanner() {
     var box = $('home-banner');
     if (!box) return;
@@ -207,7 +220,7 @@
   }
 
   function load() {
-    Promise.all([chargerDictionnaire(), chargerListeProtocoles(), chargerLitterature()]).then(function() {
+    Promise.all([chargerDictionnaire(), chargerPrelude(), chargerListeProtocoles(), chargerLitterature()]).then(function() {
       var bh = $('btn-start-hero');
       if (bh) { bh.disabled = false; bh.textContent = 'Commencer l\'évaluation →'; }
       renderHomeBanner();
