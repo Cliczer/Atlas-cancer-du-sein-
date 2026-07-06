@@ -770,31 +770,33 @@
   function ouvrirVuePatiente() {
     var ov = $('vue-patiente');
     if (!ov) { ov = document.createElement('div'); ov.id = 'vue-patiente'; document.body.appendChild(ov); }
-    ov.style.cssText = 'position:fixed;inset:0;z-index:200;background:#fff;overflow:auto;padding:32px 20px;';
-    var h = '<div style="max-width:840px;margin:0 auto;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:16px;">' +
-        '<h2 style="font-size:26px;font-weight:800;margin:0;">Ce que disent les études</h2>' +
-        '<button onclick="fermerVuePatiente()" style="font-size:16px;padding:10px 18px;border-radius:10px;border:none;background:#111;color:#fff;cursor:pointer;flex-shrink:0;">✕ Fermer</button>' +
-      '</div>' +
-      '<p style="color:#636e72;font-size:14px;margin:0 0 24px;">Chiffres issus de la littérature, à discuter avec votre médecin. Ils décrivent des groupes de patientes, pas une certitude individuelle.</p>';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:200;background:#f4f6f8;overflow:auto;';
+    var h = '<div style="position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 20px;z-index:2;">' +
+      '<div style="max-width:820px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px;">' +
+        '<h2 style="font-size:22px;font-weight:800;margin:0;">👩‍⚕️ Ce que disent les études</h2>' +
+        '<button onclick="fermerVuePatiente()" style="font-size:15px;padding:9px 16px;border-radius:10px;border:none;background:#111;color:#fff;cursor:pointer;flex-shrink:0;">✕ Fermer</button>' +
+      '</div></div>' +
+      '<div style="max-width:820px;margin:0 auto;padding:24px 20px 48px;">' +
+      '<p style="color:#636e72;font-size:14px;margin:0 0 22px;line-height:1.5;">Ces chiffres viennent de la littérature et décrivent des <b>groupes</b> de patientes — pas une certitude individuelle. À discuter avec votre médecin.' +
+      (filtreMesure ? ' <span style="background:#fff7ed;border:1px solid #fed7aa;border-radius:99px;padding:2px 10px;font-size:12px;color:#9a3412;">filtre : ' + esc(filtreMesure) + '</span>' : '') + '</p>';
     if (!dernieresEtudesRetenues.length) h += '<p>Aucune étude correspondante pour ce parcours.</p>';
     dernieresEtudesRetenues.slice(0, 8).forEach(function(etude) {
       var comps = comparaisonsEtude(etude).filter(function(c){ return !filtreMesure || familleDe(c) === filtreMesure; });
-      h += '<div style="border:1px solid #e5e7eb;border-radius:16px;padding:24px;margin-bottom:20px;">';
-      h += '<h3 style="font-size:18px;font-weight:800;margin:0 0 4px;">' + esc(titreEtude(etude)) + '</h3>';
-      if (etude.niveau_preuve) h += '<div style="color:#636e72;font-size:13px;margin-bottom:14px;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</div>';
-      if (!comps.length) h += '<p style="color:#9aa1a8;">Pas de résultat chiffré renseigné pour cette étude.</p>';
+      if (!comps.length) return;
+      h += '<div style="background:#fff;border:1px solid #edf0f3;border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.03);">';
+      h += '<div class="repliable"><h3 class="repliable-txt" data-lignes="2" style="font-size:16px;font-weight:800;margin:0 0 4px;color:#1a1a1a;">' + esc(titreEtude(etude)) + '</h3><button class="repliable-btn" type="button">déplier ▾</button></div>';
+      if (etude.niveau_preuve) h += '<div style="color:#9aa1a8;font-size:12px;margin-bottom:10px;">Niveau de preuve ' + esc(etude.niveau_preuve) + '</div>';
       comps.forEach(function(c) {
         var estPct = !c.unite || c.unite === '%';
-        h += '<div style="margin:18px 0;">';
-        if (c.mesure) h += '<div style="font-weight:700;font-size:16px;margin-bottom:12px;">' + esc(c.mesure) + '</div>';
+        h += '<div style="margin:16px 0 4px;">';
+        if (c.mesure) h += '<div style="font-weight:700;font-size:15px;color:#111;margin-bottom:10px;">' + esc(c.mesure) + '</div>';
         if (estPct) {
           (c.bras || []).forEach(function(b, i) {
             var col = PALETTE_BARS[i % PALETTE_BARS.length];
-            h += '<div style="display:flex;gap:16px;align-items:center;margin-bottom:14px;">' +
+            h += '<div style="display:flex;gap:16px;align-items:center;background:#f8fafc;border-radius:12px;padding:12px 14px;margin-bottom:10px;">' +
               pictoGrille(b.valeur, col) +
-              '<div><div style="font-size:24px;font-weight:800;color:' + col + ';">' + Math.round(Number(b.valeur) || 0) + ' sur 100</div>' +
-              '<div style="font-size:15px;color:#374151;">' + esc(b.label || ('Bras ' + (i + 1))) + '</div></div>' +
+              '<div><div style="font-size:26px;font-weight:800;color:' + col + ';line-height:1;">' + Math.round(Number(b.valeur) || 0) + '<span style="font-size:14px;font-weight:600;color:#636e72;"> sur 100</span></div>' +
+              '<div style="font-size:14px;color:#374151;margin-top:4px;">' + esc(b.label || ('Bras ' + (i + 1))) + '</div></div>' +
             '</div>';
           });
         } else {
@@ -807,7 +809,7 @@
           });
         }
         var ph = phraseResume(c);
-        if (ph) h += '<div style="font-size:15px;color:#1f2937;background:#f8fafc;border-radius:10px;padding:12px 16px;margin-top:6px;">' + ph + '</div>';
+        if (ph) h += '<div style="font-size:14px;color:#1f2937;background:#fff7ed;border:1px solid #fde3c4;border-radius:10px;padding:10px 14px;margin-top:2px;">💡 ' + ph + '</div>';
         h += '</div>';
       });
       if (etude.lien) h += '<a href="' + esc(etude.lien) + '" target="_blank" style="font-size:13px;color:#e67e22;font-weight:600;">Ouvrir l\'article →</a>';
@@ -815,6 +817,7 @@
     });
     h += '</div>';
     ov.innerHTML = h;
+    configurerRepliables(ov);
     ov.style.display = 'block';
     window.scrollTo(0, 0);
   }
