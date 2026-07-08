@@ -748,7 +748,7 @@
     for (var i = 0; i < 100; i++) {
       femmes += iconeFemme(i < n ? couleur : '#dbe0e6');
     }
-    return '<div style="display:flex;flex-wrap:wrap;width:160px;flex-shrink:0;">' + femmes + '</div>';
+    return '<div style="display:flex;flex-wrap:wrap;width:160px;margin:0 auto;justify-content:center;">' + femmes + '</div>';
   }
 
 
@@ -793,10 +793,10 @@
         if (estPct) {
           (c.bras || []).forEach(function(b, i) {
             var col = PALETTE_BARS[i % PALETTE_BARS.length];
-            h += '<div style="display:flex;gap:16px;align-items:center;background:#f8fafc;border-radius:12px;padding:12px 14px;margin-bottom:10px;">' +
+            h += '<div style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:10px;text-align:center;">' +
               pictoGrille(b.valeur, col) +
-              '<div><div style="font-size:26px;font-weight:800;color:' + col + ';line-height:1;">' + Math.round(Number(b.valeur) || 0) + '<span style="font-size:14px;font-weight:600;color:#636e72;"> sur 100</span></div>' +
-              '<div style="font-size:14px;color:#374151;margin-top:4px;">' + esc(b.label || ('Bras ' + (i + 1))) + '</div></div>' +
+              '<div style="font-size:26px;font-weight:800;color:' + col + ';line-height:1;margin-top:10px;">' + Math.round(Number(b.valeur) || 0) + '<span style="font-size:14px;font-weight:600;color:#636e72;"> sur 100</span></div>' +
+              '<div style="font-size:14px;color:#374151;margin-top:4px;">' + esc(b.label || ('Bras ' + (i + 1))) + '</div>' +
             '</div>';
           });
         } else {
