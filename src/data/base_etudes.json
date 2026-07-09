@@ -1,64 +1,69 @@
 {
     "etudes": [
         {
-            "reference": "Huang, E.H., Tucker, S.L., Strom, E.A., Mcneese, M.D., Kuerer, H.M., Buzdar, A.U., Valero, V., Perkins, G.H., Schechter, N.R., Hunt, K.K., Sahin, A.A., Hortobagyi, G.N., & Buchholz, T.A. (s.d.). La radiothérapie post-mastectomie améliore le contrôle local-régional et la survie de certaines patientes atteintes d'un cancer du sein localement avancé traitées par chimiothérapie néoadjuvante et mastectomie",
+            "titre": "Efficacité RT post M + CNA pour K localement avancé",
+            "auteurs": "",
+            "reference": "Huang, E.H., Tucker, S.L., Strom, E.A., Mcneese, M.D., Kuerer, H.M., Buzdar, A.U., Valero, V., Perkins, G.H., Schechter, N.R., Hunt, K.K., Sahin, A.A., Hortobagyi, G.N., & Buchholz, T.A. (s.d.). La radiothérapie post-mastectomie améliore le contrôle local-régional et la survie de certaines patientes atteintes d'un cancer du sein localement avancé traitées par chimiothérapie néoadjuvante et mastectomie. https://doi.org/10.1200/JCO.2004.11.129",
             "objectif": "efficacité RT post M + CNA pour K localement avancé",
             "niveau_preuve": "2",
+            "type_etude": "etude de cohorte rétrospective",
+            "lien": "",
             "criteres": {
                 "T": "T4a, T3, T4b, T4c, T1, T2",
                 "N": "N2, N3, N0, N1",
-                "M": "M0",
-                "Chirurgie_axillaire": "CA",
-                "CNA": "Oui"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "RT"
-            ],
-            "lien": "https://doi.org/10.1200/JCO.2004.11.129",
-            "auteurs": "Huang, E.H., Tucker, S.L., Strom, E.A., Mcneese, M.D., Kuerer, H.M., Buzdar, A.U., Valero, V., Perkins, G.H., Schechter, N.R., Hunt, K.K., Sahin, A.A., Hortobagyi, G.N., & Buchholz, T.A. (s.d.).",
-            "titre": "La radiothérapie post-mastectomie améliore le contrôle local-régional et la survie de certaines patientes atteintes d'un cancer du sein localement avancé traitées par chimiothérapie néoadjuvante et mastectomie",
             "comparaisons": [
                 {
-                    "mesure": "Survie globale à 5 ans",
-                    "bras": [
-                        {
-                            "label": "RT post-mastectomie",
-                            "valeur": 82
-                        },
-                        {
-                            "label": "Sans RT",
-                            "valeur": 71
-                        }
-                    ]
-                },
-                {
                     "mesure": "Survie globale à 10 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "RT post-mastectomie",
-                            "valeur": 64
+                            "label": "avec RT",
+                            "valeur": 54
                         },
                         {
-                            "label": "Sans RT",
-                            "valeur": 52
+                            "label": "sans RT",
+                            "valeur": 47
                         }
-                    ]
+                    ],
+                    "temps": 10,
+                    "famille": "Survie globale"
                 },
                 {
-                    "mesure": "Contrôle loco-régional à 10 ans",
+                    "mesure": "Survie spécifique au cancer du sein à 10 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "RT post-mastectomie",
-                            "valeur": 91
+                            "label": "avec RT",
+                            "valeur": 58
                         },
                         {
-                            "label": "Sans RT",
-                            "valeur": 74
+                            "label": "sans RT",
+                            "valeur": 55
                         }
-                    ]
+                    ],
+                    "temps": 10,
+                    "famille": "Survie spécifique au cancer du sein"
+                },
+                {
+                    "mesure": "Récidive loco-régionale à 10 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec RT",
+                            "valeur": 8
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 20
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive loco-régionale"
                 }
             ],
-            "importance": 4,
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -84,50 +89,212 @@
             ]
         },
         {
-            "reference": "Groupe d'essais sur les premiers essais sur le cancer du sein. (2014). Effet de la radiothérapie après mastectomie et chirurgie axillaire sur la récidive à 10 ans et la mortalité par cancer du sein à 20 ans : méta-analyse des données individuelles de 8 135 femmes dans 22 essais randomisés. The Lancet, 383 (9935), 2127-2135",
+            "titre": "Efficacité RT après M+CA // pN1-3",
+            "auteurs": "",
+            "reference": "Groupe d'essais sur les premiers essais sur le cancer du sein. (2014). Effet de la radiothérapie après mastectomie et chirurgie axillaire sur la récidive à 10 ans et la mortalité par cancer du sein à 20 ans : méta-analyse des données individuelles de 8 135 femmes dans 22 essais randomisés. The Lancet, 383 (9935), 2127-2135. https://doi.org/10.1016/S0140-6736(14)60488-8",
             "objectif": "Efficacité RT après M+CA // pN1-3",
             "niveau_preuve": "1",
+            "type_etude": "méta analyse (22 ECR entre 1964 et 86, ayant débuté avant 2000)",
+            "lien": "",
             "criteres": {
                 "N": "pN0",
-                "M": "M0",
-                "Chirurgie_mammaire": "MT",
-                "Chirurgie_axillaire": "CA"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "RT"
-            ],
-            "lien": "https://doi.org/10.1016/S0140-6736(14)60488-8",
-            "auteurs": "Groupe d'essais sur les premiers essais sur le cancer du sein. (2014).",
-            "titre": "Effet de la radiothérapie après mastectomie et chirurgie axillaire sur la récidive à 10 ans et la mortalité par cancer du sein à 20 ans : méta-analyse des données individuelles de 8 135 femmes dans 22 essais randomisés. The Lancet, 383 (9935), 2127-2135",
             "comparaisons": [
                 {
-                    "mesure": "Récidive à 10 ans",
+                    "mesure": "Mortalité par cancer du sein à 20 ans — pN0",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "RT",
-                            "valeur": 9
+                            "label": "RT + aires ggl",
+                            "valeur": 28.8
                         },
                         {
-                            "label": "Pas de RT",
-                            "valeur": 23
+                            "label": "sans RT",
+                            "valeur": 26.6
                         }
-                    ]
+                    ],
+                    "temps": 20,
+                    "famille": "Mortalité par cancer du sein"
                 },
                 {
-                    "mesure": "Mortalité spécifique à 20 ans",
+                    "mesure": "Mortalité par cancer du sein à 20 ans — pN+",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "RT",
-                            "valeur": 27
+                            "label": "RT + aires ggl",
+                            "valeur": 58.3
                         },
                         {
-                            "label": "Pas de RT",
-                            "valeur": 35
+                            "label": "sans RT",
+                            "valeur": 66.4
                         }
-                    ]
+                    ],
+                    "temps": 20,
+                    "famille": "Mortalité par cancer du sein"
+                },
+                {
+                    "mesure": "Mortalité par cancer du sein à 20 ans — pN1-3",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 42.3
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 50.2
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Mortalité par cancer du sein"
+                },
+                {
+                    "mesure": "Mortalité par cancer du sein à 20 ans — pN4+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 70.7
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 80
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Mortalité par cancer du sein"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 22.4
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 21.1
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 51.9
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 62.5
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN1-3",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 34.2
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 45.7
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN4+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 66.3
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 75.1
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
+                },
+                {
+                    "mesure": "Récidive loco-régionale à 10 ans — pN0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 3
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 1.6
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive loco-régionale"
+                },
+                {
+                    "mesure": "Récidive loco-régionale à 10 ans — pN+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 8.1
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 26
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive loco-régionale"
+                },
+                {
+                    "mesure": "Récidive loco-régionale à 10 ans — pN1-3",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 3.8
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 20.3
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive loco-régionale"
+                },
+                {
+                    "mesure": "Récidive loco-régionale à 10 ans — pN4+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 13
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 32.1
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive loco-régionale"
                 }
             ],
-            "importance": 2,
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "N",
@@ -146,57 +313,116 @@
             ]
         },
         {
-            "reference": "Secrétariat de l'Ebctcg, S., Darby, P., McGale, C., Correa, C., Taylor, R., Arriagada, M., Clarke, D., Cutter, C., Davies, M., Ewertz, J., Godwin, R., Gray, L., Pierce, T., Whelan, Y., Wang, K., Albain, S., Anderson, W., Barlow, J., Bergh, J. Bliss, J., Buyse, M., Cameron, D., Carrasco, E., Clarke, M., Coates, A., Collins, R., Costantino, J., Cuzick, J., Davidson, N., Davies, C., Davies, K., Delmestri, A., Di Leo, M., Dowsett, M., Elphinstone, P., Evans, V., Gelber, R., Gettins, L., Geyer, C., Goldhirsch, A., Godwin, J., Gray, R., Gregory, C., Hayes, D., Hill, J. Ingle, J., Jakesz, R., James, S., Kaufmann, M., Kerr, A., Mackinnon, E., McGale, P., Mchugh, T., Norton, L., Ohashi, Y., Paik, S., Pan, H.C., Pérez, E., Peto, R., Piccart, G., Pruneri, G., Raina, V., Ravdin, P., Robertson, J., Rutgers, E., Shao, Y. F., Swain, S., Taylor, C., Valagussa, G., Viale, G., Winer, E. et Wang, Y. (2011). Effet de la radiothérapie après une chirurgie mammaire conservatrice sur la récidive à 10 ans et la mortalité par cancer du sein à 15 ans : méta-analyse des données individuelles de 10 801 femmes dans 17 essais randomisés. The Lancet,",
+            "titre": "Impact de la RT sur le risque de récidive à 10 ans",
+            "auteurs": "",
+            "reference": "Secrétariat de l'Ebctcg, S., Darby, P., McGale, C., Correa, C., Taylor, R., Arriagada, M., Clarke, D., Cutter, C., Davies, M., Ewertz, J., Godwin, R., Gray, L., Pierce, T., Whelan, Y., Wang, K., Albain, S., Anderson, W., Barlow, J., Bergh, J. Bliss, J., Buyse, M., Cameron, D., Carrasco, E., Clarke, M., Coates, A., Collins, R., Costantino, J., Cuzick, J., Davidson, N., Davies, C., Davies, K., Delmestri, A., Di Leo, M., Dowsett, M., Elphinstone, P., Evans, V., Gelber, R., Gettins, L., Geyer, C., Goldhirsch, A., Godwin, J., Gray, R., Gregory, C., Hayes, D., Hill, J. Ingle, J., Jakesz, R., James, S., Kaufmann, M., Kerr, A., Mackinnon, E., McGale, P., Mchugh, T., Norton, L., Ohashi, Y., Paik, S., Pan, H.C., Pérez, E., Peto, R., Piccart, G., Pruneri, G., Raina, V., Ravdin, P., Robertson, J., Rutgers, E., Shao, Y. F., Swain, S., Taylor, C., Valagussa, G., Viale, G., Winer, E. et Wang, Y. (2011). Effet de la radiothérapie après une chirurgie mammaire conservatrice sur la récidive à 10 ans et la mortalité par cancer du sein à 15 ans : méta-analyse des données individuelles de 10 801 femmes dans 17 essais randomisés. The Lancet, https://doi.org/10.1016/S0140 -",
             "objectif": "Impact de la RT sur le risque de récidive à 10 ans",
             "niveau_preuve": "1",
+            "type_etude": "méta analyse (17 ECR)",
+            "lien": "",
             "criteres": {
                 "N": "pN0, pN+",
-                "M": "M0",
-                "Chirurgie_mammaire": "MP"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "RT"
-            ],
-            "lien": "https://doi.org/10.1016/S0140",
-            "auteurs": "Secrétariat de l'Ebctcg, S., Darby, P., McGale, C., Correa, C., Taylor, R., Arriagada, M., Clarke, D., Cutter, C., Davies, M., Ewertz, J., Godwin, R., Gray, L., Pierce, T., Whelan, Y., Wang, K., Albain, S., Anderson, W., Barlow, J., Bergh, J. Bliss, J., Buyse, M., Cameron, D., Carrasco, E., Clarke, M., Coates, A., Collins, R., Costantino, J., Cuzick, J., Davidson, N., Davies, C., Davies, K., Delmestri, A., Di Leo, M., Dowsett, M., Elphinstone, P., Evans, V., Gelber, R., Gettins, L., Geyer, C., Goldhirsch, A., Godwin, J., Gray, R., Gregory, C., Hayes, D., Hill, J. Ingle, J., Jakesz, R., James, S., Kaufmann, M., Kerr, A., Mackinnon, E., McGale, P., Mchugh, T., Norton, L., Ohashi, Y., Paik, S., Pan, H.C., Pérez, E., Peto, R., Piccart, G., Pruneri, G., Raina, V., Ravdin, P., Robertson, J., Rutgers, E., Shao, Y. F., Swain, S., Taylor, C., Valagussa, G., Viale, G., Winer, E. et Wang, Y. (2011).",
-            "titre": "Effet de la radiothérapie après une chirurgie mammaire conservatrice sur la récidive à 10 ans et la mortalité par cancer du sein à 15 ans : méta-analyse des données individuelles de 10 801 femmes dans 17 essais randomisés. The Lancet,",
             "comparaisons": [
                 {
-                    "mesure": "Survie sans maladie à 5 ans",
+                    "mesure": "Décès par cancer du sein à 15 ans — pN0, pN+",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Chirurgie + RT",
-                            "valeur": 88
+                            "label": "avec RT",
+                            "valeur": 21.4
                         },
                         {
-                            "label": "Chirurgie seule",
-                            "valeur": 79
-                        },
-                        {
-                            "label": "RT seule",
-                            "valeur": 73
+                            "label": "sans RT",
+                            "valeur": 25.2
                         }
-                    ]
+                    ],
+                    "temps": 15,
+                    "famille": "Décès par cancer du sein"
                 },
                 {
-                    "mesure": "Survie globale à 10 ans",
+                    "mesure": "Décès par cancer du sein à 15 ans — pN0",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Chirurgie + RT",
-                            "valeur": 76
+                            "label": "avec RT",
+                            "valeur": 17.2
                         },
                         {
-                            "label": "Chirurgie seule",
-                            "valeur": 68
-                        },
-                        {
-                            "label": "RT seule",
-                            "valeur": 61
+                            "label": "sans RT",
+                            "valeur": 20.5
                         }
-                    ]
+                    ],
+                    "temps": 15,
+                    "famille": "Décès par cancer du sein"
+                },
+                {
+                    "mesure": "Décès par cancer du sein à 15 ans — pN+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec RT",
+                            "valeur": 42.8
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 51.3
+                        }
+                    ],
+                    "temps": 15,
+                    "famille": "Décès par cancer du sein"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN0, pN+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec RT",
+                            "valeur": 19.3
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 35
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec RT",
+                            "valeur": 15.6
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 31
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
+                },
+                {
+                    "mesure": "Récidive à 10 ans — pN+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec RT",
+                            "valeur": 42.5
+                        },
+                        {
+                            "label": "sans RT",
+                            "valeur": 63.7
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive"
                 }
             ],
-            "importance": 5,
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "M",
@@ -208,51 +434,101 @@
             ]
         },
         {
-            "reference": "Donker, M., Van Tienhoven, G., Straver, M.E., Meijnen, P., Cornelis, J.H., Van De Velde, R.E., Mansel, L., Cataliotti, H., Westenberg, J.H.G., Klinkenbijl, L., Orzalesi, W.H., Bouma, H.C.J., Van Der Mijle, G.A.P., Nieuwenhuijzen, S.C., Veltkamp, L., Slaets, N.J., Duez, P.W., De Graaf, T., Van Dalen, A., Marinelli, H., Rijna, M., Snoj, N.J., Bundred, J.W.S., Merkus, Y., Belkacemi, P., Petignat, D.A.X., Schinagl, C., Coens, C.G.M. Messina, J., Bogaerts, J.T. et Rutgers, J.T. (2014). Radiothérapie ou chirurgie de l'aisselle après un ganglion sentinelle positif dans le cancer du sein (EORTC 10981-22023 AMAROS) : essai de non-infériorité randomisé, multicentrique, ouvert et de phase III. The Lancet Oncology",
+            "titre": "Essai de non inferiorité GS+RT vs GS+CA sur le controle régional avec moins d'effet IIr après GS+",
+            "auteurs": "",
+            "reference": "Donker, M., Van Tienhoven, G., Straver, M.E., Meijnen, P., Cornelis, J.H., Van De Velde, R.E., Mansel, L., Cataliotti, H., Westenberg, J.H.G., Klinkenbijl, L., Orzalesi, W.H., Bouma, H.C.J., Van Der Mijle, G.A.P., Nieuwenhuijzen, S.C., Veltkamp, L., Slaets, N.J., Duez, P.W., De Graaf, T., Van Dalen, A., Marinelli, H., Rijna, M., Snoj, N.J., Bundred, J.W.S., Merkus, Y., Belkacemi, P., Petignat, D.A.X., Schinagl, C., Coens, C.G.M. Messina, J., Bogaerts, J.T. et Rutgers, J.T. (2014). Radiothérapie ou chirurgie de l'aisselle après un ganglion sentinelle positif dans le cancer du sein (EORTC 10981-22023 AMAROS) : essai de non-infériorité randomisé, multicentrique, ouvert et de phase III. The Lancet Oncology. https://doi.org/10.1016/S1470-2045(14)70460-7",
             "objectif": "essai de non inferiorité GS+RT vs GS+CA sur le controle régional avec moins d'effet IIr après GS+",
             "niveau_preuve": "1",
+            "type_etude": "ECR de phase 3 de non-infériorité",
+            "lien": "",
             "criteres": {
                 "T": "T1, T2",
                 "N": "N0, pN+",
-                "M": "M0",
-                "Chirurgie_mammaire": "MT, MP",
-                "RT": "axillaire, supraclaviculaire"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "Chirurgie_axillaire"
-            ],
-            "lien": "https://doi.org/10.1016/S1470-2045(14)70460-7",
-            "auteurs": "Donker, M., Van Tienhoven, G., Straver, M.E., Meijnen, P., Cornelis, J.H., Van De Velde, R.E., Mansel, L., Cataliotti, H., Westenberg, J.H.G., Klinkenbijl, L., Orzalesi, W.H., Bouma, H.C.J., Van Der Mijle, G.A.P., Nieuwenhuijzen, S.C., Veltkamp, L., Slaets, N.J., Duez, P.W., De Graaf, T., Van Dalen, A., Marinelli, H., Rijna, M., Snoj, N.J., Bundred, J.W.S., Merkus, Y., Belkacemi, P., Petignat, D.A.X., Schinagl, C., Coens, C.G.M. Messina, J., Bogaerts, J.T. et Rutgers, J.T. (2014).",
-            "titre": "Radiothérapie ou chirurgie de l'aisselle après un ganglion sentinelle positif dans le cancer du sein (EORTC 10981-22023 AMAROS) : essai de non-infériorité randomisé, multicentrique, ouvert et de phase III. The Lancet Oncology",
             "comparaisons": [
                 {
-                    "mesure": "Réponse complète",
+                    "mesure": "Survie globale à 5 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Chimio néoadjuvante",
-                            "valeur": 34
+                            "label": "GS seul",
+                            "valeur": 92.5
                         },
                         {
-                            "label": "Chimio adjuvante",
-                            "valeur": 19
+                            "label": "curage axillaire",
+                            "valeur": 93.3
                         }
-                    ]
+                    ],
+                    "temps": 5,
+                    "famille": "Survie globale"
                 },
                 {
-                    "mesure": "Conservation mammaire",
+                    "mesure": "Récidive axillaire à 5 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Chimio néoadjuvante",
-                            "valeur": 63
+                            "label": "GS seul",
+                            "valeur": 1.2
                         },
                         {
-                            "label": "Chimio adjuvante",
-                            "valeur": 41
+                            "label": "curage axillaire",
+                            "valeur": 0.4
                         }
-                    ]
+                    ],
+                    "temps": 5,
+                    "famille": "Récidive axillaire"
+                },
+                {
+                    "mesure": "Survie sans maladie à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "GS seul",
+                            "valeur": 82.7
+                        },
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 86.9
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie sans maladie"
+                },
+                {
+                    "mesure": "Arm increase ≥10% à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "GS seul",
+                            "valeur": 6
+                        },
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 13
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Arm increase ≥10%"
+                },
+                {
+                    "mesure": "Clinical signs of lymphoed à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "GS seul",
+                            "valeur": 11
+                        },
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 23
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Clinical signs of lymphoed"
                 }
             ],
-            "importance": 3,
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -274,51 +550,67 @@
             ]
         },
         {
-            "reference": "Poortmans, P.M., Collette, S., Kirkove, C., Van Limbergen, E., Budach, V., Struikmans, H., Collette, L., Fourquet, A., Maingon, P., Valli, M., De Winter, K., Marnitz, S., Barillot, I., Scandolaro, L., Vonk, E., Rodenhuis, C., Marseille, H., Weidner, N., Van Tienhoven, G., Glanzmann, C., Kuten, A., Arriagada, R., Bartelink, H. et Van, W. (2015). Irradiation mammaire interne et supraclaviculaire médiale dans le cancer du sein. The New-England journal of medecine",
+            "titre": "Effet ajout RT CMI/ supra claviculaire à RT paroie/mammaire sur la survie des ♀ atteintes d'un cancer précoce",
+            "auteurs": "",
+            "reference": "Poortmans, P.M., Collette, S., Kirkove, C., Van Limbergen, E., Budach, V., Struikmans, H., Collette, L., Fourquet, A., Maingon, P., Valli, M., De Winter, K., Marnitz, S., Barillot, I., Scandolaro, L., Vonk, E., Rodenhuis, C., Marseille, H., Weidner, N., Van Tienhoven, G., Glanzmann, C., Kuten, A., Arriagada, R., Bartelink, H. et Van, W. (2015). Irradiation mammaire interne et supraclaviculaire médiale dans le cancer du sein. The New-England journal of medecine. https://doi.org/10.1056/NEJMoa1415369",
             "objectif": "Effet ajout RT CMI/ supra claviculaire à RT paroie/mammaire sur la survie des ♀ atteintes d'un cancer précoce",
             "niveau_preuve": "1",
+            "type_etude": "ECR multicentrique multinational",
+            "lien": "",
             "criteres": {
-                "M": "M0",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "Chirurgie_mammaire": "MT, MP",
-                "Chirurgie_axillaire": "CA"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "RT"
-            ],
-            "lien": "https://doi.org/10.1056/NEJMoa1415369",
-            "auteurs": "Poortmans, P.M., Collette, S., Kirkove, C., Van Limbergen, E., Budach, V., Struikmans, H., Collette, L., Fourquet, A., Maingon, P., Valli, M., De Winter, K., Marnitz, S., Barillot, I., Scandolaro, L., Vonk, E., Rodenhuis, C., Marseille, H., Weidner, N., Van Tienhoven, G., Glanzmann, C., Kuten, A., Arriagada, R., Bartelink, H. et Van, W. (2015).",
-            "titre": "Irradiation mammaire interne et supraclaviculaire médiale dans le cancer du sein. The New-England journal of medecine",
             "comparaisons": [
                 {
-                    "mesure": "Survie globale à 5 ans",
+                    "mesure": "Mortalité par cancer du sein à 10 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Trastuzumab + chimio",
-                            "valeur": 87
+                            "label": "RT + aires ggl",
+                            "valeur": 12.5
                         },
                         {
-                            "label": "Chimio seule",
-                            "valeur": 75
+                            "label": "avec RT",
+                            "valeur": 14.4
                         }
-                    ]
+                    ],
+                    "temps": 10,
+                    "famille": "Mortalité par cancer du sein"
                 },
                 {
-                    "mesure": "Survie sans récidive à 5 ans",
+                    "mesure": "Survie globale à 10 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Trastuzumab + chimio",
-                            "valeur": 81
+                            "label": "RT + aires ggl",
+                            "valeur": 82.3
                         },
                         {
-                            "label": "Chimio seule",
-                            "valeur": 67
+                            "label": "avec RT",
+                            "valeur": 80.7
                         }
-                    ]
+                    ],
+                    "temps": 10,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie sans maladie à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "RT + aires ggl",
+                            "valeur": 72.1
+                        },
+                        {
+                            "label": "avec RT",
+                            "valeur": 69.1
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie sans maladie"
                 }
             ],
-            "importance": 5,
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "M",
@@ -330,53 +622,37 @@
             ]
         },
         {
+            "titre": "Efficacité et toxicité RTmammaire accéléré et hypofractionné de 3 semaine vs schema standard sur 5 semaines, pour les ♀ atteintes d'un K invasif après MP",
+            "auteurs": "",
             "reference": "Timothy J. Whelan, Jean-Philippe Pignol, Mark N. Levine, Jim A. Julian, Robert Mackenzie, Sameer Parpia, Wendy Shelley, Laval Grimard, Julie Bowen, Himu Lukka, Francisco Perera, Anthony Fyles, Ken Schneider, Sunil Gulavita et Carolyn Freeman, publié dans The New England Journal of Medicine",
             "objectif": "Efficacité et toxicité RTmammaire accéléré et hypofractionné de 3 semaine vs schema standard sur 5 semaines, pour les ♀ atteintes d'un K invasif après MP",
             "niveau_preuve": "1",
+            "type_etude": "ECR de non inferiorité",
+            "lien": "",
             "criteres": {
                 "T": "T2, T1",
                 "N": "pN0",
-                "M": "M0",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "Chirurgie_mammaire": "MP",
-                "Chirurgie_axillaire": "CA"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "RT"
-            ],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
             "comparaisons": [
                 {
-                    "mesure": "Survie globale à 10 ans",
+                    "mesure": "Récidive locale à 10 ans",
+                    "unite": "",
                     "bras": [
                         {
-                            "label": "Inhibiteur de PARP",
-                            "valeur": 73
+                            "label": "RT standard",
+                            "valeur": 6.7
                         },
                         {
-                            "label": "Chimio standard",
-                            "valeur": 59
+                            "label": "RT hypofractionnée",
+                            "valeur": 6.2
                         }
-                    ]
-                },
-                {
-                    "mesure": "Survie sans progression",
-                    "bras": [
-                        {
-                            "label": "Inhibiteur de PARP",
-                            "valeur": 58
-                        },
-                        {
-                            "label": "Chimio standard",
-                            "valeur": 40
-                        }
-                    ]
+                    ],
+                    "temps": 10,
+                    "famille": "Récidive locale"
                 }
             ],
-            "importance": 3,
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -405,54 +681,290 @@
             ]
         },
         {
-            "reference": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.). SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF",
+            "titre": "Efficacité MP ±RT mammaire post opératoire vs MT pour les cancers invasifs",
+            "auteurs": "",
+            "reference": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.). SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF.",
             "objectif": "Efficacité MP ±RT mammaire post opératoire vs MT pour les cancers invasifs",
             "niveau_preuve": "1",
-            "criteres": {
-                "Age": "-1",
-                "Chirurgie_mammaire": "MT",
-                "Chirurgie_axillaire": "CA"
-            },
-            "traitements_evalues": [
-                "RT"
-            ],
-            "lien": null,
-            "auteurs": "Ernard, B., Isher, F., Anderson, T.A., Argolese, G.M., Eutsch, E.D., Yeon, J.-H., Eong, J., Olmark, W.A., & Abstract. (s.d.).",
-            "titre": "SUIVI SUR VINGT ANS D'UN ESSAI RANDOMISÉ COMPARANT LA MASTECTOMIE TOTALE, LA TUMORECTOMIE ET LA TUMORECTOMIE PLUS L'IRRADIATION POUR LE TRAITEMENT DU CANCER DU SEIN INVASIF",
-            "contraintes": [],
+            "type_etude": "ECR",
+            "lien": "",
+            "criteres": {},
             "comparaisons": [
                 {
-                    "mesure": "LR à 20A",
+                    "mesure": "Survie globale à 20 ans",
                     "unite": "",
                     "bras": [
                         {
-                            "label": "Avec",
+                            "label": "mastectomie totale · sans RT",
+                            "valeur": 47
+                        },
+                        {
+                            "label": "chir. conservatrice · sans RT",
+                            "valeur": 46
+                        },
+                        {
+                            "label": "chir. conservatrice · avec RT",
+                            "valeur": 46
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Récidive locale à 20 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans RT",
                             "valeur": 39.2
                         },
                         {
-                            "label": "Sans",
+                            "label": "avec RT",
                             "valeur": 14.3
                         }
-                    ]
+                    ],
+                    "temps": 20,
+                    "famille": "Récidive locale"
+                },
+                {
+                    "mesure": "Survie sans maladie à 20 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie totale · sans RT",
+                            "valeur": 36
+                        },
+                        {
+                            "label": "chir. conservatrice · sans RT",
+                            "valeur": 35
+                        },
+                        {
+                            "label": "chir. conservatrice · avec RT",
+                            "valeur": 35
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Survie sans maladie"
+                },
+                {
+                    "mesure": "Survie sans métastase à 20 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie totale · sans RT",
+                            "valeur": 49
+                        },
+                        {
+                            "label": "chir. conservatrice · sans RT",
+                            "valeur": 45
+                        },
+                        {
+                            "label": "chir. conservatrice · avec RT",
+                            "valeur": 46
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Survie sans métastase"
                 }
-            ]
+            ],
+            "importance": 0,
+            "contraintes": []
         },
         {
+            "titre": "Évaluer l'efficacité et la sécurité de différentes approches chirurgicales pour le traitement du cancer du sein, en particulier la mastectomie radicale par rapport à la mastectomie totale.",
+            "auteurs": "",
             "reference": "Bernard Fisher, M.D., Carol Redmond, Sc.D., Edwin R. Fisher, M.D., Madeline Bauer, Ph.D., Norman Wolmark, M.D., D. Lawrence Wickerham, M.D., Melvin Deutsch, M.D., Eleanor Montague, M.D., Richard Margolese, M.D., and Roger Foster, M.D. (1985) Ten-Year Results of a Randomized Clinical Trial Comparing Radical Mastectomy and Total Mastectomy with or without Radiation - The New-England journal of medecine. DOI: 10.1056/NEJM198503143121102",
             "objectif": "Évaluer l'efficacité et la sécurité de différentes approches chirurgicales pour le traitement du cancer du sein, en particulier la mastectomie radicale par rapport à la mastectomie totale.",
             "niveau_preuve": "1",
+            "type_etude": "ECR",
+            "lien": "",
             "criteres": {
                 "N": "N0",
-                "M": "M0",
-                "Chirurgie_mammaire": "M radicale",
-                "Chirurgie_axillaire": "CA",
-                "RT": "non",
-                "Autre_intervention": "Non"
+                "M": "M0"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [
+                {
+                    "mesure": "Survie globale à 10 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 58
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 59
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 54
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie globale à 10 ans — N+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 38
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 39
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie globale à 5 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 75
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 75
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 74
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie globale à 5 ans — N+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 62
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 58
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie sans maladie à 5 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 60
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 65
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 56
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie sans maladie"
+                },
+                {
+                    "mesure": "Survie sans maladie à 5 ans — N+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 45
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 40
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie sans maladie"
+                },
+                {
+                    "mesure": "Survie sans maladie à 10 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 47
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 48
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 42
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie sans maladie"
+                },
+                {
+                    "mesure": "Survie sans maladie à 10 ans — N+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 29
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 25
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie sans maladie"
+                },
+                {
+                    "mesure": "Survie sans métastase à 10 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 58
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 57
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 55
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie sans métastase"
+                },
+                {
+                    "mesure": "Survie sans métastase à 10 ans — N+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire",
+                            "valeur": 39
+                        },
+                        {
+                            "label": "sans curage",
+                            "valeur": 40
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie sans métastase"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "N",
@@ -471,86 +983,35 @@
             ]
         },
         {
+            "titre": "Efficacité et l'innocuité GS pour détecter les métastases axillaires chez les femmes atteintes d'un cancer du sein de petite taille (≤ 2 cm) VS CA",
+            "auteurs": "",
             "reference": "Veronesi, U., Paganelli, G., Viale, G. F. R. C. Path et coll. (2003). Comparaison randomisée de la biopsie des ganglions sentinelles avec la dissection axillaire de routine dans le cancer du sein. NEJM",
             "objectif": "efficacité et l'innocuité GS pour détecter les métastases axillaires chez les femmes atteintes d'un cancer du sein de petite taille (≤ 2 cm) VS CA",
             "niveau_preuve": "1",
+            "type_etude": "ECR monocentrique",
+            "lien": "",
             "criteres": {
                 "T": "T1",
-                "M": "M0",
-                "Age": "40-75",
-                "Chirurgie_mammaire": "MP",
-                "RT": "mammaire",
-                "CNA": "Non",
-                "CT_rattrapage": "Non",
-                "CTadj": "Oui, Non",
-                "Hormonotherapie": "Oui"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "Chirurgie_axillaire"
-            ],
-            "lien": null,
-            "auteurs": "Veronesi, U., Paganelli, G., Viale, G. F. R. C. Path et coll. (2003).",
-            "titre": "Comparaison randomisée de la biopsie des ganglions sentinelles avec la dissection axillaire de routine dans le cancer du sein. NEJM",
-            "contraintes": [
-                {
-                    "critere": "T",
-                    "op": "dans",
-                    "valeurs": [
-                        "T1a",
-                        "T1b",
-                        "T1c"
-                    ]
-                },
-                {
-                    "critere": "M",
-                    "op": "dans",
-                    "valeurs": [
-                        "M0"
-                    ]
-                },
-                {
-                    "critere": "Age",
-                    "op": "entre",
-                    "min": 40,
-                    "max": 75
-                }
-            ],
             "comparaisons": [
                 {
                     "mesure": "Evénements associés au cancer du sein",
                     "unite": "",
                     "bras": [
                         {
-                            "label": "Avec",
+                            "label": "GS seul",
                             "valeur": 1.6
                         },
                         {
-                            "label": "Sans",
+                            "label": "GS + curage",
                             "valeur": 1
                         }
-                    ]
+                    ],
+                    "famille": "Evénements associés au cancer du sein"
                 }
-            ]
-        },
-        {
-            "reference": "UMBERTO VERONESI , M.D., NATALE CASCINELLI , M.D., LUIGI MARIANI , M.D., MARCO GRECO , M.D., ROBERTO SACCOZZI , M.D., ALBERTO LUINI , M.D., MARISEL AGUILAR , M.D., AND ETTORE MARUBINI , PH .D - SUIVI SUR VINGT ANS D'UNE ÉTUDE RANDOMISÉE COMPARANT LA CHIRURGIE MAMMAIRE CONSERVATRICE À LA MASTECTOMIE RADICALE POUR LE CANCER DU SEIN AU STADE PRÉCOCE. N English J Med 2002 ; 347:1227-32",
-            "objectif": "comparer les résultats à long terme de la mastectomie radicale (Halsted) par rapport à la CMC+RT postopératoire chez des femmes atteintes d'un cancer du sein au stade précoce",
-            "niveau_preuve": "1",
-            "criteres": {
-                "T": "T1",
-                "M": "M0",
-                "Chirurgie_axillaire": "CA",
-                "RT": "non",
-                "CNA": "Non",
-                "CT_rattrapage": "Non",
-                "CTadj": "Oui, Non"
-            },
-            "traitements_evalues": [
-                "Chirurgie_mammaire"
             ],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -568,77 +1029,199 @@
                         "M0"
                     ]
                 }
-            ],
+            ]
+        },
+        {
+            "titre": "Comparer les résultats à long terme de la mastectomie radicale (Halsted) par rapport à la CMC+RT postopératoire chez des femmes atteintes d'un cancer du sein au stade précoce",
+            "auteurs": "",
+            "reference": "UMBERTO VERONESI , M.D., NATALE CASCINELLI , M.D., LUIGI MARIANI , M.D., MARCO GRECO , M.D., ROBERTO SACCOZZI , M.D., ALBERTO LUINI , M.D., MARISEL AGUILAR , M.D., AND ETTORE MARUBINI , PH .D - SUIVI SUR VINGT ANS D'UNE ÉTUDE RANDOMISÉE COMPARANT LA CHIRURGIE MAMMAIRE CONSERVATRICE À LA MASTECTOMIE RADICALE POUR LE CANCER DU SEIN AU STADE PRÉCOCE. N English J Med 2002 ; 347:1227-32",
+            "objectif": "comparer les résultats à long terme de la mastectomie radicale (Halsted) par rapport à la CMC+RT postopératoire chez des femmes atteintes d'un cancer du sein au stade précoce",
+            "niveau_preuve": "1",
+            "type_etude": "ECR",
+            "lien": "",
+            "criteres": {
+                "T": "T1",
+                "M": "M0"
+            },
             "comparaisons": [
+                {
+                    "mesure": "Décès toutes causes",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "Bras 1",
+                            "valeur": 41.2
+                        },
+                        {
+                            "label": "Bras 2",
+                            "valeur": 41.7
+                        }
+                    ],
+                    "famille": "Décès toutes causes"
+                },
+                {
+                    "mesure": "Mortalité par cancer du sein à 20 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "Bras 1",
+                            "valeur": 24.3
+                        },
+                        {
+                            "label": "Bras 2",
+                            "valeur": 26.1
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Mortalité par cancer du sein"
+                },
+                {
+                    "mesure": "Incidence cumulative de recidive locale à 20 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie radicale",
+                            "valeur": 2.3
+                        },
+                        {
+                            "label": "chir. conservatrice",
+                            "valeur": 8.8
+                        }
+                    ],
+                    "temps": 20,
+                    "famille": "Incidence cumulative de recidive locale"
+                },
                 {
                     "mesure": "Taux de recidive locale annuel",
                     "unite": "",
                     "bras": [
                         {
-                            "label": "Avec",
+                            "label": "mastectomie radicale · sans RT",
                             "valeur": 0.2
                         },
                         {
-                            "label": "Sans",
+                            "label": "chir. conservatrice · avec RT",
                             "valeur": 0.6
+                        },
+                        {
+                            "label": "chir. conservatrice · avec RT (2)",
+                            "valeur": 1.1
                         }
+                    ],
+                    "famille": "Taux de recidive locale annuel"
+                }
+            ],
+            "importance": 0,
+            "contraintes": [
+                {
+                    "critere": "T",
+                    "op": "dans",
+                    "valeurs": [
+                        "T1a",
+                        "T1b",
+                        "T1c"
+                    ]
+                },
+                {
+                    "critere": "M",
+                    "op": "dans",
+                    "valeurs": [
+                        "M0"
                     ]
                 }
             ]
         },
         {
+            "titre": "Sécurité BCT chez BRCA* par rapport aux non mutées, d'examiner le risque de récidive mammaire ipsilatérale (IBR) et de cancer du sein controlatéral (CBC) par rapport aux non-porteurs, et d'identifier et de classer les facteurs de risque potentiels de l'IBR et du CBC",
+            "auteurs": "",
             "reference": "Valachis A, Nearchou AD, Lind PL, Lind AP Prise en charge chirurgicale du cancer du sein chez les porteurs de mutations BRCA : revue systématique et méta-analyse. 2014. doi:10.1007/s10549-014-2890-1",
             "objectif": "sécurité BCT chez BRCA* par rapport aux non mutées, d'examiner le risque de récidive mammaire ipsilatérale (IBR) et de cancer du sein controlatéral (CBC) par rapport aux non-porteurs, et d'identifier et de classer les facteurs de risque potentiels de l'IBR et du CBC",
-            "niveau_preuve": "La qualité des preuves a été classée en niveaux (élevée, modérée, faible ou peu concluante) à l'aide d'une liste de contrôle en 16 points ; certains résultats sont étayés par des preuves modérées tandis que d'autres restent peu concluants. 2",
+            "niveau_preuve": "",
+            "type_etude": "revue systématique - méta analyse d'études observationelles (cohorte et cas témoin)",
+            "lien": "",
             "criteres": {
-                "Mutation": "BRCA1, BRCA2",
-                "Chirurgie_mammaire": "MP",
-                "RT": "mammaire",
-                "CNA": "Non",
-                "CT_rattrapage": "Non"
+                "Mutation": "BRCA1, BRCA2"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
-            "contraintes": [
-                {
-                    "critere": "Mutation",
-                    "op": "dans",
-                    "valeurs": [
-                        "BRCA_mute"
-                    ]
-                }
-            ],
             "comparaisons": [
                 {
-                    "mesure": "IBR",
+                    "mesure": "Survie globale à 15 ans",
                     "unite": "",
                     "bras": [
                         {
-                            "label": "Avec",
-                            "valeur": 17.3
+                            "label": "chir. conservatrice",
+                            "valeur": 91.8
                         },
                         {
-                            "label": "Sans",
-                            "valeur": 11
+                            "label": "mastectomie totale",
+                            "valeur": 89.8
                         }
-                    ]
+                    ],
+                    "temps": 15,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie spécifique au cancer du sein à 15 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "chir. conservatrice",
+                            "valeur": 93.5
+                        },
+                        {
+                            "label": "mastectomie totale",
+                            "valeur": 92.8
+                        }
+                    ],
+                    "temps": 15,
+                    "famille": "Survie spécifique au cancer du sein"
+                },
+                {
+                    "mesure": "Cancer du sein controlatéral",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "Bras 1",
+                            "valeur": 23.7
+                        },
+                        {
+                            "label": "Bras 2",
+                            "valeur": 6.8
+                        },
+                        {
+                            "label": "Bras 3",
+                            "valeur": 21.1
+                        },
+                        {
+                            "label": "Bras 4",
+                            "valeur": 15.1
+                        }
+                    ],
+                    "famille": "Cancer du sein controlatéral"
+                },
+                {
+                    "mesure": "True recurence",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "chir. conservatrice · avec RT",
+                            "valeur": 1.4
+                        }
+                    ],
+                    "famille": "True recurence"
+                },
+                {
+                    "mesure": "New primary cancer",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "chir. conservatrice · avec RT",
+                            "valeur": 2.1
+                        }
+                    ],
+                    "famille": "New primary cancer"
                 }
-            ]
-        },
-        {
-            "reference": "Van Sprundel TC, Schmidt MK, Rookus MA, Brohet R, van\nAsperen CJ, Rutgers EJ, Van’t Veer LJ, Tollenaar RA (2005)\nRisk reduction of contralateral breast cancer and survival after\ncontralateral prophylactic mastectomy in BRCA1 or BRCA2\nmutation carriers. Br J Cancer 93:287–292",
-            "objectif": "",
-            "niveau_preuve": null,
-            "criteres": {
-                "Mutation": "BRCA1, BRCA2",
-                "Chirurgie_mammaire": "MT"
-            },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "Mutation",
@@ -650,26 +1233,55 @@
             ]
         },
         {
+            "titre": "Van Sprundel et al. (2005)",
+            "auteurs": "",
+            "reference": "Van Sprundel TC, Schmidt MK, Rookus MA, Brohet R, van\nAsperen CJ, Rutgers EJ, Van’t Veer LJ, Tollenaar RA (2005)\nRisk reduction of contralateral breast cancer and survival after\ncontralateral prophylactic mastectomy in BRCA1 or BRCA2\nmutation carriers. Br J Cancer 93:287–292",
+            "objectif": "",
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
+            "criteres": {
+                "Mutation": "BRCA1, BRCA2"
+            },
+            "comparaisons": [
+                {
+                    "mesure": "Survie spécifique au cancer du sein",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie totale",
+                            "valeur": 0.8
+                        }
+                    ],
+                    "famille": "Survie spécifique au cancer du sein"
+                }
+            ],
+            "importance": 0,
+            "contraintes": [
+                {
+                    "critere": "Mutation",
+                    "op": "dans",
+                    "valeurs": [
+                        "BRCA_mute"
+                    ]
+                }
+            ]
+        },
+        {
+            "titre": "Effets du tamoxifène postopératoire chez les femmes ayant subi une résection chirurgicale locale du CCIS",
+            "auteurs": "",
             "reference": "Le tamoxifène postopératoire pour le carcinome canalaire in situ » rédigé par Helen Staley, Iain Mccallum et Julie Bruce, publié le 16 août 2011 avec DOI : 10.1002/14651858.CD007847.pub2",
             "objectif": "effets du tamoxifène postopératoire chez les femmes ayant subi une résection chirurgicale locale du CCIS",
             "niveau_preuve": "2",
+            "type_etude": "evue systématique et une méta-analyse d'essais contrôlés randomisés (ECR) et de quasi-ECR",
+            "lien": "",
             "criteres": {
                 "T": "Tis",
                 "N": "N0",
-                "M": "M0",
-                "Chirurgie_mammaire": "MP, MT",
-                "Chirurgie_axillaire": "GS, non",
-                "RT": "mammaire, non",
-                "CNA": "Non",
-                "CT_rattrapage": "Non",
-                "CTadj": "Non",
-                "Immunotherapie": "Non",
-                "Hormonotherapie": "Non"
+                "M": "M0"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -695,21 +1307,21 @@
             ]
         },
         {
+            "titre": "Évaluer le bénéfice de la radiothérapie postopératoire par rapport à la largeur des marges post MP pour CCIS",
+            "auteurs": "",
             "reference": "MELVIN J. SILVERSTEIN , M.D., MICHAEL D. LAGIOS , M.D., SUSAN GROSHEN , PH .D., JAMES R. WAISMAN , M.D., BERNARD S. LEWINSKY , M.D., SILVANA MARTINO , D.O., PARVIS GAMAGAMI , M.D., AND WILLIAM J. COLBURN , M.D. - L'INFLUENCE DE LA LARGEUR DES MARGES SUR LE CONTRÔLE LOCAL DU CARCINOME CANALAIRE IN SITU DU SEIN - 1999 NEJM",
             "objectif": "évaluer le bénéfice de la radiothérapie postopératoire par rapport à la largeur des marges post MP pour CCIS",
             "niveau_preuve": "2",
+            "type_etude": "observationnelle rétrospective",
+            "lien": "",
             "criteres": {
                 "T": "Tis",
                 "N": "N0",
                 "M": "M0",
-                "Marges et autres paramètres": "Marge >10mm",
-                "Chirurgie_mammaire": "MP",
-                "RT": "mammaire"
+                "Marges": "Marge >10mm"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -737,51 +1349,92 @@
                     "op": ">",
                     "valeur": 10
                 }
-            ],
-            "comparaisons": [
-                {
-                    "mesure": "RR",
-                    "unite": "",
-                    "bras": [
-                        {
-                            "label": "Avec",
-                            "valeur": 1.1
-                        },
-                        {
-                            "label": "Sans",
-                            "valeur": 1.5
-                        }
-                    ]
-                }
             ]
         },
         {
+            "titre": "Evue systématiquement la littérature sur la mastectomie totale épargnant la peau (TSSM)",
+            "auteurs": "",
             "reference": "Merisa Piper, MD,* Anne Warren Peled, MD,* Robert D. Foster, MD,*\nDan H. Moore, PhD,Þ and Laura J. Esserman, MD, MBA (2013). Mastectomie totale épargnant la peau : une revue systématique des résultats oncologiques et des complications postopératoires. doi:10.1097/SAP.0B013E31827E5333",
             "objectif": "evue systématiquement la littérature sur la mastectomie totale épargnant la peau (TSSM)",
             "niveau_preuve": "2",
-            "criteres": {
-                "Chirurgie_mammaire": "TSSM"
-            },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Merisa Piper, MD,* Anne Warren Peled, MD,* Robert D. Foster, MD,* Dan H. Moore, PhD,Þ and Laura J. Esserman, MD, MBA (2013).",
-            "titre": "Mastectomie totale épargnant la peau : une revue systématique des résultats oncologiques et des complications postopératoires. doi:10.1097/SAP.0B013E31827E5333",
+            "type_etude": "revue systématique",
+            "lien": "",
+            "criteres": {},
+            "comparaisons": [
+                {
+                    "mesure": "Atteinte du mamelon",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 6.4
+                        }
+                    ],
+                    "famille": "Atteinte du mamelon"
+                },
+                {
+                    "mesure": "LRR rate à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 4.4
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "LRR rate"
+                },
+                {
+                    "mesure": "NAC necrosis",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 8.8
+                        }
+                    ],
+                    "famille": "NAC necrosis"
+                },
+                {
+                    "mesure": "complete NAC loss// necrosis",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 2
+                        }
+                    ],
+                    "famille": "complete NAC loss// necrosis"
+                },
+                {
+                    "mesure": "expander-implant loss",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 3.9
+                        }
+                    ],
+                    "famille": "expander-implant loss"
+                }
+            ],
+            "importance": 0,
             "contraintes": []
         },
         {
+            "titre": "Revue le rôle du GS après CNA et évalue sa faisabilité, sa précision et sa capacité à éviter le CA, en particulier dans des contextes N0 et N1",
+            "auteurs": "",
             "reference": "Pilewskie M, Morrow M. Gestion des ganglions axillaires après une chimiothérapie néoadjuvante : une revue. JAMA Oncologie. Publié le 1er décembre 2016 ; doi:10.1001/jamaoncol.2016.4163",
             "objectif": "revue le rôle du GS après CNA et évalue sa faisabilité, sa précision et sa capacité à éviter le CA, en particulier dans des contextes N0 et N1",
             "niveau_preuve": "2",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T2, T3, T1",
-                "N": "N0, N1",
-                "Chirurgie_axillaire": "GS",
-                "CNA": "Oui"
+                "N": "N0, N1"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -805,22 +1458,53 @@
             ]
         },
         {
+            "titre": "Déterminer si le test du score de récurrence des 21 gènes (RS) Onco type DX pouvait prédire l'ampleur des bénéfices de la chimiothérapie chez les femmes atteintes d'un cancer du sein présentant des récepteurs d'œstrogènes positifs et des ganglions négatifs.",
+            "auteurs": "",
             "reference": "Soonmyung Paik, Gong Tang, Steven Shak, Chungyeul Kim, Joffre Baker, Wanseop Kim, Maureen Cronin, Frederick L. Baehner, Drew Watson, John Bryant, Joseph P. Costantino, Charles E. Geyer, D. Lawrence Wickerham, Norman Wolmark - Expression génique et avantages de la chimiothérapie chez les femmes atteintes d'un cancer du sein à ganglions négatifs et à récepteurs d'œstrogènes positifs » - 23 mai 2006 - DOI : 10.1200/JCO.2005.04.7985",
             "objectif": "déterminer si le test du score de récurrence des 21 gènes (RS) Onco type DX pouvait prédire l'ampleur des bénéfices de la chimiothérapie chez les femmes atteintes d'un cancer du sein présentant des récepteurs d'œstrogènes positifs et des ganglions négatifs.",
-            "niveau_preuve": "Cette étude fournit des preuves pronostiques solides grâce à des interactions statistiquement significatives (P = 0,038) mais reste une analyse d'échantillons archivés provenant d'un essai clinique randomisé",
+            "niveau_preuve": "",
+            "type_etude": "analyse rétrospective d'un essai randomisé prélevé prospectivement (NSABP B20), utilisant des blocs tumoraux archivés.",
+            "lien": "",
             "criteres": {
                 "N": "pN0",
                 "RE": "Positif",
-                "RP": "Positif",
-                "Hormonotherapie": "Tamoxifène",
-                "Autre_intervention": "Non"
+                "RP": "Positif"
             },
-            "traitements_evalues": [
-                "CTadj"
+            "comparaisons": [
+                {
+                    "mesure": "Survie globale à 10 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio",
+                            "valeur": 86.4
+                        },
+                        {
+                            "label": "avec chimio",
+                            "valeur": 89.5
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie sans maladie à 10 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio",
+                            "valeur": 83.5
+                        },
+                        {
+                            "label": "avec chimio",
+                            "valeur": 90.1
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie sans maladie"
+                }
             ],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "N",
@@ -843,40 +1527,23 @@
                         "RP+"
                     ]
                 }
-            ],
-            "comparaisons": [
-                {
-                    "mesure": "Distant-DFS à 10 A",
-                    "unite": "",
-                    "bras": [
-                        {
-                            "label": "Avec",
-                            "valeur": 87.8
-                        },
-                        {
-                            "label": "Sans",
-                            "valeur": 92.2
-                        }
-                    ]
-                }
             ]
         },
         {
+            "titre": "Déterminer la largeur de marge optimale en chirurgie mammaire conservatrice, dans le but spécifique de minimiser le risque de récidive ipsilatérale des tumeurs du sein (IBTR) dans les cancers du sein invasifs de stades I et II",
+            "auteurs": "",
             "reference": "Meena S. Moran, Stuart J. Schnitt, Armando E. Giuliano, Jay R. Harris, Seema A. Khan, Janet Horton,\nSuzanne Klimberg, Mariana Chavez-MacGregor, Gary Freedman, Nehmat Houssami, Peggy L. Johnson,\nand Monica Morrow - Society of Surgical Oncology–American Society for\nRadiation Oncology Consensus Guideline on Margins for\nBreast-Conserving Surgery With Whole-Breast Irradiation\nin Stages I and II Invasive Breast Cancer - 2014 - JCO - DOI (10.1200/JCO.2013.53.3935)",
             "objectif": "déterminer la largeur de marge optimale en chirurgie mammaire conservatrice, dans le but spécifique de minimiser le risque de récidive ipsilatérale des tumeurs du sein (IBTR) dans les cancers du sein invasifs de stades I et II",
             "niveau_preuve": "2",
+            "type_etude": "étude observationnelle basée sur des données rétrospectives et une méta-analyse de revues systématiques",
+            "lien": "",
             "criteres": {
                 "T": "T1, T2",
                 "N": "N0, N1",
-                "M": "M0",
-                "Chirurgie_mammaire": "MP",
-                "RT": "mammaire",
-                "CNA": "Non"
+                "M": "M0"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -906,27 +1573,114 @@
             ]
         },
         {
+            "titre": "Examiner l'incidence de la récidive locale (LR) et d'identifier les facteurs associés à la LR chez les patientes ayant subi une mastectomie épargnant la peau (SSM) et une reconstruction mammaire immédiate pour un cancer du sein invasif",
+            "auteurs": "",
             "reference": "Heriberto Medina-Franco, MD,* Luis O. Vasconez, MD,† R. Jobe Fix, MD,† Martin J. Heslin, MD,* Samuel W. Beenken, MD,*\nKirby I. Bland, MD,* and Marshall M. Urist, MD - Factors Associated With Local Recurrence After Skin-Sparing Mastectomy and Immediate Breast Reconstruction for Invasive Breast Cancer - 2002 - Annals of surgery",
             "objectif": "examiner l'incidence de la récidive locale (LR) et d'identifier les facteurs associés à la LR chez les patientes ayant subi une mastectomie épargnant la peau (SSM) et une reconstruction mammaire immédiate pour un cancer du sein invasif",
             "niveau_preuve": "III",
+            "type_etude": "étude de cohorte rétrospective",
+            "lien": "",
             "criteres": {
                 "T": "T1, T2, T3, T4",
                 "N": "N0, N1, N2, pN0, pN1-3, pN4+",
                 "M": "M0",
                 "RE": "Positif, Négatif",
-                "RP": "Positif, Négatif",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "Chirurgie_mammaire": "TSSM, reconstruction immédiate",
-                "Chirurgie_axillaire": "CA",
-                "RT": "non, oui",
-                "CTadj": "Oui, Non",
-                "Hormonotherapie": "Non, Oui"
+                "RP": "Positif, Négatif"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [
+                {
+                    "mesure": "Survie globale à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire · mastectomie + reconstruction",
+                            "valeur": 88
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie globale à 5 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire · mastectomie + reconstruction",
+                            "valeur": 96.5
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie globale à 5 ans — pN1-3",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire · mastectomie + reconstruction",
+                            "valeur": 79.7
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Récidive locale à 5 ans — N0",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire · mastectomie + reconstruction",
+                            "valeur": 98.4
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Récidive locale"
+                },
+                {
+                    "mesure": "Récidive locale à 5 ans — pN1-3",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire · mastectomie + reconstruction",
+                            "valeur": 86.4
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Récidive locale"
+                },
+                {
+                    "mesure": "Récidive locale à 5 ans — pN4+",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans hormonothérapie",
+                            "valeur": 89.5
+                        },
+                        {
+                            "label": "avec hormonothérapie",
+                            "valeur": 97.6
+                        },
+                        {
+                            "label": "sans hormonothérapie (2)",
+                            "valeur": 93.2
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "Récidive locale"
+                },
+                {
+                    "mesure": "Taux de recidive locale annuel",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "curage axillaire · mastectomie + reconstruction",
+                            "valeur": 4.5
+                        }
+                    ],
+                    "famille": "Taux de recidive locale annuel"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -950,37 +1704,34 @@
                         "M0"
                     ]
                 }
-            ],
-            "comparaisons": [
-                {
-                    "mesure": "OS à 5A",
-                    "unite": "",
-                    "bras": [
-                        {
-                            "label": "Avec",
-                            "valeur": 88
-                        },
-                        {
-                            "label": "Sans",
-                            "valeur": 96.5
-                        }
-                    ]
-                }
             ]
         },
         {
+            "titre": "Comparer le traitement systémique néoadjuvant (préopératoire) au traitement systémique adjuvant (post-opératoire) chez les patientes atteintes d'un cancer du sein. Il se concentre sur l'évaluation des différences en termes de survie globale, de progression de la maladie et de schémas de récidive, en particulier les récidives locorégionales",
+            "auteurs": "",
             "reference": "Davide Mauri, Nicholas Pavlidis, John P. A. Ioannidis -Neoadjuvant Versus Adjuvant Systemic Treatment in Breast Cancer: A Meta-Analysis — Journal of the National Cancer Institute (2005) ; DOI — 10.1093/jnci/dji021",
             "objectif": "comparer le traitement systémique néoadjuvant (préopératoire) au traitement systémique adjuvant (post-opératoire) chez les patientes atteintes d'un cancer du sein. Il se concentre sur l'évaluation des différences en termes de survie globale, de progression de la maladie et de schémas de récidive, en particulier les récidives locorégionales",
             "niveau_preuve": "1",
+            "type_etude": "méta-analyse d'essais contrôlés randomisés",
+            "lien": "",
             "criteres": {
-                "M": "M0",
-                "CNA": "Oui",
-                "CTadj": "Non"
+                "M": "M0"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [
+                {
+                    "mesure": "LRR rate à 5 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 1.2
+                        }
+                    ],
+                    "temps": 5,
+                    "famille": "LRR rate"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "M",
@@ -992,21 +1743,42 @@
             ]
         },
         {
-            "reference": "(9) Avril A, Faucher A, Bussieres E, Stockle E, Durand M, Mauriac L,\net al. Results of 10 years of a randomized trial of neoadjuvant chemo-\ntherapy in breast cancers larger than 3 cm. Chirurgie 1998;123:247–56",
+            "titre": "Avril et al. (1998)",
+            "auteurs": "",
+            "reference": "(9) Avril A, Faucher A, Bussieres E, Stockle E, Durand M, Mauriac L,\net al. Results of 10 years of a randomized trial of neoadjuvant chemo-\ntherapy in breast cancers larger than 3 cm. Chirurgie 1998;123:247–56.",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T2, T3",
-                "N": "N0, N1",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, \"EVM = epirubicin, vincristine, and methotrexate\", \"ETV = mitomycin, thiothepa, and vindesine\"",
-                "CTadj": "Non"
+                "N": "N0, N1"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Avril A, Faucher A, Bussieres E, Stockle E, Durand M, Mauriac L, et al.",
-            "titre": "Results of 10 years of a randomized trial of neoadjuvant chemo- therapy in breast cancers larger than 3 cm. Chirurgie 1998;123:247–56",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 33
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 30
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1027,47 +1799,91 @@
             ]
         },
         {
+            "titre": "Mauriac et al. (1999)",
+            "auteurs": "",
             "reference": "(10) Mauriac L, MacGrogan G, Avril A, Durand M, Floquet A, Debled M, et al.\nNeoadjuvant chemotherapy for operable breast carcinoma larger than 3 cm:\na unicentre randomized trial with a 124-month median follow-up. Institut\nBergonie Bordeaux Groupe Sein (IBBGS). Ann Oncol 1999 ; 10 : 47– 52",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {},
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Mauriac L, MacGrogan G, Avril A, Durand M, Floquet A, Debled M, et al.",
-            "titre": "Neoadjuvant chemotherapy for operable breast carcinoma larger than 3 cm: a unicentre randomized trial with a 124-month median follow-up. Institut Bergonie Bordeaux Groupe Sein (IBBGS). Ann Oncol 1999 ; 10 : 47– 52",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": []
         },
         {
-            "reference": "(11) Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA,\nSeleznev IK, et al. Primary (neoadjuvant) chemotherapy and radiotherapy\ncompared with primary radiotherapy alone in stage IIb-IIIa breast cancer.\nAnn Oncol 1994 ; 5 : 591– 5",
+            "titre": "Semiglazov et al. (1994)",
+            "auteurs": "",
+            "reference": "(11) Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA,\nSeleznev IK, et al. Primary (neoadjuvant) chemotherapy and radiotherapy\ncompared with primary radiotherapy alone in stage IIb-IIIa breast cancer.\nAnn Oncol 1994 ; 5 : 591– 5.",
             "objectif": "",
-            "niveau_preuve": null,
-            "criteres": {
-                "Age": "-1",
-                "CNA": "Oui, \"TMF = thiotepa, methotrexate, and fluorouracil\"",
-                "CTadj": "Oui, \"TMF = thiotepa, methotrexate, and fluorouracil\""
-            },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Semiglazov VF, Topuzov EE, Bavli JL, Moiseyenko VM, Ivanova OA, Seleznev IK, et al.",
-            "titre": "Primary (neoadjuvant) chemotherapy and radiotherapy compared with primary radiotherapy alone in stage IIb-IIIa breast cancer. Ann Oncol 1994 ; 5 : 591– 5",
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
+            "criteres": {},
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 12
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 57
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": []
         },
         {
-            "reference": "(12) Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E,\net al. Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer\n1991 ; 27 : 1668– 71",
+            "titre": "Scholl et al. (1991)",
+            "auteurs": "",
+            "reference": "(12) Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E,\net al. Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer\n1991 ; 27 : 1668– 71.",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T2, T3",
-                "N": "N1b",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\"",
-                "CTadj": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\""
+                "N": "N1b"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Scholl SM, Asselain B, Palangie T, Dorval T, Jouve M, Garcia Giralt E, et al.",
-            "titre": "Neoadjuvant chemotherapy in operable breast cancer. Eur J Cancer 1991 ; 27 : 1668– 71",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 13
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 32
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1087,21 +1903,42 @@
             ]
         },
         {
+            "titre": "Scholl et al. (1994)",
+            "auteurs": "",
             "reference": "(13) Scholl SM, Fourquet A, Asselain B, Pierga JY, Vilcoq JR, Durand JC, et al.\nNeoadjuvant versus adjuvant chemotherapy in premenopausal patients with\ntumours considered too large for breast conserving surgery: preliminary re-\nsults of a randomised trial: S6. Eur J Cancer 1994 ; 30A : 645– 52",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T2, T3",
-                "N": "N0, N1b1",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, \"FAC = fluorouracil, doxorubicin, and cyclophosphamide\"",
-                "CTadj": "Non"
+                "N": "N0, N1b1"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Scholl SM, Fourquet A, Asselain B, Pierga JY, Vilcoq JR, Durand JC, et al.",
-            "titre": "Neoadjuvant versus adjuvant chemotherapy in premenopausal patients with tumours considered too large for breast conserving surgery: preliminary re- sults of a randomised trial: S6. Eur J Cancer 1994 ; 30A : 645– 52",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 24
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 42
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1122,32 +1959,55 @@
             ]
         },
         {
-            "reference": "(14) Broet P, Scholl SM, de la Rochefordiere A, Fourquet A, Moreau T, De Rycke\nY, et al. Short and long-term effects on survival in breast cancer patients\ntreated by primary chemotherapy: an updated analysis of a randomized trial.\nBreast Cancer Res Treat 1999 ; 58 : 151– 6",
+            "titre": "Broet et al. (1999)",
+            "auteurs": "",
+            "reference": "(14) Broet P, Scholl SM, de la Rochefordiere A, Fourquet A, Moreau T, De Rycke\nY, et al. Short and long-term effects on survival in breast cancer patients\ntreated by primary chemotherapy: an updated analysis of a randomized trial.\nBreast Cancer Res Treat 1999 ; 58 : 151– 6.",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {},
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Broet P, Scholl SM, de la Rochefordiere A, Fourquet A, Moreau T, De Rycke Y, et al.",
-            "titre": "Short and long-term effects on survival in breast cancer patients treated by primary chemotherapy: an updated analysis of a randomized trial. Breast Cancer Res Treat 1999 ; 58 : 151– 6",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": []
         },
         {
-            "reference": "(15) Makris A, Powles TJ, Ashley SE, Chang J, Hickish T, Tidy VA, et al.\nA reduction in the requirements for mastectomy in a randomized trial of\nneoadjuvant chemoendocrine therapy in primary breast cancer. Ann Oncol\n1998 ; 9 : 1179– 84",
+            "titre": "Makris et al. (1998)",
+            "auteurs": "",
+            "reference": "(15) Makris A, Powles TJ, Ashley SE, Chang J, Hickish T, Tidy VA, et al.\nA reduction in the requirements for mastectomy in a randomized trial of\nneoadjuvant chemoendocrine therapy in primary breast cancer. Ann Oncol\n1998 ; 9 : 1179– 84.",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T0, T1, T4, T2, T3",
-                "N": "N0, N1",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\"",
-                "CTadj": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\""
+                "N": "N0, N1"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Makris A, Powles TJ, Ashley SE, Chang J, Hickish T, Tidy VA, et al.",
-            "titre": "A reduction in the requirements for mastectomy in a randomized trial of neoadjuvant chemoendocrine therapy in primary breast cancer. Ann Oncol 1998 ; 9 : 1179– 84",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 22
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 61
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1176,21 +2036,42 @@
             ]
         },
         {
+            "titre": "Fisher et al. (1998)",
+            "auteurs": "",
             "reference": "(16)Fisher B, Bryant J, Wolmark N, Mamounas E, Brown A, Fisher ER, et al.\nEffect of preoperative chemotherapy on the outcome of women with oper-\nable breast cancer. J Clin Oncol 1998 ; 16 : 2672– 85.\n+ (17)Wolmark N, Wang J, Mamounas E, Bryant J, Fisher B. Preoperative\nchemotherapy in patients with operable breast cancer: nine-year results from\nNational Surgical Adjuvant Breast and Bowel Project B-18. J Natl Cancer\nInst Monogr 2001 ; 30 : 96– 102",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T1, T2, T3",
-                "N": "N0, N1",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, AC = doxorubicin and cyclophosphamide",
-                "CTadj": "Non"
+                "N": "N0, N1"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Fisher B, Bryant J, Wolmark N, Mamounas E, Brown A, Fisher ER, et al.",
-            "titre": "Effect of preoperative chemotherapy on the outcome of women with oper- able breast cancer. J Clin Oncol 1998 ; 16 : 2672– 85. + (17)Wolmark N, Wang J, Mamounas E, Bryant J, Fisher B. Preoperative chemotherapy in patients with operable breast cancer: nine-year results from National Surgical Adjuvant Breast and Bowel Project B-18. J Natl Cancer Inst Monogr 2001 ; 30 : 96– 102",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 36
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 43
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1214,21 +2095,42 @@
             ]
         },
         {
+            "titre": "Gazet et al. (2001)",
+            "auteurs": "",
             "reference": "(18)Gazet JC, Ford HT, Gray R, McConkey C, Sutcliffe R, Quilliam J, et al.\nEstrogen-receptor-directed neoadjuvant therapy for breast cancer: results\nof a randomised trial using formestane and methotrexate, mitozantrone and\nmitomycin C (MMM) chemotherapy. Ann Oncol 2001 ; 12 : 685– 91",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T2, T3, T1, T4",
-                "N": "N0, N1, N2",
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, Gsr = goserelin, Frm = formestane, \"MM = mitoxantrone, mitomycin, and methotrexate\"",
-                "CTadj": "Oui, \"MM = mitoxantrone, mitomycin, and methotrexate\", Gsr = goserelin, Frm = formestane"
+                "N": "N0, N1, N2"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Gazet JC, Ford HT, Gray R, McConkey C, Sutcliffe R, Quilliam J, et al.",
-            "titre": "Estrogen-receptor-directed neoadjuvant therapy for breast cancer: results of a randomised trial using formestane and methotrexate, mitozantrone and mitomycin C (MMM) chemotherapy. Ann Oncol 2001 ; 12 : 685– 91",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 25
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "avec chimio · avec chimio néoadj.",
+                            "valeur": 26
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1257,21 +2159,42 @@
             ]
         },
         {
+            "titre": "Van der Hage et al. (2001)",
+            "auteurs": "",
             "reference": "(8) van der Hage JA, van de Velde CJ, Julien JP, Tubiana-Hulin M, Vandervelden\nC, Duchateau L. Preoperative chemotherapy in primary operable breast\ncancer: results from the European Organization for Research and Treatment\nof Cancer trial 10902. J Clin Oncol 2001 ; 19 : 4224– 37",
             "objectif": "",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
             "criteres": {
                 "T": "T1c, T2, T3, T4a, T4b",
-                "N": "N0, N1",
-                "Age": "<=50",
-                "Ménopause %": "-1",
-                "CNA": "Oui, \"FEC = fluorouracil, epirubicin, and cyclophosphamide\"",
-                "CTadj": "Non"
+                "N": "N0, N1"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 7
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 42
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1291,69 +2214,184 @@
                         "N0",
                         "N1"
                     ]
-                },
-                {
-                    "critere": "Age",
-                    "op": "<=",
-                    "valeur": 50
                 }
             ]
         },
         {
+            "titre": "Danforth et al. (2003)",
+            "auteurs": "",
             "reference": "(19)Danforth DN Jr, Cowan K, Altemus R, Merino M, Chow C, Berman A, et al.\nPreoperative FLAC/granulocyte-colony-stimulating factor chemotherapy\nfor stage II breast cancer: a prospective randomized trial. Ann Surg Oncol\n2003 ; 10 : 635– 44",
             "objectif": "",
-            "niveau_preuve": null,
-            "criteres": {
-                "Age": "-1",
-                "Ménopause %": "-1",
-                "CNA": "Oui, \"FLAC/G-CSF = fluorouracil, leucovorin, doxorubicin, cyclophosphamide, and granulocyte colony-stimulating factor support\"",
-                "CTadj": "Non"
-            },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Danforth DN Jr, Cowan K, Altemus R, Merino M, Chow C, Berman A, et al.",
-            "titre": "Preoperative FLAC/granulocyte-colony-stimulating factor chemotherapy for stage II breast cancer: a prospective randomized trial. Ann Surg Oncol 2003 ; 10 : 635– 44",
+            "niveau_preuve": "",
+            "type_etude": "",
+            "lien": "",
+            "criteres": {},
+            "comparaisons": [
+                {
+                    "mesure": "Réponse complète clinique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 65
+                        }
+                    ],
+                    "famille": "Réponse complète clinique"
+                },
+                {
+                    "mesure": "Réponse complète pathologique",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "sans chimio · avec chimio néoadj.",
+                            "valeur": 12
+                        }
+                    ],
+                    "famille": "Réponse complète pathologique"
+                }
+            ],
+            "importance": 0,
             "contraintes": []
         },
         {
+            "titre": "Quantifier l'incidence de la malignité occulte des mamelons dans le cancer du sein, identifier les facteurs influençant cette malignité, à déterminer les taux de récidive locorégionaux et à évaluer les taux de complications après une mastectomie épargnant les mamelons",
+            "auteurs": "",
             "reference": "Peter Mallon, Jean-Guillaume Feron, Benoît Couturaud, Alfred Fitoussi, Périg Lemasurier, Thierry Guihard, Isabelle Cothier-Savay et Fabien Reyal. (s.d.). Malignité occulte du mamelon dans le cancer du sein et résultats de la mastectomie épargnant les mamelons. doi:10.1097/Prs.0B013E3182865A3C",
             "objectif": "quantifier l'incidence de la malignité occulte des mamelons dans le cancer du sein, identifier les facteurs influençant cette malignité, à déterminer les taux de récidive locorégionaux et à évaluer les taux de complications après une mastectomie épargnant les mamelons",
             "niveau_preuve": "4",
-            "criteres": {
-                "Age": "41,5-52,8",
-                "Chirurgie_mammaire": "TSSM"
-            },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "Peter Mallon, Jean-Guillaume Feron, Benoît Couturaud, Alfred Fitoussi, Périg Lemasurier, Thierry Guihard, Isabelle Cothier-Savay et Fabien Reyal. (s.d.).",
-            "titre": "Malignité occulte du mamelon dans le cancer du sein et résultats de la mastectomie épargnant les mamelons. doi:10.1097/Prs.0B013E3182865A3C",
-            "contraintes": [
+            "type_etude": "revue documentaire complète qui regroupe les données de plusieurs études (29 études au total)",
+            "lien": "",
+            "criteres": {},
+            "comparaisons": [
                 {
-                    "critere": "Age",
-                    "op": "entre",
-                    "min": 41.5,
-                    "max": 52.8
+                    "mesure": "Atteinte du mamelon",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 11.5
+                        }
+                    ],
+                    "famille": "Atteinte du mamelon"
+                },
+                {
+                    "mesure": "Taux de récidive du mamelon global",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 0.9
+                        }
+                    ],
+                    "famille": "Taux de récidive du mamelon global"
+                },
+                {
+                    "mesure": "Tx récidive du lambeau cutané",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 4.2
+                        }
+                    ],
+                    "famille": "Tx récidive du lambeau cutané"
+                },
+                {
+                    "mesure": "NAC necrosis",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 6.3
+                        }
+                    ],
+                    "famille": "NAC necrosis"
+                },
+                {
+                    "mesure": "complete NAC loss// necrosis",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 2.9
+                        }
+                    ],
+                    "famille": "complete NAC loss// necrosis"
+                },
+                {
+                    "mesure": "Hematome",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 0.3
+                        }
+                    ],
+                    "famille": "Hematome"
+                },
+                {
+                    "mesure": "Infection",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "mastectomie + reconstruction",
+                            "valeur": 1.7
+                        }
+                    ],
+                    "famille": "Infection"
                 }
-            ]
+            ],
+            "importance": 0,
+            "contraintes": []
         },
         {
+            "titre": "Non inferiorité abstention reprise par CA pour GS pour des cancer invasif T1-2 N0 clinique",
+            "auteurs": "",
             "reference": "Effect of Axillary Dissection vs No Axillary Dissection on 10-Year Overall Survival Among Women With Invasive Breast Cancer and Sentinel Node Metastasis: The ACOSOG Z0011 (Alliance) Randomized Clinical Trial\nArmando E Giuliano 1, Karla V Ballman 2, Linda McCall 3, Peter D Beitsch 4, Meghan B Brennan 5, Pond R Kelemen 6, David W Ollila 7, Nora M Hansen 8, Pat W Whitworth 9, Peter W Blumencranz 10, A Marilyn Leitch 11, Sukamal Saha 12, Kelly K Hunt 13, Monica Morrow 14\nAffiliations expand\t\nPMID: 28898379 PMCID: PMC5672806 DOI: 10.1001/jama.2017.11470",
             "objectif": "Non inferiorité abstention reprise par CA pour GS pour des cancer invasif T1-2 N0 clinique",
             "niveau_preuve": "1",
+            "type_etude": "essai randomisé de phase III",
+            "lien": "",
             "criteres": {
                 "T": "T1a, T1b, T1c, T2",
                 "N": "cN0, pN1-2",
-                "M": "M0",
-                "Age": "-1",
-                "Chirurgie_mammaire": "MP",
-                "RT": "mammaire"
+                "M": "M0"
             },
-            "traitements_evalues": [
-                "Chirurgie_axillaire"
+            "comparaisons": [
+                {
+                    "mesure": "Survie globale à 10 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "GS + curage",
+                            "valeur": 83.6
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 86.3
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie globale"
+                },
+                {
+                    "mesure": "Survie sans maladie à 10 ans",
+                    "unite": "",
+                    "bras": [
+                        {
+                            "label": "GS + curage",
+                            "valeur": 78.2
+                        },
+                        {
+                            "label": "GS seul",
+                            "valeur": 80.2
+                        }
+                    ],
+                    "temps": 10,
+                    "famille": "Survie sans maladie"
+                }
             ],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",
@@ -1381,37 +2419,23 @@
                         "M0"
                     ]
                 }
-            ],
-            "comparaisons": [
-                {
-                    "mesure": "OS à 10A",
-                    "unite": "",
-                    "bras": [
-                        {
-                            "label": "Avec",
-                            "valeur": 83.6
-                        },
-                        {
-                            "label": "Sans",
-                            "valeur": 86.3
-                        }
-                    ]
-                }
             ]
         },
         {
+            "titre": "Non-infériorité GSl versus CA chez des patientes atteintes d'un cancer du sein T1 à T3, pN0 ou 1 ou 2 macrométastase ganglionnaires",
+            "auteurs": "",
             "reference": "Omitting Axillary Dissection in Breast Cancer with Sentinel-Node Metastases\nJana de Boniface 1, Tove Filtenborg Tvedskov 1, Lisa Rydén 1, Robert Szulkin 1, Toralf Reimer 1, Thorsten Kühn 1, Michalis Kontos 1, Oreste D Gentilini 1, Roger Olofsson Bagge 1, Malin Sund 1, Dan Lundstedt 1, Matilda Appelgren 1, Johan Ahlgren 1, Sophie Norenstedt 1, Fuat Celebioglu 1, Helena Sackey 1, Inge Scheel Andersen 1, Ute Hoyer 1, Per F Nyman 1, Eva Vikhe Patil 1, Elinore Wieslander 1, Henrik Dahl Nissen 1, Sara Alkner 1, Yvette Andersson 1, Birgitte V Offersen 1, Leif Bergkvist 1, Jan Frisell 1, Peer Christiansen 1; SENOMAC Trialists’ Group; SENOMAC Trialists' Group\nCollaborators, Affiliations expand\nPMID: 38598571 DOI: 10.1056/NEJMoa2313487",
             "objectif": "non-infériorité GSl versus CA chez des patientes atteintes d'un cancer du sein T1 à T3, pN0 ou 1 ou 2 macrométastase ganglionnaires",
-            "niveau_preuve": null,
+            "niveau_preuve": "",
+            "type_etude": "essai randomisé de phase III",
+            "lien": "",
             "criteres": {
                 "T": "T1, T2, T3",
                 "N": "pN1-2, cN0",
                 "M": "M0"
             },
-            "traitements_evalues": [],
-            "lien": null,
-            "auteurs": "",
-            "titre": "",
+            "comparaisons": [],
+            "importance": 0,
             "contraintes": [
                 {
                     "critere": "T",

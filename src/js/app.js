@@ -585,26 +585,30 @@
     if (!Array.isArray(etude.comparaisons)) return [];
     return etude.comparaisons.map(function(c) {
       var bras = Array.isArray(c.bras) ? c.bras.map(function(b){ return { label: b.label || '', valeur: b.valeur }; }) : [];
-      return { mesure: c.mesure || '', unite: c.unite || '', sens: c.sens || '', bras: bras };
+      return { mesure: c.mesure || '', unite: c.unite || '', sens: c.sens || '',
+               famille: c.famille || '', temps: (c.temps != null ? c.temps : null), bras: bras };
     });
   }
   
   var PALETTE_BARS = ['#2563eb','#16a34a','#9333ea','#0891b2','#f59e0b','#e11d48','#0d9488'];
 
-  // Décompose une mesure en { famille, temps }. Utilise les champs explicites
-  // famille/temps s'ils existent, sinon les DÉDUIT du libellé ("Survie globale
-  // à 5 ans" → famille "Survie globale", temps 5). Permet le graphe temporel et
-  // le filtre sans re-saisir les données existantes.
+  // Décompose une mesure en { famille, temps, cle }. Utilise les champs
+  // explicites famille/temps s'ils existent, sinon les DÉDUIT du libellé
+  // ("Survie globale à 5 ans" → famille "Survie globale", temps 5).
+  //  - famille : famille de base, sert au FILTRE (chips) — sans le sous-groupe.
+  //  - cle     : clé de regroupement du GRAPHE — garde le sous-groupe ("— pN0")
+  //              pour ne pas fusionner des courbes de populations différentes.
   function analyserMesure(c) {
-    var fam = c.famille, t = (c.temps != null ? Number(c.temps) : null);
+    var t = (c.temps != null ? Number(c.temps) : null);
     if (t == null) { var mt = String(c.mesure || '').match(/(\d+(?:[.,]\d+)?)\s*ans?/i); if (mt) t = parseFloat(mt[1].replace(',', '.')); }
-    if (!fam) {
-      fam = String(c.mesure || '')
-        .replace(/\s*à\s+\d+(?:[.,]\d+)?\s*ans?/gi, '')   // "… à 5 ans"
-        .replace(/\s*\d+(?:[.,]\d+)?\s*ans?/gi, '')         // "… 5 ans"
-        .replace(/\s+/g, ' ').trim() || String(c.mesure || 'Mesure');
-    }
-    return { famille: fam, temps: t };
+    var cle = String(c.mesure || '')
+      .replace(/\s*à\s+\d+(?:[.,]\d+)?\s*ans?/gi, '')   // "… à 5 ans"
+      .replace(/\s*\d+(?:[.,]\d+)?\s*ans?/gi, '')         // "… 5 ans"
+      .replace(/\s+/g, ' ').trim();
+    var fam = (c.famille && c.famille.trim()) ||
+      cle.replace(/\s*[—–-]\s*pN.*$/i, '').replace(/\s*[—–-]\s*N\d.*$/i, '').trim() ||
+      cle || String(c.mesure || 'Mesure');
+    return { famille: fam, temps: t, cle: cle || fam };
   }
   function familleDe(c) { return analyserMesure(c).famille; }
 
@@ -662,7 +666,7 @@
     comps = comps.filter(function(c){ return !filtreMesure || familleDe(c) === filtreMesure; });
     if (!comps.length) return '<div style="font-size:12px; color:#9aa1a8;">Aucun résultat pour ce filtre.</div>';
     var groupes = {}, ordre = [];
-    comps.forEach(function(c){ var a = analyserMesure(c); c._temps = a.temps; if (!groupes[a.famille]) { groupes[a.famille] = []; ordre.push(a.famille); } groupes[a.famille].push(c); });
+    comps.forEach(function(c){ var a = analyserMesure(c); c._temps = a.temps; if (!groupes[a.cle]) { groupes[a.cle] = []; ordre.push(a.cle); } groupes[a.cle].push(c); });
     return ordre.map(function(fam){
       var ms = groupes[fam];
       var tousPct = ms.every(function(c){ return !c.unite || c.unite === '%'; });
