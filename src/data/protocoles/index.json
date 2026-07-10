@@ -19,6 +19,11 @@
       "id": "radiotherapie_avance",
       "nom": "Radiothérapie et Cancer Avancé",
       "fichier": "radiotherapie_avance.json"
+    },
+    {
+      "id": "diagnostique_et_biopsie",
+      "nom": "Diagnostique et biopsie",
+      "fichier": "diagnostique_et_biopsie.json"
     }
   ]
 }
