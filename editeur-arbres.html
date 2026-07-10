@@ -471,6 +471,14 @@ function edgeValues(e){
  return String((e&&e.label)||"").split(",").map(s=>s.trim()).filter(Boolean);
 }
 function edgeHasValeurs(e){ return e && e.valeurs && Object.keys(e.valeurs).length>0; }
+function outCount(nodeId){ return edges.filter(e=>e.source===nodeId).length; }
+// Une étape ne se comporte comme « suite unique » (flèche ↓, traversée directe)
+// que si elle a EXACTEMENT une branche sans nom. Dès qu'elle se divise (≥2
+// branches), ses branches se gèrent comme celles d'une question : à nommer.
+function etapeSuiteUnique(sourceId){
+ let s=node(sourceId);
+ return s && s.type==="etape" && outCount(sourceId)===1;
+}
 function edgeLabelDisplay(e){
  let vals = edgeValues(e);
  // Branche sans nom : on n'impose plus « Réponse ». Le libellé reste vide
@@ -814,9 +822,9 @@ function renderEdge(e){
  
  let lab=document.createElement("div");
  lab.className="label"+(sel?" selected":""); 
- if(isEtape && edgeValues(e).length === 0){
-     lab.style.left=((x1+x2)/2-15)+"px"; 
-     lab.style.top=((y1+y2)/2-10)+"px"; 
+ if(isEtape && edgeValues(e).length === 0 && etapeSuiteUnique(s.id)){
+     lab.style.left=((x1+x2)/2-15)+"px";
+     lab.style.top=((y1+y2)/2-10)+"px";
      lab.style.padding = "2px 6px";
      lab.innerHTML="<span style='color:var(--primary); font-size:14px; line-height:1'>↓</span>";
  } else {
@@ -835,7 +843,7 @@ function summary(n){
  if(n.type==="etape"){
      let out=edges.filter(e=>e.source===n.id);
      if (out.length === 1 && edgeValues(out[0]).length === 0) return "→ "+(node(out[0].target)?.titre||"?");
-     if (out.length > 0) return out.map(edgeLabelDisplay).join("  •  ");
+     if (out.length > 0) return out.map(e=>edgeLabelDisplay(e)||"à nommer").join("  •  ");
      return "(aucune suite)";
  }
  let out=edges.filter(e=>e.source===n.id);return out.length?out.map(e=>edgeLabelDisplay(e)||"à nommer").join("  •  "):"(aucune réponse)"
@@ -871,8 +879,9 @@ function buildQuestionRow(n){
   let row=document.createElement("div");
   row.className="listRow"+(selectedEdge===e.id?" sel":"");
   row.style.marginLeft="14px"; row.style.borderLeftColor="#f59e0b";
-  let labelDisplay = (n.type === "etape" && edgeValues(e).length === 0) ? "Suite" : (edgeLabelDisplay(e) || "à nommer");
-  row.textContent="↳ "+((n.type==="etape" && edgeValues(e).length === 0)?"":"« "+labelDisplay+" » → ")+(child?(child.titre||"(sans titre)"):"?");
+  let suiteUnique = (n.type === "etape" && edgeValues(e).length === 0 && childEdges.length === 1);
+  let labelDisplay = suiteUnique ? "Suite" : (edgeLabelDisplay(e) || "à nommer");
+  row.textContent="↳ "+(suiteUnique?"":"« "+labelDisplay+" » → ")+(child?(child.titre||"(sans titre)"):"?");
   row.onclick=function(ev){
    ev.stopPropagation();
    selectedEdge=e.id; selectedNode=null;
@@ -928,10 +937,14 @@ function renderEditor(){
  if(e){
   document.getElementById("edgeValuesWrapper").style.display="block";
   let s=node(e.source);
+  let notice=document.getElementById("edgeEtapeNotice");
   if(s && s.type==="etape"){
-      document.getElementById("edgeEtapeNotice").style.display="block";
+      notice.style.display="block";
+      notice.textContent = outCount(s.id) > 1
+        ? "Cette étape se divise en plusieurs branches : nommez chacune (ex. « Positif », « Négatif ») — elles s'afficheront comme les réponses d'une question."
+        : "Étape à suite unique : laissez vide (une flèche ↓). Pour la diviser, ajoutez d'autres branches puis nommez-les.";
   } else {
-      document.getElementById("edgeEtapeNotice").style.display="none";
+      notice.style.display="none";
   }
   renderEdgeValueFields(edgeValues(e));
   editEdgeCriteres = Object.entries(e.valeurs||{}).map(([critere,valeur])=>({critere:critere, valeur:String(valeur)}));
