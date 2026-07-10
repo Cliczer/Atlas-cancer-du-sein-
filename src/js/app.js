@@ -272,18 +272,12 @@
   }
 
   function reculer() {
-    // Les nœuds « étape » sont transparents : render() les traverse et
-    // re-descend aussitôt. Revenir « sur » une étape rebondirait donc vers
-    // l'avant → on saute les étapes pour retomber sur la vraie question
-    // précédente (celle que la patiente a réellement vue).
-    var cible = null;
-    while (history.length) {
-      var h = history[history.length - 1];
-      if (h.node && h.node.type !== 'etape') { cible = history.pop(); break; }
-      history.pop();
-    }
-    if (!cible) return;
-    current = cible.node;
+    // Chaque étape/question/nombre affiché est empilé dans history au moment où
+    // on le quitte ; les étapes sont désormais des écrans visibles (bouton
+    // « Continuer »), donc revenir = dépiler le dernier écran vu, sans saut.
+    if (!history.length) return;
+    var h = history.pop();
+    current = h.node;
     render(current);
   }
 
@@ -300,14 +294,7 @@
     if (!node) return;
     if (node.type === 'resultat') { renderResults(node); return; }
 
-    if (node.type === 'etape' && node.suite) {
-      history.push({node: node, label: node.titre || 'Étape intermédiaire'});
-      current = node.suite;
-      render(current);
-      return;
-    }
-
-    $('quiz-question').textContent = node.titre || 'Question';
+    $('quiz-question').textContent = node.titre || (node.type === 'etape' ? 'Étape' : 'Question');
 
     var step = history.length + 1, total = maxDepth || step;
     var pct  = Math.round(Math.max(0, (step-1)/total) * 100);
@@ -321,6 +308,23 @@
     container.innerHTML = '';
 
     if (node.type === 'numerique') { renderNumerique(node, container); return; }
+
+    // Étape à suite unique : on affiche son texte + un bouton « Continuer ».
+    // (Elle n'est plus traversée en silence → tous les textes d'étape sont vus.)
+    if (node.type === 'etape' && node.suite && !(node.choix && Object.keys(node.choix).length)) {
+      var bc = document.createElement('button');
+      bc.className = 'choice-btn';
+      var tc = document.createElement('span'); tc.textContent = 'Continuer';
+      var ac = document.createElement('span'); ac.className = 'arrow'; ac.textContent = '→';
+      bc.appendChild(tc); bc.appendChild(ac);
+      bc.addEventListener('click', function() {
+        history.push({node: node, label: node.titre || 'Étape'});
+        current = node.suite;
+        render(current);
+      });
+      container.appendChild(bc);
+      return;
+    }
 
     var choices = node.choix || {};
     var keys = Object.keys(choices);

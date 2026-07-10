@@ -75,7 +75,23 @@ body.fs-actif #fsToolbar{display:flex}
 #fsToolbar button{padding:6px 10px;font-size:12.5px}
 #fsToolbar .sep{width:1px;height:22px;background:var(--border);margin:0 2px}
 .panel{background:var(--surface);padding:16px;border:1px solid var(--border);border-radius:var(--radius);
- box-shadow:var(--shadow);overflow:auto}
+ box-shadow:var(--shadow);overflow:auto;position:relative}
+/* Replier les panneaux latéraux pour agrandir le canevas */
+.panelToggle{position:absolute;top:10px;z-index:6;padding:3px 9px;font-size:13px;line-height:1;font-weight:800;
+ color:var(--text-muted);background:var(--surface-alt)}
+#leftPanel .panelToggle{right:10px}
+#rightPanel .panelToggle{left:10px}
+body.leftHidden .main{grid-template-columns:36px 1fr 330px}
+body.rightHidden .main{grid-template-columns:300px 1fr 36px}
+body.leftHidden.rightHidden .main{grid-template-columns:36px 1fr 36px}
+body.fs-actif.leftHidden .main{grid-template-columns:36px 1fr 270px}
+body.fs-actif.rightHidden .main{grid-template-columns:240px 1fr 36px}
+body.fs-actif.leftHidden.rightHidden .main{grid-template-columns:36px 1fr 36px}
+body.leftHidden #leftPanel, body.rightHidden #rightPanel{padding:8px 2px;overflow:hidden}
+body.leftHidden #leftPanel > :not(.panelToggle),
+body.rightHidden #rightPanel > :not(.panelToggle){display:none}
+body.leftHidden #leftPanel .panelToggle,
+body.rightHidden #rightPanel .panelToggle{left:50%;right:auto;transform:translateX(-50%)}
 #canvas{position:relative;overflow:scroll;cursor:grab;border:1px solid var(--border);border-radius:var(--radius);
  box-shadow:var(--shadow);background-color:#fbfcfe;
  background-image:radial-gradient(circle,#dbe3ee 1.2px,transparent 1.2px);background-size:22px 22px}
@@ -328,7 +344,8 @@ details.listGroup[open]>summary::before{content:"▾ "}
 </div>
 
 <div class="main">
-<div class="panel">
+<div class="panel" id="leftPanel">
+<button class="panelToggle" onclick="togglePanel('left')" title="Replier / déplier la liste">⟨</button>
 <div id="loadStatus" class="notice">Chargement du registre des protocoles…</div>
 
 <div class="legend" id="typeFilter">
@@ -346,7 +363,8 @@ details.listGroup[open]>summary::before{content:"▾ "}
 <div id="world"></div>
 </div>
 
-<div class="panel right">
+<div class="panel right" id="rightPanel">
+<button class="panelToggle" onclick="togglePanel('right')" title="Replier / déplier l'éditeur">⟩</button>
 <h3>Édition</h3>
 <div id="editEmpty">Cliquez sur un nœud ou une branche.</div>
 
@@ -428,6 +446,19 @@ function setStatus(text, ok){
  if(!el)return;
  el.textContent=text;
  el.className= ok ? "notice ok" : "notice";
+}
+// Replie/déplie un panneau latéral (liste à gauche, éditeur à droite) pour
+// donner plus de place au canevas. Le chevron du bouton indique l'action.
+function togglePanel(side){
+ let cls = side==="left" ? "leftHidden" : "rightHidden";
+ let hidden = document.body.classList.toggle(cls);
+ let panel = document.getElementById(side==="left" ? "leftPanel" : "rightPanel");
+ let btn = panel && panel.querySelector(".panelToggle");
+ if(btn){
+  if(side==="left") btn.textContent = hidden ? "⟩" : "⟨";
+  else              btn.textContent = hidden ? "⟨" : "⟩";
+  btn.title = hidden ? "Déplier" : "Replier";
+ }
 }
 function uid(p){return p+Math.random().toString(36).slice(2,9)}
 function node(id){return nodes.find(n=>n.id===id)}
