@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "titre": "Diagnostique et biopsie",
+    "date_maj": "2026-07-10"
+  },
+  "tree": {
+    "type": "etape",
+    "titre": "Foyer de Calcifications ACR3*, 4 ou 5",
+    "suite": {
+      "type": "etape",
+      "titre": "Macrobiopsies\nSous mammographie (stéréo, tomosynthèse)",
+      "suite": {
+        "type": "etape",
+        "titre": "Histologie",
+        "choix": {
+          "Branche 1": {
+            "type": "etape",
+            "titre": "Bénin",
+            "suite": {
+              "type": "question",
+              "titre": "RCP",
+              "choix": {
+                "Concordant": {
+                  "type": "resultat",
+                  "titre": "ACR2 \n\nMAmmo à 6 mois\n\nSi CA+ résiduelles >50% (Nouveau baseline)",
+                  "donnees": {
+                    "Traitement": "1"
+                  },
+                  "infos_science": {},
+                  "source_senorif": ""
+                },
+                "Discordant": {
+                  "type": "resultat",
+                  "titre": "Mammo\nAlternatives : \n-Suivi rapproché\n-Refaire biopsies\n-Chirurgie",
+                  "donnees": {
+                    "Traitement": "1"
+                  },
+                  "infos_science": {},
+                  "source_senorif": ""
+                }
+              },
+              "infos_science": {},
+              "source_senorif": ""
+            },
+            "infos_science": {},
+            "source_senorif": ""
+          },
+          "Branche 2": {
+            "type": "etape",
+            "titre": "Lésions histologiques à risque",
+            "suite": {
+              "type": "etape",
+              "titre": "RCP",
+              "suite": {
+                "type": "resultat",
+                "titre": "Chirurgie vs surveillance rapprochée (nouveau bilan complet post biopsie puis suivi annuel pendant 10 ans)",
+                "donnees": {
+                  "Traitement": "1"
+                },
+                "infos_science": {},
+                "source_senorif": ""
+              },
+              "infos_science": {},
+              "source_senorif": ""
+            },
+            "infos_science": {},
+            "source_senorif": ""
+          },
+          "Branche 3": {
+            "type": "etape",
+            "titre": "Cancer",
+            "suite": {
+              "type": "etape",
+              "titre": "RCP",
+              "suite": {
+                "type": "etape",
+                "titre": "Si clip Mammo F+P",
+                "suite": {
+                  "type": "resultat",
+                  "titre": "Chirurgie",
+                  "donnees": {
+                    "Traitement": "1"
+                  },
+                  "infos_science": {},
+                  "source_senorif": ""
+                },
+                "infos_science": {},
+                "source_senorif": ""
+              },
+              "infos_science": {},
+              "source_senorif": ""
+            },
+            "infos_science": {},
+            "source_senorif": ""
+          }
+        },
+        "infos_science": {},
+        "source_senorif": ""
+      },
+      "infos_science": {},
+      "source_senorif": ""
+    },
+    "infos_science": {},
+    "source_senorif": ""
+  }
+}
